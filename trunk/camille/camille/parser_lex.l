@@ -50,7 +50,8 @@ int defaults_found = 0;
 stack s;
 int ssize;
 
-void add_to_str(char);
+void push_char(char);
+char *pop_string(void);
 
 %}
 
@@ -70,25 +71,17 @@ void add_to_str(char);
 			BEGIN STR_ENV;
 			ssize = 0;
 			s = stack_create();
-			printf("creating stack, setting ssize = 0\n");
                 }
 
 <STR_ENV>\\(.|\n)	{
 			if (yytext[1] == '\n')
 				lineno++;	/* Keep track of line numbers,
 						   even in STR_ENV! */
-			add_to_str(yytext[1]);
+			push_char(yytext[1]);
 		}
 
 <STR_ENV>\"	{
-			char *str = (char *)malloc(ssize + 1);
-			printf("\nend of string occured\nssize = %d\n", ssize);
-			str[ssize] = '\0';
-			while (ssize > 0)
-				str[--ssize] = (char) (int) stack_pop(s);
-			        /* NOTE: This ----^ is rans */
-			printf("resulting string: \"%s\"\n", str);
-			yylval.string = str;
+			yylval.string = pop_string();
 
 			BEGIN 0;	/* Leave the STR_ENV environment */
 			return STRING;
@@ -97,10 +90,12 @@ void add_to_str(char);
 <STR_ENV>\n	{
 			/* Keep track of line numbers, even in STR_ENV! */
 			lineno++;
-			add_to_str(yytext[0]);
+			push_char(yytext[0]);
 		}
 
-<STR_ENV>.	{ add_to_str(yytext[0]); }
+<STR_ENV>.	{
+			push_char(yytext[0]);
+		}
 
 	/*** Language keywords ***/
 defaults	{
@@ -137,10 +132,22 @@ yywrap(void) {
         return 1;
 }
 
-void add_to_str(char c)
+void
+push_char(char c)
 {
 	ssize++;
-	printf("read %c... setting ssize to %d\n", c, ssize);
+	/* printf("read %c... setting ssize to %d\n", c, ssize); */
 	stack_push(s, (void *) (int) c);
 	/* NOTE: This ----^ is rans */
+}
+
+char *
+pop_string(void)
+{
+	char *str = (char *)malloc(ssize + 1);
+	str[ssize] = '\0';
+	while (ssize > 0)
+		str[--ssize] = (char) (int) stack_pop(s);
+		/* NOTE: This ----^ is rans */
+	return str;
 }

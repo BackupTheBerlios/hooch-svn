@@ -65,9 +65,9 @@ loc:
 contact:
 	CONTACT IDENTIFIER '{' contact_fields '}'
 		{
-			printf("Verify that contact ID %s does not exist\n", $2);
-			printf("Verify that contact %s has \"name\" and \"address\".\n", $2);
-			printf("Clean and store above fields in contact buffer as: %s\n", $2);
+			printf("===> Verify that contact ID %s does not exist\n", $2);
+			printf("===> Verify that contact %s has \"name\" and \"address\".\n", $2);
+			printf("===> Clean and store above fields in contact buffer as: %s\n", $2);
 		}
 	;
 
@@ -75,10 +75,10 @@ defaults:
 	DEFAULTS '{' defaults_fields '}'
 		{
 			if ($3 > 0) {
-				printf("Found defaults:\n");
-				printf("Clean and store above fields in buffer for contact defaults\n");
+				printf("===> Found defaults (with fields)\n");
+				printf("===> Clean and store above fields in buffer for contact defaults\n");
 			} else {
-				printf("Found empty defaults\n");
+				printf("===> Found empty defaults\n");
 			}
 		}
 	;
