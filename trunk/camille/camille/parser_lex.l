@@ -39,7 +39,18 @@ wspace		[ \t]
 
 %{
 
+#define YY_NO_UNPUT
+/*
+ * The above is needed to remove the warning about "yyunput unused".
+ * lex creates the prototype regardless of whether or not yyunput is actually
+ * used anywhere, resulting in a C compiler warning.  This may not be very
+ * portable, but at least it won't hurt if it's not recognised.
+ */
+
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <gune/gune.h>
 #include "parser.h"
 
@@ -115,7 +126,23 @@ empty			{	return EMPTY;		}
 
 	/*** Numbers ***/
 \-?0x{hexdigit}+	{
-				yylval.integer = strtol(yytext, NULL, 16);
+				long lval;
+
+				lval = strtol(yytext, NULL, 16);
+
+				errno = 0;
+				/*
+				 * Check if the number is either too large
+				 * according to strtol itself (even too big
+				 *  for a long, that is), or if the long
+				 * result can not be crammed into an integer.
+				 */
+				if ((errno == ERANGE && (lval == LONG_MAX ||
+					lval == LONG_MIN)) ||
+				    (lval > INT_MAX || lval < INT_MIN))
+					yyerror("Integer overflow (%s)",
+						yytext);
+				yylval.integer = lval;
 				return INTEGER;
 			}
 

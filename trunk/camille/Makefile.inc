@@ -12,7 +12,9 @@
 # Without pkgsrc, default is /usr
 #PREFIX=		/usr/local
 
-CFLAGS+=	-g -ansi -pedantic-errors -Wall
+# Treat C and lint warnings as errors.
+CFLAGS+=	-g -ansi -pedantic-errors -Wall -Werror
+LINTFLAGS+=	-w
 
 ########################
 # Compile-time options #
