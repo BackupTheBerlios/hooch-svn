@@ -1,0 +1,104 @@
+%
+% Quickly hacked together, may contain lots of too-long descriptions,
+% mistakes etc.  I just wanted to jot this down before we forgot it.
+%
+
+\documentclass[a4paper]{article}
+
+\title{Design rationale for Turner and Hooch}
+\date{May 2004}
+\author{Peter~Bex\and{}Vincent~Driessen}
+
+\begin{document}
+
+\maketitle
+
+\section{General configuration files syntax}
+
+The syntax of all Hooch and Turner config files is the same.
+The basic notation is borrowed from C-like languages and inspired by
+Irssi's configuration files and CSS notation.  This should make it easy
+to read for experienced programmers.  Beginners should not need to edit
+most config files manually, since the user interface shall at some point
+support some way of setting preferences, so there was no reason to worry
+about the somewhat cryptic nature (for beginners, anyway) of C.
+
+For ease of parsing, a semicolon is required at the end of a statement.
+This allows the user to make statements span multiple lines in the file,
+providing maximum flexibility of notation.  Whitespace and comments are
+also completely ignored for this reason.
+
+For consistency with many other Unix tools, a hash symbol (\#) marks the
+beginning of a comment that runs until the end of a line.
+
+
+\section{Contact list design rationale}
+
+Contacts in many other Unix mail clients are just simple aliases for a
+name and an email address.  Because it is often the case that one
+person has multiple email addresses (like one for home, one for work),
+Hooch binds these addresses under one contact to keep them together and
+perform operations on the basis of contacts instead of on email
+addresses.
+
+The system used for this is somewhat like CSS.  Settings that belong to a
+certain contact are stored in the contact's main id and optionally
+overridden in a sub-id.  By doing so, we can allow the main id's settings
+to also pertain to sub-ids of the contact.  When we mail to another email
+address of the same person, the name of that person generally does not
+change, neither as do many other properties.  These are properties of
+the \emph{contact}, not of the alias/email address.
+
+On the other hand, there are certain things that \emph{sometimes} differ
+from email address to email address, like a PGP key, for example, or
+perhaps the ability to receive HTML mail.  It does not matter which of
+the options these are, that cannot be predicted in advance.  Also, plugins
+might define new options which might or might not be carried over into
+sub-ids.
+
+
+\subsection{Groups}
+
+Groups are a very useful feature, since users often want to mail to
+several people interested in a subject (say students attending a course)
+and do not want to manually select these people from a large address
+book every time.
+
+Treating groups as simply a collection of e-mail addresses is a bad idea
+because Hooch supports the notion of contacts.  If one modifies the
+address of a contact, one should not also have to modify this address in
+all groups that address is in as well.
+
+Simply wrapping a `group' keyword around contacts is not acceptable, for
+two reasons:
+\begin{itemize}
+\item Contacts can be members of more than one group
+\item When a contact is a member of two groups, we might want to use
+	their business or their personal id, depending on which group we
+	mail to.
+\end{itemize}
+For this last reason, a new notation had to be decided, which is used
+subsequently in other config files as well.  This is the colon
+operator.  When we wish to mail to homer's work address, we say
+\texttt{homer:work}.  We cannot use the notation \texttt{homer.work} as
+this would imply the value of the \texttt{work} option of \texttt{homer}.
+
+For groups, the settings of a contact might conflict with other members
+of the group.  For example, when working in a project group, one of the
+members may not want to receive, HTML encoded mail.  If this is the
+case (and we are using a HTML composer), we can set the option that
+enables HTML attachments to \texttt{false} in the group, while allowing
+us to send HTML mail to those who prefer it when we mail them personally
+or from another group.
+
+Thus, settings in a group override those of the contacts (or actually,
+ids of contacts) in those groups.  Because, again, we cannot predict
+which settings make sense (for example, setting a group-wide PGP key ID for
+encryption probably isn't a very good idea, but who knows?  Perhaps some
+group one day decides they share a PGP key), we should not make any
+assumptions about which options may be overridden by a group.
+
+All options that are legal inside a contact (or id) are also legal
+inside a group.  If it makes sense is up to the user.
+
+\end{document}
