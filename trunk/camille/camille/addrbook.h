@@ -69,7 +69,7 @@ addrbook addrbook_del_group(addrbook, char *);
 addrbook addrbook_parse_file(FILE *);
 
 #ifdef DEBUG
-addrbook_dump(addrbook);
+void addrbook_dump(addrbook);
 #endif
 
 #ifdef __cplusplus
