@@ -72,7 +72,7 @@ main(int argc, char **argv)
 		}
 
 	/* Perform tests */
-	test_parse();
+	addrbook_parse_file(stdin);
 	printf("Done\n");
 
 	return 0;
