@@ -30,9 +30,12 @@ contact homer {
 	# XXX Internally these are just the `primary' id.
 	address = "homer@simpsons.net";
 
-	# Strings are enclosed within double or single quotes (there is no difference
-	# in behaviour)
+	# Strings can be enclosed within all three quoting styles (", ` and ').
+	# There is no difference in behaviour between these three.  The only
+	# rule is that an opening quote must be matched with a closing one of
+	# the same type.
 	company = "ACME, Inc.";
+	name = `Homer Simpson`;
 	picture = '~/pics/homer.png';	# No photo
 	pgp.key_id = empty;		# `empty' means unset (NOT the empty string "")
 
