@@ -239,15 +239,15 @@ group_block:
 defaults_block:
 	DEFAULTS '{' defaults_stms '}'
 		{
-			gendata data;
+			gendata dummy_data;
 
 			if (read_defaults) {
 				yyerror("Error: More than one defaults-block"
 				         " is not allowed.");
 			} else {
 				read_defaults = 1;
-				data.ptr = curr_opthier;
-				bind_list_walk($3, defaults_walker, data);
+				dummy_data.num = 0;
+				bind_list_walk($3, defaults_walker, dummy_data);
 			}
 			bind_list_destroy($3);
 		}
