@@ -35,7 +35,7 @@
  */
 
 #include <stdlib.h>
-#include <gune/error.h>
+#include <gune/gune.h>
 #include <camille/contacts.h>
 
 contact_t * const ERROR_CONTACT = (void *)error_dummy_func;
@@ -57,5 +57,24 @@ contact_create(const char *name)
 	if ((cont = malloc(sizeof(contact_t))) == NULL)
 		return ERROR_CONTACT;
 
+	cont->name = str_cpy(name);
+
+	if (cont->name == NULL) {
+		free(cont);
+		return ERROR_CONTACT;
+	}
+
 	return (contact)cont;
+}
+
+
+/*
+ * Destroy a contact.
+ *
+ * \param cont  The contact to destroy.
+ */
+void
+contact_destroy(contact cont)
+{
+	free(cont);
 }

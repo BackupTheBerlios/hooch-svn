@@ -39,6 +39,14 @@
 extern "C" {
 #endif
 
+typedef struct group_t {
+	char *name;
+	alist contacts;
+} group_t, *group;
+
+group group_create(const char *);
+void group_destroy(group);
+
 #ifdef __cplusplus
 }
 #endif

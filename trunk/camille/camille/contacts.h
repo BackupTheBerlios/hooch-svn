@@ -52,6 +52,7 @@ typedef struct contact_t {
 } contact_t, *contact;
 
 contact contact_create(const char *);
+void contact_destroy(contact);
 
 #ifdef __cplusplus
 }

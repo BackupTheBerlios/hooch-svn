@@ -111,9 +111,9 @@ addrbook_create(void)
 void
 addrbook_destroy(addrbook ab)
 {
-	/* XXX TODO FIXME Change NULL parameters into contact_destroy etc */
-	ht_destroy(ab->contacts, NULL, NULL);
-	ht_destroy(ab->groups, NULL, NULL);
+	/* Casting to free_func is ok */
+	ht_destroy(ab->contacts, NULL, (free_func)contact_destroy);
+	ht_destroy(ab->groups, NULL, (free_func)group_destroy);
 	alist_destroy(ab->defaults, NULL, NULL);
 	free(ab);
 }

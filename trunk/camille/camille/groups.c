@@ -34,9 +34,48 @@
  * Addressbook groups functionality
  */
 
-#include <gune/error.h>
+#include <stdlib.h>
+#include <gune/gune.h>
 #include <camille/groups.h>
 
-/*group_t * const ERROR_GROUP = (void *)error_dummy_func; */
+group_t * const ERROR_GROUP = (void *)error_dummy_func;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+/**
+ * Create a group with a given name, initialising all data to the defaults.
+ *
+ * \param name  The (symbolic, identifier) name of the group
+ *
+ * \return  The new group, or ERROR_GROUP if there was an error.
+ */
+group
+group_create(const char *name)
+{
+	group_t *gr;
+
+	if ((gr = malloc(sizeof(group_t))) == NULL)
+		return ERROR_GROUP;
+
+	gr->name = str_cpy(name);
+
+	if (gr->name == NULL) {
+		free(gr);
+		return ERROR_GROUP;
+	}
+
+	return (group)gr;
+}
+
+
+/*
+ * Destroy a group.
+ *
+ * \param gr  The group to destroy.
+ */
+void
+group_destroy(group gr)
+{
+	free(gr);
+}
