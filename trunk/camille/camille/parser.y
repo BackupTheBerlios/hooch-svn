@@ -67,7 +67,7 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
 %type <amount> defaults_stms
 %type <amount> identity_stms
 %type <amount> group_stms
-%type <amount> single_stms
+%type <amount> stms
 
 /* Field names */
 %type <identifier> field
@@ -97,17 +97,21 @@ block:	contact_block		{ }
 	;
 
 contact_block:
-	CONTACT IDENTIFIER '{' contact_body '}'
+	CONTACT IDENTIFIER
 		{
-			printf("===> Check whether no contact with the same name exists.\n");
-			printf("===> If not, store contact %s.\n", $2);
+			printf("===> Make contact \"%s\"\n", $2);
+			/* TODO: Check whether no contact with the same name exists */
+		}
+	'{' contact_body '}'
+		{
+			printf("===> Store contact \"%s\"\n", $2);
 		}
 	;
 
 contact_body:
 	identities
 		{
-			printf("===> Check that there was at least a primary identity.\n");
+			/* Check that there was at least a primary identity */
 		}
 	/*
 	   XXX TODO Support direct identity field declarations in
@@ -122,69 +126,80 @@ identities:
 	;
 
 identity:
-	IDENTITY IDENTIFIER '{' identity_stms '}'
+	IDENTITY IDENTIFIER
 		{
-			printf("===> Check whether no identity with the same name exists.\n");
-			printf("===> Check that identity %s has \"name\" and \"address\".\n", $2);
-			printf("===> If both, store identity %s\n", $2);
+			printf("===> Make new identity \"%s\"\n", $2);
+			/* TODO: Check whether no identity with the same name exists */
+		}
+	'{' identity_stms '}'
+		{
+			/* TODO: Check that this identity has name and address */
+			/* If so: */
+			printf("===> Store identity \"%s\"\n", $2);
 		}
 	;
 
 group_block:
-	GROUP IDENTIFIER '{' group_stms '}'
+	GROUP IDENTIFIER
 		{
-			printf("===> Check whether no group with the same name exists.\n");
-			printf("===> Check whether group has a members field.\n");
-			printf("===> If not, store group %s.\n", $2);
+			printf("===> Make new group: \"%s\"\n", $2);
+			/* TODO: Check whether no group with the same name exists */
+		}
+	'{' group_stms '}'
+		{
+			/* TODO: Check whether group has a members field */
+			/* If so: */
+			printf("===> Store group %s.\n", $2);
 		}
 	;
 
 defaults_block:
-	DEFAULTS '{' defaults_stms '}'
+	DEFAULTS
 		{
 			if (read_defaults) {
 				yyerror("Error: More than one defaults-block is not allowed.\n");
 			}
 			read_defaults = 1;
-
-			if ($3 > 0) {
-				printf("===> Found defaults (with fields)\n");
-				printf("===> Clean and store above fields in buffer for contact defaults\n");
+			printf("===> Make new 'default settings'\n");
+		}
+	'{' defaults_stms '}'
+		{
+			/* XXX: Hmm, apparently need to use $4 here.  Why does
+			 * the code block above seem to be $2?  Do some
+			 * research. */
+			if ($4 > 0) {
+				printf("===> Found default settings! Store 'em!\n");
 			} else {
-				printf("===> Found empty defaults\n");
+				printf("===> Found no defaults settings (empty block)\n");
 			}
 		}
 	;
 
-identity_stms: single_stms	{ $$ = $1; };
-defaults_stms: single_stms	{ $$ = $1; };
-group_stms:    single_stms	{ $$ = $1; };	/* XXX Allow multi_stms, too */
+identity_stms: stms		{ $$ = $1; };
+defaults_stms: stms		{ $$ = $1; };
+group_stms:    stms		{ $$ = $1; };	/* XXX Allow multi_stms, too */
 
-single_stms:
-	single_stm single_stms	{ $$ = 1 + $2; }
+stms:
+	stm stms		{ $$ = 1 + $2; }
 	| /* Empty */		{ $$ = 0; };
 
-single_stm:
+stm:
 	';'			{ }
 	| field '=' BOOLEAN ';'
 		{
-			printf("Storing boolean \"%s\" => %d in contact buffer.\n",
-			       $1, $3);
+			printf("Storing boolean \"%s\" => %d\n", $1, $3);
 		}
 	| field '=' INTEGER ';'
 		{
-			printf("Storing integer \"%s\" => %d in contact buffer.\n",
-			       $1, $3);
+			printf("Storing integer \"%s\" => %d\n", $1, $3);
 		}
 	| field '=' STRING ';'
 		{
-			printf("Storing string \"%s\" => \"%s\" in contact buffer.\n",
-			       $1, $3);
+			printf("Storing string \"%s\" => \"%s\"\n", $1, $3);
 		}
 	| field '=' EMPTY ';'
 		{
-			printf("Storing empty field \"%s\" in contact buffer.\n",
-			       $1);
+			printf("Storing empty field \"%s\"\n", $1);
 		}
 	;
 
