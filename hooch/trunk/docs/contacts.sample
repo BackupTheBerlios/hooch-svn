@@ -73,19 +73,10 @@ group parents {
 
 #
 # We allow the exact same options for groups as for contacts, to provide
-# group-wide defaults for all contacts, with optional override in the contacts
-# themselves.  When addressing the group, the group settings will have effect,
-# but when addressing the contact directly, the contact's settings have effect.
+# group-wide defaults for all contacts.  When addressing the group, the
+# group settings will have effect, but when addressing the contact directly,
+# the contact's settings have effect.
 #
-# <nvie>: sjamaan, what do you mean by ``with optional override in the
-# contacts''?  Not fully clear to me.  Do you mean that in the following
-# example, when mailing ``To:'' ``non-kielp'', my pgp.id will be set to 0xf00?
-# Or did you mean ``risking possible'' instead of ``optional''.
-contact nvie {
-	address = "nvie@users.sf.net";
-	pgp.id = 0xf00;
-}
-group non-kielp = { contacts = nvie; pgp.id = 0x12345678; }
 
 #
 # Subsystems/extensions can be handled with ease.  They simply register which
