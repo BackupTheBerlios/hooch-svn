@@ -17,18 +17,29 @@
 
 \section{General configuration files syntax}
 
-The syntax of all Hooch and Turner config files is the same.
+The syntax of all Hooch and Turner config files is generally speaking the same.
 The basic notation is borrowed from C-like languages and inspired by
 Irssi's configuration files and CSS notation.  This should make it easy
 to read for experienced programmers.  Beginners should not need to edit
-most config files manually, since the user interface shall at some point
+most config files manually, since the user interface shall eventually
 support some way of setting preferences, so there was no reason to worry
 about the somewhat cryptic nature (for beginners, anyway) of C.
+
+There is a C struct-like notation to group options that belong together,
+like all options that are applicable to a certain plug-in.  This is to
+bring some structure into the config files.  This avoids the mess that
+many programs' config files are, especially when Hooch's feature set grows
+as the program matures and new plug-ins are installed.
+Because the user does not always fully utilise every option a plug-in or
+subsystem has to offer, the dot notation can be used for compactness.
 
 For ease of parsing, a semicolon is required at the end of a statement.
 This allows the user to make statements span multiple lines in the file,
 providing maximum flexibility of notation.  Whitespace and comments are
-also completely ignored for this reason.
+also completely ignored for this reason.  Because a closing brace (\}) is
+always the end of a list of assignments to one structure's fields, there
+is no need for a semicolon after a closing brace.  Thus, to avoid confusion,
+the semicolon is explicitly disallowed after closing braces.
 
 For consistency with many other Unix tools, a hash symbol (\#) marks the
 beginning of a comment that runs until the end of a line.
@@ -39,8 +50,8 @@ beginning of a comment that runs until the end of a line.
 Contacts in many other Unix mail clients are just simple aliases for a
 name and an email address.  Because it is often the case that one
 person has multiple email addresses (like one for home, one for work),
-Hooch binds these addresses under one contact to keep them together and
-perform operations on the basis of contacts instead of on email
+Hooch binds these addresses under one \emph{contact} to keep them together
+and perform operations on the basis of contacts instead of on email
 addresses.
 
 The system used for this is somewhat like CSS.  Settings that belong to a
@@ -52,17 +63,25 @@ change, neither as do many other properties.  These are properties of
 the \emph{contact}, not of the alias/email address.
 
 On the other hand, there are certain things that \emph{sometimes} differ
-from email address to email address, like a PGP key, for example, or
-perhaps the ability to receive HTML mail.  It does not matter which of
-the options these are, that cannot be predicted in advance.  Also, plugins
-might define new options which might or might not be carried over into
-sub-ids.
+between email addresses of one person, like a PGP key for example, or
+perhaps the ability to view HTML mail at that address' site.  It does not
+matter which of the options these are, that cannot be predicted in advance.
+Also, plugins might define new options which might or might not be carried
+over into sub-ids.  For this reason, every option of a contact may be
+overridden in a sub-id, even if this would not make much sense conceptually.
+
+Requiring each id to be a sub-id (ie, not allowing an \texttt{address}
+field in the main body of the contact) would be irritating in the simple
+case of a pure name/address pair with nothing else added.  Also, when
+mailing to a contact, most of the time we do not bother about some
+secondary address, we just wish to send mail to that person's primary
+address.  Not having to specify a sub-id is more practical then.
 
 
 \subsection{Groups}
 
 Groups are a very useful feature, since users often want to mail to
-several people interested in a subject (say students attending a course)
+several people interested in a subject (say, students attending a course)
 and do not want to manually select these people from a large address
 book every time.
 
@@ -71,17 +90,23 @@ because Hooch supports the notion of contacts.  If one modifies the
 address of a contact, one should not also have to modify this address in
 all groups that address is in as well.
 
-Simply wrapping a `group' keyword around contacts is not acceptable, for
-two reasons:
+Having a \texttt{groups} option in a contact listing the groups the
+contact is a member of is a possible solution, but it is not very clear.
+How can one get a simple overview of all the contacts in a group?  One would
+have to walk through the entire file to find them all.  As can be read
+below, our solution to the groups problem is more flexible, as well.
+
+Simply wrapping a \texttt{group \{ .. \}} block around contacts is not
+acceptable, for two reasons:
 \begin{itemize}
-\item Contacts can be members of more than one group
+\item Contacts can be members of more than one group.
 \item When a contact is a member of two groups, we might want to use
 	their business or their personal id, depending on which group we
 	mail to.
 \end{itemize}
 For this last reason, a new notation had to be decided, which is used
 subsequently in other config files as well.  This is the colon
-operator.  When we wish to mail to homer's work address, we say
+operator.  When we wish to mail to Homer's work address, we say
 \texttt{homer:work}.  We cannot use the notation \texttt{homer.work} as
 this would imply the value of the \texttt{work} option of \texttt{homer}.
 
@@ -97,10 +122,9 @@ Thus, settings in a group override those of the contacts (or actually,
 ids of contacts) in those groups.  Because, again, we cannot predict
 which settings make sense (for example, setting a group-wide PGP key ID for
 encryption probably isn't a very good idea, but who knows?  Perhaps some
-group one day decides they share a PGP key), we should not make any
+group one day decides they want to share a PGP key), we should not make any
 assumptions about which options may be overridden by a group.
-
-All options that are legal inside a contact (or id) are also legal
-inside a group.  If it makes sense is up to the user.
+For this reason, all options that are legal inside a contact (or id) are
+also legal inside a group.  If it makes sense is up to the user.
 
 \end{document}
