@@ -6,7 +6,7 @@
 #  as BSD Makefile structure is extremely elegant.
 #
 
-SUBDIR=		src
+SUBDIR=		camille
 SUBDIR+=	test
 
 .include <bsd.subdir.mk>

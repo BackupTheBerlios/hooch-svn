@@ -4,8 +4,9 @@
 # Camille testing suite Makefile
 #
 
-PROG=	test
+PROG= test
 MAN=
-LDADD=	-L../src -R../src -lcamille
+CFLAGS+= -I..
+LDADD= -L../camille -R../camille -lcamille
 
 .include <bsd.prog.mk>

@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../src/camille.h"
+#include <camille/camille.h>
 
 void
 usage(void)
