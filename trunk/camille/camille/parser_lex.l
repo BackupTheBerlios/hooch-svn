@@ -1,5 +1,5 @@
 /*
- * $Id: parser.y 70 2004-06-06 02:26:09Z nvie $
+ * $Id$
  *
  * Copyright (c) 2004 Peter Bex and Vincent Driessen
  * All rights reserved.
@@ -130,6 +130,8 @@ defaults	{
 		}
 
 contact		{	return CONTACT;		}
+
+empty		{	return EMPTY;		}
 
 	/*** Interpunction ***/
 [{}=;]		{	return yytext[0];	}

@@ -53,7 +53,7 @@
 %token <string> STRING;
 %token <boolean> BOOLEAN;
 %token <integer> INTEGER;
-%token CONTACT, DEFAULTS;
+%token CONTACT, DEFAULTS, EMPTY;
 
 %type <result> loc defaults_fields contact_fields fields
 
@@ -105,11 +105,15 @@ field_assignment:
 			printf("Storing integer \"%s\" => %d in contact buffer.\n",
 			       $1, $3);
 		}
-	;
 	| IDENTIFIER '=' STRING ';'	/* Should be fieldname '=' string */
 		{
 			printf("Storing string \"%s\" => \"%s\" in contact buffer.\n",
 			       $1, $3);
+		}
+	| IDENTIFIER '=' EMPTY ';'	/* Should be fieldname '=' empty */
+		{
+			printf("Storing empty field \"%s\" in contact buffer.\n",
+			       $1);
 		}
 	;
 

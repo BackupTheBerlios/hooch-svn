@@ -30,6 +30,8 @@ contact sjamaan {
 	an_overflow = 93281972189127982179;	# Overflow
 	negative = -37268;
 	negative_hex_overflow = -0x8923793472439732498;
+
+	some_unset_field = empty;
 }
 
 # ...or we could write it in a one-liner
@@ -40,7 +42,8 @@ defaults {
 	string_test = `Enclosed in backticks, test: { ', ", \`, \\ }`;
 	string_test2 = 'Enclosed in single quotes, test: { \', ", `, \\ }';
 	string_test3 = "Enclosed in double quotes, test: { \', \", `, \\ }";
-	empty = "";
+	#empty = "";	# <-- This gave syntax error!
+	something-empty = empty;
 }
 
 contact SomeEmptyContactAfterADefaultsBlock {
