@@ -4,19 +4,14 @@
 # Camille testing suite Makefile
 #
 
-CAMILLEPATH= ..
-CAMILLEPATH2= ../camille
-GUNEPATH= ../../../gune
-GUNEPATH2= ../../../gune/gune
-
 PROG= test
 MAN=
-CFLAGS+= -I${CAMILLEPATH} -I${CAMILLEPATH2}
-LDADD= -L${CAMILLEPATH} -R${CAMILLEPATH} -L${CAMILLEPATH2} -R${CAMILLEPATH2}
+CFLAGS+= -I..
+LDADD= -L../camille -R../camille
 LDADD+= -lcamille -lgune
 
 # XXX HACK: Clean this up
-LDADD+= -L${GUNEPATH} -R${GUNEPATH} -L${GUNEPATH2} -R${GUNEPATH2}
-CFLAGS+= -I${GUNEPATH} -I${GUNEPATH2}
+LDADD+= -L../../../gune/gune -R../../../gune/gune
+CFLAGS+= -I../../../gune
 
 .include <bsd.prog.mk>
