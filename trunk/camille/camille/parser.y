@@ -238,10 +238,9 @@ group_block:
 defaults_block:
 	DEFAULTS
 		{
-			if (read_defaults) {
-				yyerror("Error: More than one defaults-block is not allowed.");
-			}
-			printf("===> Make new 'default settings'\n");
+			if (read_defaults)
+				yyerror("Error: More than one defaults-block"
+				         " is not allowed.");
 		}
 	'{' defaults_stms '}'
 		{
@@ -263,7 +262,6 @@ group_stms:    stms		{ $$ = $1; };	/* XXX Allow multi_stms, too */
 stms:
 	stm stms
 		{
-			printf("THERE!\n");
 			assert ($2 != ERROR_PTR);
 
 			/*
@@ -285,7 +283,6 @@ stms:
 	| /* Empty */
 		{
 			$$ = bind_list_create();
-			printf("HERE!\n");
 		}
 	;
 
@@ -383,7 +380,6 @@ try_bind(option_hier h, char *name, option_type t, gendata d)
 					strerror(errno), name);
 			}
 		}
-	printf("Just bound %s\n", name);
 	}
 	return bnd;
 }
