@@ -68,7 +68,7 @@
 ;; Returns: An addressbook structure
 ;;
 (define (read-addressbook . port)
-  (let next ((book (create-addressbook)))
+  (let next ((book (make-addressbook '() '() '())))
     (let ((datum (apply read port)))
       (if (eof-object? datum)
 	  book
@@ -114,7 +114,7 @@
 	    (parse-error "Expected name for contact" name))
 	  (else
 	    (let next ((details details)
-		       (contact (make-contact name '() '() '())))
+		       (contact (make-contact name '() '())))
 	      (if (null? details)
 		  contact
 		  (let ((detail (car details))
@@ -160,7 +160,7 @@
 	  ((not (symbol? name))  (parse-error "Expected name for id" name))
 	  (else
 	    (let next ((details details)
-		       (id (make-contact-id name '() '())))
+		       (id (make-contact-id name '())))
 	      (if (null? details)
 		  id
 		  (let ((detail (car details))
@@ -219,7 +219,7 @@
 		((not (lsym? members)) (parse-error "Expected member names"
 						    name))
 		(else (let next ((details details)
-				 (group (make-group name members '() '())))
+				 (group (make-group name members '())))
 			(if (null? details)
 			    group
 			    (let ((detail (car details))
@@ -255,7 +255,7 @@
       (let ((name (car struct))
 	    (details (cdr struct)))
 	(let next ((details details)
-		   (struct (make-struct name '() '())))
+		   (struct (make-struct name '())))
 	  (if (null? details)
 	      struct
 	      (next (cdr details)

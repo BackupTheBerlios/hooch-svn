@@ -36,16 +36,14 @@
 
 (define-structure addressbook
   (export addressbook? make-addressbook addressbook-contacts
-          addressbook-groups addressbook-defaults create-addressbook
+          addressbook-groups addressbook-defaults
 	  addressbook-add-entry addressbook-add-contact
 	  addressbook-add-group addressbook-add-defaults
-          contact? make-contact contact-name contact-ids contact-options
-	  contact-structs
-	  group? make-group group-name group-options group-structs
-	  contact-id? make-contact-id contact-id-name contact-id-options
-	  contact-id-structs
-	  struct? make-struct struct-name struct-structs struct-options
-	  struct-add-struct struct-add-option struct-add-detail
+          contact? make-contact contact-name contact-ids contact-settings
+	  group? make-group group-name group-settings
+	  contact-id? make-contact-id contact-id-name contact-id-settings
+	  struct? make-struct struct-name struct-settings struct-add-setting
+	  struct-add-detail
 	  option? make-option option-name option-value
 	  contact-add-detail contact-id-add-detail
 	  find-contact find-contact-id find-group find-setting
