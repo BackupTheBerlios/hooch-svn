@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
+#include <gune/error.h>
 #include <camille/addrbook.h>
 #include <camille/contact.h>
 #include <camille/contact_id.h>
@@ -128,7 +129,7 @@ contact_block:
 			addrbook a;
 
 			a = addrbook_add_contact(curr_addrbook, curr_contact);
-			if (a == ERROR_ADDRBOOK) {
+			if (a == ERROR_PTR) {
 				if (errno == EINVAL)
 					yyerror("Redefinition of contact %s",
 						contact_get_name(curr_contact));
@@ -189,7 +190,7 @@ group_block:
 			/* TODO: Check whether group has a members field */
 			/* If so: */
 			a = addrbook_add_group(curr_addrbook, curr_group);
-			if (a == ERROR_ADDRBOOK) {
+			if (a == ERROR_PTR) {
 				if (errno == EINVAL)
 					yyerror("Redefinition of group %s",
 						group_get_name(curr_group));
@@ -314,10 +315,10 @@ try_bind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
 	option opt;
 	option_type otype;
 
-	if ((opt = option_hier_lookup(h, name)) == ERROR_OPTION) {
+	if ((opt = option_hier_lookup(h, name)) == ERROR_PTR) {
 		yyerror("option %s not recognised", name);
 	} else {
-		if ((bl = option_bind(bl, opt, t, 0, d)) == ERROR_BIND_LIST) {
+		if ((bl = option_bind(bl, opt, t, 0, d)) == ERROR_PTR) {
 			if (errno == EINVAL) {
 				otype = option_get_type(opt);
 				yyerror("%s is of type %s", name,

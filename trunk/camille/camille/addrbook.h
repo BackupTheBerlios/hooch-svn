@@ -61,9 +61,6 @@ typedef struct addrbook_t {
 	bind_list defaults;			/* Default bindings */
 } addrbook_t, *addrbook;
 
-/** Invalid addressbook, used as error in return value */
-extern addrbook_t * const ERROR_ADDRBOOK;
-
 addrbook addrbook_create(void);
 void addrbook_destroy(addrbook);
 addrbook addrbook_add_contact(addrbook, contact);

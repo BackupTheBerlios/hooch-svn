@@ -47,9 +47,6 @@ typedef struct group_t {
 	bind_list bindings;
 } group_t, *group;
 
-/** Invalid group, used as error in return value */
-extern group_t * const ERROR_GROUP;
-
 group group_create(const char *);
 void group_destroy(group);
 char *group_get_name(group);

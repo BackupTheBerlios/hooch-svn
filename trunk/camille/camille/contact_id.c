@@ -41,8 +41,6 @@
 #include <camille/contact_id.h>
 #include <camille/option.h>
 
-contact_id_t * const ERROR_CONTACT_ID = (void *)error_dummy_func;
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
@@ -52,7 +50,7 @@ contact_id_t * const ERROR_CONTACT_ID = (void *)error_dummy_func;
  *		  get copied, so you can free the original or pass const
  *		  strings.
  *
- * \return  The new contact id, or ERROR_CONTACT_ID if there was an error.
+ * \return  The new contact id, or ERROR_PTR if there was an error.
  *	      errno = ENOMEM if out of memory.
  *
  * \sa contact_id_destroy
@@ -65,17 +63,17 @@ contact_id_create(const char *name)
 	assert(name != NULL);
 
 	if ((id = malloc(sizeof(contact_id_t))) == NULL)
-		return ERROR_CONTACT_ID;
+		return ERROR_PTR;
 
 	if ((id->name = str_cpy(name)) == NULL) {
 		free(id);
-		return ERROR_CONTACT_ID;
+		return ERROR_PTR;
 	}
 
-	if ((id->bindings = bind_list_create()) == ERROR_BIND_LIST) {
+	if ((id->bindings = bind_list_create()) == ERROR_PTR) {
 		free(id->name);
 		free(id);
-		return ERROR_CONTACT_ID;
+		return ERROR_PTR;
 	}
 
 	return (contact_id)id;
@@ -92,7 +90,7 @@ contact_id_create(const char *name)
 void
 contact_id_destroy(contact_id id)
 {
-	assert(id != ERROR_CONTACT_ID);
+	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	bind_list_destroy(id->bindings);
 	free(id->name);
@@ -112,7 +110,7 @@ contact_id_destroy(contact_id id)
 char *
 contact_id_get_name(contact_id id)
 {
-	assert(id != ERROR_CONTACT_ID);
+	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	return id->name;
 }
@@ -126,7 +124,7 @@ contact_id_get_name(contact_id id)
 bind_list
 contact_id_get_bindings(contact_id id)
 {
-	assert(id != ERROR_CONTACT_ID);
+	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	return id->bindings;
 }
@@ -141,7 +139,7 @@ contact_id_get_bindings(contact_id id)
 void
 contact_id_dump(contact_id id)
 {
-	assert(id != ERROR_CONTACT_ID);
+	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	printf("Id %s:\n", id->name);
 	bind_list_dump(id->bindings);

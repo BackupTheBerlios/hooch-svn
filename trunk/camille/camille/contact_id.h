@@ -46,9 +46,6 @@ typedef struct contact_id_t {
 	bind_list bindings;
 } contact_id_t, *contact_id;
 
-/** Invalid contact id, used as error in return value */
-extern contact_id_t * const ERROR_CONTACT_ID;
-
 contact_id contact_id_create(const char *);
 void contact_id_destroy(contact_id);
 char *contact_id_get_name(contact_id);

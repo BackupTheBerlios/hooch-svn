@@ -53,9 +53,6 @@ typedef enum {
 typedef alist_t option_hier_t;
 typedef alist option_hier;
 
-/** Invalid option hierarchy, used as error in return value */
-extern option_hier_t * const ERROR_OPTION_HIER;
-
 typedef union {
 	gendata def;			/* Default val if type != OTYPE_HIER */
 	option_hier subhier;		/* Subhierarchy if type == OTYPE_HIER */
@@ -68,9 +65,6 @@ typedef struct option_t {
 	option_data data;
 } option_t, * option;
 
-/** Invalid option, used as error in return value */
-extern option_t * const ERROR_OPTION;
-
 /** Option binding */
 typedef struct binding_t {
 	option option;			/* The bound option */
@@ -78,15 +72,9 @@ typedef struct binding_t {
 	gendata value;			/* The bound value */
 } binding_t, * binding;
 
-/** Invalid binding, used as error in return value */
-extern binding_t * const ERROR_BINDING;
-
 /** Option binding list */
 typedef alist bind_list;
 typedef alist_t bind_list_t;
-
-/** Invalid bind list, used as error in return value */
-extern bind_list_t * const ERROR_BIND_LIST;
 
 char *option_type_name(option_type);
 

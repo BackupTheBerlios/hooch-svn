@@ -53,7 +53,7 @@ add_builtin_options(void)
 	option o;
 	option_data d;
 
-	if ((h = option_hier_create()) == ERROR_OPTION_HIER)
+	if ((h = option_hier_create()) == ERROR_PTR)
 		log_entry(WARN_ERROR, "Cannot create option hierarchy");
 
 	/* Add some simple options to demonstrate that it works */
@@ -65,12 +65,12 @@ add_builtin_options(void)
 
 	d.def.ptr = "";			/* Empty string as default addr */
 
-	if ((o = option_create("address", OTYPE_STRING, d)) == ERROR_OPTION) {
+	if ((o = option_create("address", OTYPE_STRING, d)) == ERROR_PTR) {
 		option_hier_destroy(h);
 		log_entry(WARN_ERROR, "Cannot create option!");
 	}
 
-	if ((hnew = option_hier_insert(h, o)) == ERROR_OPTION_HIER) {
+	if ((hnew = option_hier_insert(h, o)) == ERROR_PTR) {
 		option_hier_destroy(h);
 		log_entry(WARN_ERROR, "Cannot insert option in hierarchy!");
 	}

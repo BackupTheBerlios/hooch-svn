@@ -40,8 +40,6 @@
 #include <gune/error.h>
 #include <camille/addrbook.h>
 
-addrbook_t * const ERROR_ADDRBOOK = (void *)error_dummy_func;
-
 /* XXX There's prolly a cleaner way to do this */
 /* Parser data */
 addrbook curr_addrbook;
@@ -63,7 +61,7 @@ static void group_walk(gendata *, gendata *);
  * \param fp  The file to parse.
  * \param h   The options hierarchy to use while parsing.
  *
- * \return  The file's contents, as addrbook, or ERROR_ADDRBOOK if the file
+ * \return  The file's contents, as addrbook, or ERROR_PTR if the file
  *	     could not be parsed.
  */
 addrbook
@@ -80,7 +78,7 @@ addrbook_parse_file(FILE *fp, option_hier h)
 /**
  * Create a new, empty, addressbook
  *
- * \return  The newly created addressbook, or ERROR_ADDRBOOK if out of memory.
+ * \return  The newly created addressbook, or ERROR_PTR if out of memory.
  *
  * \sa addrbook_destroy
  */
@@ -90,26 +88,26 @@ addrbook_create(void)
 	addrbook_t *ab;
 
 	if ((ab = malloc(sizeof(addrbook_t))) == NULL)
-		return ERROR_ADDRBOOK;
+		return ERROR_PTR;
 
 	if ((ab->contacts = ht_create(CONTACTS_RANGE, str_hash))
-	    == ERROR_HT) {
+	    == ERROR_PTR) {
 		free(ab);
-		return ERROR_ADDRBOOK;
+		return ERROR_PTR;
 	}
 
 	if ((ab->groups = ht_create(GROUPS_RANGE, str_hash))
-	    == ERROR_HT) {
+	    == ERROR_PTR) {
 		ht_destroy(ab->contacts, NULL, NULL);
 		free(ab);
-		return ERROR_ADDRBOOK;
+		return ERROR_PTR;
 	}
 
-	if ((ab->defaults = alist_create()) == ERROR_ALIST) {
+	if ((ab->defaults = alist_create()) == ERROR_PTR) {
 		ht_destroy(ab->groups, NULL, NULL);
 		ht_destroy(ab->contacts, NULL, NULL);
 		free(ab);
-		return ERROR_ADDRBOOK;
+		return ERROR_PTR;
 	}
 
 	return (addrbook)ab;
@@ -127,7 +125,7 @@ addrbook_create(void)
 void
 addrbook_destroy(addrbook ab)
 {
-	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
 
 	/* Casting to free_func is ok here */
@@ -149,7 +147,7 @@ addrbook_destroy(addrbook ab)
  * \param ab  The addressbook to add the contact to.
  * \param ct  The contact to add to the addressbook.
  *
- * \return  The addressbook, or ERROR_ADDRBOOK if an error occurred.
+ * \return  The addressbook, or ERROR_PTR if an error occurred.
  *	     errno = EINVAL if there already was a contact with the same name
  *		      in the address book.
  *	     errno = ENOMEM if out of memory.
@@ -161,17 +159,17 @@ addrbook_add_contact(addrbook ab, contact ct)
 {
 	gendata key, value;
 
-	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
-	assert(ct != ERROR_CONTACT);
+	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
 
 	key.ptr = contact_get_name(ct);
 	value.ptr = ct;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	if (ht_insert_uniq(ab->contacts, key, value, str_eq) == ERROR_HT)
-		return ERROR_ADDRBOOK;
+	if (ht_insert_uniq(ab->contacts, key, value, str_eq) == ERROR_PTR)
+		return ERROR_PTR;
 
 	return ab;
 }
@@ -183,7 +181,7 @@ addrbook_add_contact(addrbook ab, contact ct)
  * \param ab    The addressbook to delete the contact from.
  * \param name  The name of the contact to delete.
  *
- * \return  The addressbook, or ERROR_ADDRBOOK if the contact does not exist.
+ * \return  The addressbook, or ERROR_PTR if the contact does not exist.
  *
  * \sa addrbook_del_group, addrbook_add_contact
  */
@@ -193,13 +191,13 @@ addrbook_del_contact(addrbook ab, char *name)
 	gendata key;
 	key.ptr = name;
 
-	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
 	assert(name != NULL);
 
 	if (ht_delete(ab->contacts, key, str_eq, NULL,
-		      (free_func)contact_destroy) == ERROR_HT)
-		return ERROR_ADDRBOOK;
+		      (free_func)contact_destroy) == ERROR_PTR)
+		return ERROR_PTR;
 
 	return ab;
 }
@@ -211,7 +209,7 @@ addrbook_del_contact(addrbook ab, char *name)
  * \param ab  The addressbook to add the group to.
  * \param gr  The group to add to the addressbook.
  *
- * \return  The addressbook, or ERROR_ADDRBOOK in case of error.
+ * \return  The addressbook, or ERROR_PTR in case of error.
  *	     errno = EINVAL if there already was a group with the same name
  *		      in the address book.
  *	     errno = ENOMEM if out of memory.
@@ -223,17 +221,17 @@ addrbook_add_group(addrbook ab, group gr)
 {
 	gendata key, value;
 
-	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
-	assert(gr != ERROR_GROUP);
+	assert(gr != ERROR_PTR);
 	assert(gr != NULL);
 
 	key.ptr = group_get_name(gr);
 	value.ptr = gr;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	if (ht_insert_uniq(ab->groups, key, value, str_eq) == ERROR_HT)
-		return ERROR_ADDRBOOK;
+	if (ht_insert_uniq(ab->groups, key, value, str_eq) == ERROR_PTR)
+		return ERROR_PTR;
 
 	return ab;
 }
@@ -245,7 +243,7 @@ addrbook_add_group(addrbook ab, group gr)
  * \param ab    The addressbook to delete the group from.
  * \param name  The name of the group to delete.
  *
- * \return  The addressbook, or ERROR_ADDRBOOK if the group does not exist.
+ * \return  The addressbook, or ERROR_PTR if the group does not exist.
  *
  * \sa addrbook_del_contact, addrbook_add_group
  */
@@ -255,13 +253,13 @@ addrbook_del_group(addrbook ab, char *name)
 	gendata key;
 	key.ptr = name;
 
-	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
 	assert(name != NULL);
 
 	if (ht_delete(ab->groups, key, str_eq, NULL,
-		      (free_func)group_destroy) == ERROR_HT)
-		return ERROR_ADDRBOOK;
+		      (free_func)group_destroy) == ERROR_PTR)
+		return ERROR_PTR;
 
 	return ab;
 }
@@ -276,7 +274,7 @@ addrbook_del_group(addrbook ab, char *name)
 void
 addrbook_dump(addrbook ab)
 {
-	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
 
 	/* Dump contacts, groups etc */
