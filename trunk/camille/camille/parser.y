@@ -44,6 +44,7 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
 
 extern addrbook curr_addrbook;
 extern contact curr_contact;
+extern group curr_group;
 
 extern int yylex(void);
 
@@ -151,12 +152,15 @@ group_block:
 		{
 			printf("===> Make new group: \"%s\"\n", $2);
 			/* TODO: Check whether no group with the same name exists */
+			curr_group = group_create($2);
 		}
 	'{' group_stms '}'
 		{
 			/* TODO: Check whether group has a members field */
 			/* If so: */
 			printf("===> Store group %s.\n", $2);
+			curr_addrbook = addrbook_add_group(curr_addrbook,
+							  curr_group);
 		}
 	;
 
