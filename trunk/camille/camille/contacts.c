@@ -113,3 +113,52 @@ contact_dump(contact ct)
 	printf("Contact %s:\n", ct->name);
 }
 #endif /* DEBUG */
+
+
+/**
+ * Add an id to a contact, or update an existing id.
+ *
+ * \param ct  The contact to add the id to.
+ * \param id  The id to add to the contact.
+ *
+ * \return  The contact
+ *
+ * \sa contact_del_id
+ */
+contact
+contact_add_id(contact ct, contact_id id)
+{
+	/* XXX a better name is contact_insert_id??? */
+	gendata key, value;
+
+	key.ptr = contact_id_name(id);
+	value.ptr = id;
+
+	/* Hmm, this key/value gendata nonsense should be easier */
+	alist_insert(ct->ids, key, value, str_eq,
+		     (free_func)contact_id_destroy);
+
+	return ct;
+}
+
+
+/**
+ * Delete an id from a contact.
+ *
+ * \param id    The contact to delete the id from.
+ * \param name  The name of the id to delete.
+ *
+ * \return  The contact
+ *
+ * \sa contact_add_id
+ */
+contact
+contact_del_id(contact ct, char *name)
+{
+	gendata key;
+	key.ptr = name;
+
+	alist_delete(ct->ids, key, str_eq, NULL, (free_func)contact_id_destroy);
+
+	return ct;
+}

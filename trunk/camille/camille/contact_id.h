@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: contacts.h 110 2004-10-16 11:50:33Z sjamaan $
  *
  * Copyright (c) 2004 Peter Bex and Vincent Driessen
  * All rights reserved.
@@ -30,33 +30,32 @@
  */
 
 /*
- * Contact list
+ * Contact ids
  */
-#ifndef CAMILLE_CONTACTS_H
-#define CAMILLE_CONTACTS_H
+#ifndef CAMILLE_CONTACT_ID_H
+#define CAMILLE_CONTACT_ID_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <gune/gune.h>
-#include <camille/contact_id.h>
 
-typedef struct contact_t {
+typedef struct contact_id_t {
 	char *name;
-	alist ids;				/* alist of contact_ids */
-} contact_t, *contact;
+	alist options;				/* alist of addrbook_options */
+} contact_id_t, *contact_id;
 
-contact contact_create(const char *);
-void contact_destroy(contact);
-char *contact_name(contact);
+contact_id contact_id_create(const char *);
+void contact_id_destroy(contact_id);
+char *contact_id_name(contact_id);
 
 #ifdef DEBUG
-void contact_dump(contact);
+void contact_id_dump(contact_id);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CAMILLE_CONTACTS_H */
+#endif /* CAMILLE_CONTACT_ID_H */
