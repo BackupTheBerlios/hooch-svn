@@ -9,6 +9,8 @@
 #        dir in the project's rootdir?  Then we can move stuff we've
 #        already decided in there.  (to find all I've typed among the many
 #        comments, grep for <sjamaan>)
+# <nvie>
+# Time to update your Unix user name on Turkish from pbex to sjamaan, too ;)
 #
 
 #
@@ -164,6 +166,18 @@ rule {
 		#     just the number of addresses, including those not in
 		#     the list.
 		#
+		# <nvie>
+		# I suggest to define macro's, so we could say stuff like:
+		#
+		count(to) < 3;
+		count(to) >= 5;
+		#
+		# But, I seriously make a point of it now that we need to
+		# watch ourselves putting in this kind of feature creep,
+		# especially because it does not share syntax with the
+		# rest of the file, and we might get tremendous parsing
+		# problems.
+		#
 	}
 
 	match {
@@ -205,10 +219,24 @@ rule {
 	#  why, though. ;)
 	# `batch' is OK, too, but might remind people of DOS too much ;)
 	#
+	# <nvie>
+	# Hmm.  Perform is a buzz-word frequently used in Windows-marketing
+	# terms.  Might be related with your feeling ;)
+	# But seriously, I think ``batch'' was a better name in the first
+	# place.  Fuck DOS.  Batch is just an English word that indicates the
+	# job to be done.  Con, tho, is that it closely bears resemblance to
+	# the name ``match''.
+	#
+	# But, since we both like ``act'', I changed it.  For now, at least.
+	#
 	# I do think the perfect name would stress the fact that these
 	# things are executed top to bottom in the order they appear.
 	#
-	perform {
+	# <nvie> Agree.  But names are appealing as well.  And: if they become
+	# legacy, the become terribly rancid.  (car, cdr, anyone?)  Keep an
+	# open mind.  Now is the time we can easily change it.
+	#
+	act {
 		#
 		# I still favor the short syntax used before.  It's much more
 		# in Unix-style, like the rest of our program will be.  Why use
@@ -230,6 +258,9 @@ rule {
 		# (look at Scheme, there almost anything except whitespaces
 		#   or parentheses is allowed in an identifier)
 		#
+		# <nvie>
+		# Hmm.  Better, even! :)
+		#
 		# We might even consider discarding those names entirely.
 		# I originally wanted to use names, because that is clearer
 		# to read when it is followed by a { sign.  Consider
@@ -240,6 +271,9 @@ rule {
 		#  a row  ( `<', `{' and `#' ) while the body itself contains
 		#  more descriptive words, perhaps.
 		# But with our new notation, it's not as bad IMHO.
+		#
+		# <nvie>
+		# Good argument to allow both.
 		#
 
 		# Execute a command, no stdin, stdout is ignored.
@@ -262,6 +296,14 @@ rule {
 		# And here we have a nasty problem.  Those \" things look
 		# rather ugly.
 		#
+		# <nvie>
+		# I was thinking of it more like a sh script that simply
+		# follows the identifier.  Good that you point it out now.
+		# Example of what I had in mind:
+		< /bin/ls -a /some/long/path/to/a/freaky/dir | grep -v \
+			".htaccess" | grep -v ".htpasswd"
+
+		#
 		# NOTE:!!!
 		# Why are you representing a `pipe' by a `<' symbol?  A slip?
 		# `< x' on the shell denotes that stdin should come from file x.
@@ -271,6 +313,37 @@ rule {
 		# `filter', as the `new stdin' (the new email contents) come
 		# from the stdout of the command after <.
 		#
+		# <nvie>
+		# Well, it was on purpose, not a slip.  But... I was typing a
+		# rationale here why my way was better, until it occurred to
+		# me that your way indeed is the right one.
+		#
+		# So summarizing we find:
+
+		# Filter the mail by performing "| cmd" internally, replacing
+		# the mail by the contents of cmd
+		< cmd
+		# In shell terms, we could read it as: cmd < mail > mail
+		#                                  or: cat mail | cmd
+		#
+		# See?  That second line is what got me confused, I guess.
+
+		# Pipe the mail by performing "| cmd" internally,
+		# discarding output.
+		| cmd
+		# In shell terms, we could read it as: cat mail | cmd
+		#                                  or: cmd < mail
+		#
+		# See?  That second line is what got me confused, I guess.
+
+		# Invokes echo by performing "echo" internally, discarding
+		# output.
+		! cmd
+		# In shell terms: cmd
+
+		# Writes the mailbox to the given file
+		> file
+		# In shell terms: cat mail > file
 
 		# Filter the mail through an external program, stdin is the
 		# mail, the mail body is replaced by stdout
@@ -289,23 +362,15 @@ rule {
 # XXX: How do we indicate that a match is halting or non-halting when it is
 #       matched?  Here's a possible way (which I prefer):
 #
+# <nvie>
+# Hmm!  I forgot about that completely.  Nice, nice, nice.  ``It's a keeper!''
+# I deleted the other block, for it was very rans ;)
+#
 terminal rule {				# Simply an extra keyword
 	match {
 		from = spammers;
 	}
 	> /dev/null
-}
-
-#
-# Another way to do this:
-#
-rule {
-	match {
-		from = spammers;
-	}
-	> "/dev/null";
-
-	terminal = yes;
 }
 
 
@@ -323,6 +388,55 @@ non-terminal rule {
 					# conceptually means that the rule
 					# should never match, so that's
 					# something completely different.
+
+	# <nvie>
+	# I fully agree.  Maybe add some syntactic sugar for this? Like so:
+	match always	# or..
+	match always;
+	# I favor the non-semi-colon notation, for it's consistancy with the
+	# !, |, <, >-ops.
+
 	# Beep on new mail
-	! "beep";
+	! beep
+}
+
+#
+# XXX: Consideration
+# I guess, indeed, that terminals should be considered the default.
+# However, some interesting point may be to let Turner detect it itself, i.e.
+# by letting a match be terminal when it uses the '>'-operator to write to
+# a mailbox.
+#
+# Pros:
+# * Simple, elegant
+# * Less typing required (and thus, less complex scripts)
+#
+# Cons:
+# * Possible to write to one mailbox at most
+#
+# Because the only con will be almost never used in practise, still it
+# scratches.  Typically, you don't want such a restriction.
+# Maybe... a golden midway.  A proposal:
+# 1. A rule is a non-terminal one if no ">" is used.
+# 2. Otherwise a rule is terminal, UNLESS you specify the non-terminal
+#    keyword.
+#
+# Big example:
+
+# Implicit non-terminal, since ">" is not used.
+rule {
+	match always
+	! beep
+}
+
+# Explicit non-terminal required here, if one could have friends at work :)
+non-terminal rule {	
+	match { from = friends:*; }
+	> friends
+}
+
+# This rule is a terminal again
+rule {
+	match { from = acme:*; }
+	> acme
 }
