@@ -124,6 +124,8 @@ contact		{	return CONTACT;		}
 
 empty		{	return EMPTY;		}
 
+id		{	return IDENTITY;	}
+
 	/*** Interpunction ***/
 [{}=;]		{	return yytext[0];	}
 

@@ -6,37 +6,39 @@
 
 # Nice indenting supported...
 contact sjamaan {
-	name = "Peter";
-	address = "hisemail@foobar.net";
-	field = "Some field
-				that spans multiple          \
-			lines";
+	id primary {
+		name = "Peter";
+		address = "hisemail@foobar.net";
+		field = "Some field
+					that spans multiple          \
+				lines";
 
-	# Test booleans
-	rocks = true;
-	sign-pgp = yes;
-	is_healthy_in_the_brain = neener;
-	blah = no;
-	foo = false;
+		# Test booleans
+		rocks = true;
+		sign-pgp = yes;
+		is_healthy_in_the_brain = neener;
+		blah = no;
+		foo = false;
 
-	# Test integers
-	zero = 0x0;
-	pgp-key-id = 0xF00;
-	pgp-key-id2 = 0xf00;
-	hex_overflow = 0x8972937982379;
-	some-number = 0;
-	some-other_number = 13;
-	secret-number = 2713682;
-	an_overflow = 93281972189127982179;	# Overflow
-	negative = -37268;
-	negative_hex_overflow = -0x8923793472439732498;
+		# Test integers
+		zero = 0x0;
+		pgp-key-id = 0xF00;
+		pgp-key-id2 = 0xf00;
+		hex_overflow = 0x8972937982379;
+		some-number = 0;
+		some-other_number = 13;
+		secret-number = 2713682;
+		an_overflow = 93281972189127982179;	# Overflow
+		negative = -37268;
+		negative_hex_overflow = -0x8923793472439732498;
 
-	some_unset_field = empty;
+		some_unset_field = empty;
+	}
 }
 
 # ...or we could write it in a one-liner
 # Note that we can stuff a string with backslashes, without them having any effect
-contact nvie {	name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }
+contact nvie { id work { name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }}
 
 defaults {
 	string_test = `Enclosed in backticks, test: { ', ", \`, \\ }`;
@@ -48,12 +50,10 @@ defaults {
 
 contact SomeEmptyContactAfterADefaultsBlock {
 	# This should NOT be valid, eventually!
+	id one {}
+	id two {}
 }
 
-defaults {
-	string_test = `Enclosed in backticks, test: { ', ", \`, \\ }`;
-	string_test2 = 'Enclosed in single quotes, test: { \', ", `, \\ }';
-	string_test3 = "Enclosed in double quotes, test: { \', \", `, \\ }";
-	#empty = "";	# <-- This gave syntax error!
-	something-empty = empty;
+contact SomeEmptyContactAfterADefaultsBlock {
+	# This should NOT be valid, eventually!
 }

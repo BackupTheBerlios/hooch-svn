@@ -48,16 +48,17 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
 	char *string;
 	int boolean;
 	int integer;
-	int result;
+	int amount;
 };
 
 %token <identifier> IDENTIFIER;
 %token <string> STRING;
 %token <boolean> BOOLEAN;
 %token <integer> INTEGER;
-%token CONTACT, DEFAULTS, EMPTY;
+%token CONTACT, IDENTITY, DEFAULTS, EMPTY;
 
-%type <result> list_of_blocks defaults_fields contact_fields fields
+%type <amount> list_of_blocks list_of_identities
+%type <amount> defaults_fields identity_fields fields
 
 %start list_of_blocks
 
@@ -83,11 +84,36 @@ block:	contact_block		{ }
 	;
 
 contact_block:
-	CONTACT IDENTIFIER '{' contact_fields '}'
+	CONTACT IDENTIFIER '{' contact_body '}'
 		{
-			printf("===> Verify that contact ID %s does not exist\n", $2);
-			printf("===> Verify that contact %s has \"name\" and \"address\".\n", $2);
-			printf("===> Clean and store above fields in contact buffer as: %s\n", $2);
+			printf("===> Check whether no contact with the same name exists.\n");
+			printf("===> If not, store contact %s.\n", $2);
+		}
+	;
+
+contact_body:
+	list_of_identities
+		{
+			printf("===> Check that there was at least a primary identity.\n");
+		}
+	/*
+	   XXX: TODO: Support direct identity field declarations in
+	   contact_body, too, affecting the primary identity.  Note that in
+	   this case, there may be no explicit primary identity, then.
+	 */
+	;
+
+list_of_identities:
+	identity list_of_identities	{ $$ = 1 + $2; }
+	| /* Empty */			{ $$ = 0; }
+	;
+
+identity:
+	IDENTITY IDENTIFIER '{' identity_fields '}'
+		{
+			printf("===> Check whether no identity with the same name exists.\n");
+			printf("===> Check that identity %s has \"name\" and \"address\".\n", $2);
+			printf("===> If both, store identity %s\n", $2);
 		}
 	;
 
@@ -108,7 +134,7 @@ defaults_block:
 		}
 	;
 
-contact_fields: fields { $$ = $1; };
+identity_fields: fields { $$ = $1; };
 defaults_fields: fields { $$ = $1; };
 
 fields:
