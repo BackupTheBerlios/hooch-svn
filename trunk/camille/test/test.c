@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2004 Peter Bex and Vincent Driessen
+ * Copyright (c) 2003 Peter Bex and Vincent Driessen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -16,7 +16,7 @@
  *    contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY PETER BEX AND VINCENT DRIESSEN AND CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY PETER BEX AND VINCENT DRESSEN AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
@@ -29,15 +29,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file contacts.c
- * Contact list manipulation functions
- */
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "../src/camille.h"
 
 void
-test_parse(void)
+usage(void)
 {
-	yyparse();
+	printf("usage: test [options]\n");
+	printf("options:\n");
+	printf("-h    Print this help message.\n");
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+int
+main(int argc, char **argv)
+{
+	extern char *optarg;
+	char *str = NULL;
+	char ch;
+
+	/* Default options */
+	int i;
+
+	/*
+	if (argc <= 1) {
+		usage();
+		return 1;
+	}
+	*/
+
+	while ((ch = getopt(argc, argv, "h")) != -1)
+		switch (ch) {
+		case 'h':
+			usage();
+			return 0;
+		}
+
+	/* Perform tests */
+	test_parse();
+	printf("Done\n");
+
+	return 0;
+}

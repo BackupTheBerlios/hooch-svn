@@ -29,15 +29,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * \file contacts.c
- * Contact list manipulation functions
- */
+%{
 
-void
-test_parse(void)
-{
-	yyparse();
+#ifdef DEBUG
+#define TRACE printf("Reduce at line %d\n", __LINE__);
+#else
+#define TRACE
+#endif
+
+%}
+
+%%
+
+bar:	'a' = { TRACE } 
+	| abbathing = { TRACE };
+
+abbathing:	'a' bees 'a' = { TRACE };
+bees:	'b' 'b' { TRACE }
+	| 'b' 'b' bees { TRACE };
+
+%%
+
+int yylex(void) {
+	return getchar();
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+void yyerror(char *err) {
+	printf("Kox: %s\n", err);
+}
