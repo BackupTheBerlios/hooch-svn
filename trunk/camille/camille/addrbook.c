@@ -45,6 +45,13 @@ addrbook curr_addrbook;
 contact curr_contact;
 extern FILE *yyin;
 
+extern int yyparse(void);
+
+#ifdef DEBUG
+static void contact_walk(gendata *, gendata *);
+static void group_walk(gendata *, gendata *);
+#endif
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
@@ -241,5 +248,26 @@ void
 addrbook_dump(addrbook ab)
 {
 	/* Dump contacts, groups etc */
+	ht_walk(ab->contacts, contact_walk);
+	ht_walk(ab->groups, group_walk)
+}
+
+/**
+ * Call contact dumping function for all contacts in the addressbook.
+ */
+static void
+contact_walk(gendata *key, gendata *value)
+{
+	contact_dump((contact)value->ptr);
+}
+
+
+/**
+ * Call group dumping function for all groups in the addressbook.
+ */
+static void
+group_walk(gendata *key, gendata *value)
+{
+	group_dump((group)value->ptr);
 }
 #endif /* DEBUG */

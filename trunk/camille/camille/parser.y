@@ -45,6 +45,8 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
 extern addrbook curr_addrbook;
 extern contact curr_contact;
 
+extern int yylex(void);
+
 %}
 
 %union {
