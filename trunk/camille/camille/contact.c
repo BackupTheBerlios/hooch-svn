@@ -35,8 +35,8 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <gune/error.h>
 #include <gune/string.h>
 #include <camille/contact.h>
 
@@ -53,7 +53,7 @@ static void contact_id_walk(gendata *, gendata *, gendata);
  *		  copied, so you can free the original or pass const strings.
  * \param ids   An alist of initial ids for the contact.
  *
- * \return  The new contact, or ERROR_PTR if there was an error.
+ * \return  The new contact, or NULL if there was an error.
  *	      errno = ENOMEM if out of memory.
  *
  * \sa contact_destroy
@@ -64,17 +64,17 @@ contact_create(const char *name, alist ids)
 	contact_t *ct;
 
 	assert(name != NULL);
-	assert(ids != ERROR_PTR);
+	assert(ids != NULL);
 
 	if ((ct = malloc(sizeof(contact_t))) == NULL)
-		return ERROR_PTR;
+		return NULL;
 
 	ct->ids = ids;
 	ct->name = str_cpy(name);
 
 	if (ct->name == NULL) {
 		free(ct);
-		return ERROR_PTR;
+		return NULL;
 	}
 
 	return (contact)ct;
@@ -91,7 +91,6 @@ contact_create(const char *name, alist ids)
 void
 contact_destroy(contact ct)
 {
-	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
 	free(ct->name);
 	free(ct);
@@ -110,7 +109,6 @@ contact_destroy(contact ct)
 char *
 contact_get_name(contact ct)
 {
-	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
 	return ct->name;
 }
@@ -127,7 +125,6 @@ contact_dump(contact ct)
 {
 	gendata dummy_data;
 
-	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
 
 	dummy_data.num = 0;
@@ -155,7 +152,7 @@ contact_id_walk(gendata *key, gendata *value, gendata data)
  * \param ct  The contact to add the id to.
  * \param id  The id to add to the contact.
  *
- * \return  The contact, or CONTACT_ERROR if the id already existed or another
+ * \return  The contact, or NULL if the id already existed or another
  *	     error occurred.
  *	    errno = EINVAL if the id already existed
  *	    errno = ENOMEM if out of memory
@@ -167,17 +164,15 @@ contact_add_id(contact ct, contact_id id)
 {
 	gendata key, value;
 
-	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
-	assert(id != ERROR_PTR);
 	assert(id != NULL);
 
 	key.ptr = contact_id_get_name(id);
 	value.ptr = id;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	if (alist_insert_uniq(ct->ids, key, value, str_eq) == ERROR_PTR)
-		return ERROR_PTR;
+	if (alist_insert_uniq(ct->ids, key, value, str_eq) == NULL)
+		return NULL;
 
 	return ct;
 }
@@ -198,7 +193,6 @@ contact_del_id(contact ct, char *name)
 {
 	gendata key;
 
-	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
 	assert(name != NULL);
 

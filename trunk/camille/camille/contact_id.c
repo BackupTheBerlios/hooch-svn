@@ -35,8 +35,8 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <gune/error.h>
 #include <gune/string.h>
 #include <camille/contact_id.h>
 #include <camille/option.h>
@@ -51,7 +51,7 @@
  *		  strings.
  * \param bl    The initial bindings for the id.
  *
- * \return  The new contact id, or ERROR_PTR if there was an error.
+ * \return  The new contact id, or NULL if there was an error.
  *	      errno = ENOMEM if out of memory.
  *
  * \sa contact_id_destroy
@@ -64,11 +64,11 @@ contact_id_create(const char *name, bind_list bl)
 	assert(name != NULL);
 
 	if ((id = malloc(sizeof(contact_id_t))) == NULL)
-		return ERROR_PTR;
+		return NULL;
 
 	if ((id->name = str_cpy(name)) == NULL) {
 		free(id);
-		return ERROR_PTR;
+		return NULL;
 	}
 
 	id->bindings = bl;
@@ -87,7 +87,6 @@ contact_id_create(const char *name, bind_list bl)
 void
 contact_id_destroy(contact_id id)
 {
-	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	bind_list_destroy(id->bindings);
 	free(id->name);
@@ -107,7 +106,6 @@ contact_id_destroy(contact_id id)
 char *
 contact_id_get_name(contact_id id)
 {
-	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	return id->name;
 }
@@ -121,7 +119,6 @@ contact_id_get_name(contact_id id)
 bind_list
 contact_id_get_bindings(contact_id id)
 {
-	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	return id->bindings;
 }
@@ -136,7 +133,6 @@ contact_id_get_bindings(contact_id id)
 void
 contact_id_dump(contact_id id)
 {
-	assert(id != ERROR_PTR);
 	assert(id != NULL);
 	printf("Id %s:\n", id->name);
 	bind_list_dump(id->bindings);

@@ -35,8 +35,8 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <gune/error.h>
 #include <gune/string.h>
 #include <camille/group.h>
 
@@ -49,7 +49,7 @@
  *		  copied, so you can free the original or pass const strings.
  * \param bl    The initial bindings for the group.
  *
- * \return  The new group, or ERROR_PTR if there was an error.
+ * \return  The new group, or NULL if there was an error.
  *	      errno = ENOMEM if out of memory.
  *
  * \sa group_destroy
@@ -60,14 +60,14 @@ group_create(const char *name, bind_list bl)
 	group_t *gr;
 
 	assert(name != NULL);
-	assert(bl != ERROR_PTR);
+	assert(bl != NULL);
 
 	if ((gr = malloc(sizeof(group_t))) == NULL)
-		return ERROR_PTR;
+		return NULL;
 
 	if ((gr->name = str_cpy(name)) == NULL) {
 		free(gr);
-		return ERROR_PTR;
+		return NULL;
 	}
 
 	gr->bindings = bl;
@@ -86,7 +86,6 @@ group_create(const char *name, bind_list bl)
 void
 group_destroy(group gr)
 {
-	assert(gr != ERROR_PTR);
 	assert(gr != NULL);
 	bind_list_destroy(gr->bindings);
 	free(gr->name);
@@ -106,7 +105,6 @@ group_destroy(group gr)
 char *
 group_get_name(group gr)
 {
-	assert(gr != ERROR_PTR);
 	assert(gr != NULL);
 	return gr->name;
 }
@@ -120,7 +118,6 @@ group_get_name(group gr)
 bind_list
 group_get_bindings(group gr)
 {
-	assert(gr != ERROR_PTR);
 	assert(gr != NULL);
 	return gr->bindings;
 }
@@ -135,7 +132,6 @@ group_get_bindings(group gr)
 void
 group_dump(group gr)
 {
-	assert(gr != ERROR_PTR);
 	assert(gr != NULL);
 	printf("Group %s:\n", gr->name);
 	bind_list_dump(gr->bindings);

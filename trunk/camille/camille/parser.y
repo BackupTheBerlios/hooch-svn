@@ -35,7 +35,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
-#include <gune/error.h>
 #include <gune/string.h>
 #include <camille/addrbook.h>
 #include <camille/contact.h>
@@ -121,7 +120,7 @@ blocks:	contact_block blocks
 			addrbook a;
 
 			a = addrbook_add_contact($2, $1);
-			if (a == ERROR_PTR) {
+			if (a == NULL) {
 				if (errno == EINVAL)
 					yyerror("Redefinition of contact %s",
 						contact_get_name($1));
@@ -148,7 +147,7 @@ blocks:	contact_block blocks
 			/* TODO: Check whether group has a members field */
 			/* If so: */
 			a = addrbook_add_group($2, $1);
-			if (a == ERROR_PTR) {
+			if (a == NULL) {
 				if (errno == EINVAL)
 					yyerror("Redefinition of group %s",
 						group_get_name($1));
@@ -195,11 +194,11 @@ identities:
 			gendata key, value;
 
 			/* Skip error ids */
-			if ($1 != ERROR_PTR) {
+			if ($1 != NULL) {
 				key.ptr = contact_id_get_name($1);
 				value.ptr = $1;
 				$$ = alist_insert_uniq($2, key, value, str_eq);
-				if ($$ == ERROR_PTR) {
+				if ($$ == NULL) {
 					if (errno == EINVAL) {
 						yyerror("Duplicate entry for"
 							 " id %s", key.ptr);
@@ -260,15 +259,15 @@ group_stms:    stms		{ $$ = $1; };	/* XXX Allow multi_stms, too */
 stms:
 	stm stms
 		{
-			assert ($2 != ERROR_PTR);
+			assert ($2 != NULL);
 
 			/*
 			 * Simply skip error values.  We've emitted errors
 			 *  when we encountered them, anyway.
 			 */
-			if ($1 != ERROR_PTR) {
+			if ($1 != NULL) {
 				$$ = bind_list_insert_uniq($2, $1);
-				if ($$ == ERROR_PTR) {
+				if ($$ == NULL) {
 					yyerror("%s adding %s to list",
 						 strerror(errno), $1);
 					binding_destroy($1);
@@ -290,7 +289,7 @@ stm:
 			/*
 			 * Just pretend we encountered an error binding.
 			 */
-			$$ = ERROR_PTR;
+			$$ = NULL;
 		}
 	| field '=' BOOLEAN ';'
 		{
@@ -316,7 +315,7 @@ stm:
 	| field '=' EMPTY ';'
 		{
 			gendata dummy;
-			dummy.ptr = ERROR_PTR;		/* Shut up compiler */
+			dummy.ptr = NULL;		/* Shut up compiler */
 
 			$$ = try_bind(curr_opthier, $1, OTYPE_EMPTY, dummy);
 		}
@@ -364,11 +363,11 @@ try_bind(option_hier h, char *name, option_type t, gendata d)
 	option_type otype;
 	binding bnd;
 
-	if ((opt = option_hier_lookup(h, name)) == ERROR_PTR) {
+	if ((opt = option_hier_lookup(h, name)) == NULL) {
 		yyerror("option %s not recognised", name);
-		bnd = ERROR_PTR;
+		bnd = NULL;
 	} else {
-		if ((bnd = binding_create(opt, t, d)) == ERROR_PTR) {
+		if ((bnd = binding_create(opt, t, d)) == NULL) {
 			if (errno == EINVAL) {
 				otype = option_get_type(opt);
 				yyerror("%s is of type %s", name,

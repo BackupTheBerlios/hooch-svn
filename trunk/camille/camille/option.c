@@ -37,7 +37,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <gune/error.h>
 #include <gune/string.h>
 #include <camille/option.h>
 
@@ -72,7 +71,7 @@ option_type_name(option_type t)
 /**
  * Create a new option hierarchy.
  *
- * \return  The options hierarchy, or ERROR_PTR if it failed.
+ * \return  The options hierarchy, or NULL if it failed.
  *	      errno = ENOMEM if out of memory.
  *
  * \sa option_hier_destroy
@@ -82,8 +81,8 @@ option_hier_create(void)
 {
 	alist a;
 
-	if ((a = alist_create()) == ERROR_PTR)
-		return ERROR_PTR;
+	if ((a = alist_create()) == NULL)
+		return NULL;
 
 	return (option_hier)a;
 }
@@ -100,7 +99,7 @@ option_hier_create(void)
 void
 option_hier_destroy(option_hier h)
 {
-	assert(h != ERROR_PTR);
+	assert(h != NULL);
 
 	alist_destroy((alist)h, NULL, (free_func)option_destroy);
 }
@@ -112,7 +111,7 @@ option_hier_destroy(option_hier h)
  * \param h  The hierarchy under which to directly insert the option.
  * \param o  The option to insert.
  *
- * \return  The option hierarchy, or ERROR_PTR if an error occurred.
+ * \return  The option hierarchy, or NULL if an error occurred.
  *	      errno = ENOMEM if out of memory.
  *	      errno = EINVAL if the option already exists at this place in the
  *				hierarchy.
@@ -125,16 +124,15 @@ option_hier_insert(option_hier h, option o)
 	alist a = (alist)h;
 	gendata key, val;
 
-	assert(h != ERROR_PTR);
-	assert(o != ERROR_PTR);
+	assert(h != NULL);
 	assert(o != NULL);
 	assert(o->name != NULL);
 
 	key.ptr = o->name;
 	val.ptr = o;
 
-	if ((a = alist_insert_uniq(a, key, val, str_eq)) == ERROR_PTR)
-		return ERROR_PTR;
+	if ((a = alist_insert_uniq(a, key, val, str_eq)) == NULL)
+		return NULL;
 
 	return h;
 }
@@ -146,8 +144,7 @@ option_hier_insert(option_hier h, option o)
  * \param h     The hierarchy in which the option must be located.
  * \param name  The name of the option to return.
  *
- * \return   The requested option, or ERROR_PTR if the option could not
- *	       be found.
+ * \return   The requested option, or NULL if the option could not be found.
  *	        errno = EINVAL if the option could not be found.
  *
  * \sa option_hier_insert
@@ -157,12 +154,13 @@ option_hier_lookup(option_hier h, char *name)
 {
 	gendata key, val;
 
-	assert(h != ERROR_PTR);
+	assert(h != NULL);
+	assert(name != NULL);
 
 	key.ptr = name;
 
-	if (alist_lookup((alist)h, key, str_eq, &val) == ERROR_PTR)
-		return ERROR_PTR;
+	if (alist_lookup((alist)h, key, str_eq, &val) == NULL)
+		return NULL;
 
 	return (option)val.ptr;
 }
@@ -179,7 +177,7 @@ option_hier_lookup(option_hier h, char *name)
  *		  OTYPE_STRING, the data gets copied, so you can free the
  *		  original input or pass const strings.
  *
- * \return  The created option, or ERROR_PTR in case of error.
+ * \return  The created option, or NULL in case of error.
  *	      errno = ENOMEM if out of memory.
  *	      errno = EINVAL if type has invalid value.
  *
@@ -192,7 +190,7 @@ option_create(char *name, option_type type, option_data data)
 	assert (name != NULL);
 
 	if ((o = malloc(sizeof(option_t))) == NULL)
-		return ERROR_PTR;
+		return NULL;
 
 	switch(type) {
 		case OTYPE_STRING:
@@ -208,7 +206,7 @@ option_create(char *name, option_type type, option_data data)
 		default:
 			free(o);
 			errno = EINVAL;
-			return ERROR_PTR;
+			return NULL;
 	}
 
 	o->name = str_cpy(name);
@@ -228,7 +226,6 @@ option_create(char *name, option_type type, option_data data)
 void
 option_destroy(option o)
 {
-	assert(o != ERROR_PTR);
 	assert(o != NULL);
 
 	free(o->name);
@@ -290,7 +287,7 @@ option_get_default(option opt)
 void
 option_set_default(option opt, gendata def)
 {
-	assert(opt != ERROR_PTR);
+	assert(opt != NULL);
 
 	switch (opt->type) {
 		case OTYPE_HIER:

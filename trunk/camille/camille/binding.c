@@ -36,8 +36,8 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <gune/error.h>
 #include <gune/misc.h>
 #include <camille/binding.h>
 
@@ -60,7 +60,7 @@ static void binding_dump(binding);
  * \param t      The requested type of the option.
  * \param value  The value of the option (ignored if t == OTYPE_EMPTY).
  *
- * \return  The binding, or ERROR_PTR in case of error.
+ * \return  The binding, or NULL in case of error.
  *	      errno = ENOMEM if out of memory.
  *	      errno = EINVAL if option type does not match requested type.
  *
@@ -71,16 +71,15 @@ binding_create(option opt, option_type t, gendata value)
 {
 	binding_t *bnd;
 
-	assert(opt != ERROR_PTR);
 	assert(opt != NULL);
 
 	if (t != opt->type && t != OTYPE_EMPTY) {
 		errno = EINVAL;
-		return ERROR_PTR;
+		return NULL;
 	}
 
 	if ((bnd = malloc(sizeof(binding_t))) == NULL)
-		return ERROR_PTR;
+		return NULL;
 
 	bnd->option = opt;
 	bnd->empty = (t == OTYPE_EMPTY);
@@ -122,7 +121,7 @@ binding_destroy(binding bnd)
 gendata
 binding_get_value(binding bnd)
 {
-	assert(bnd != ERROR_PTR);
+	assert(bnd != NULL);
 	return bnd->value;
 }
 
@@ -139,7 +138,7 @@ binding_get_value(binding bnd)
 int
 binding_empty(binding bnd)
 {
-	assert(bnd != ERROR_PTR);
+	assert(bnd != NULL);
 	return bnd->empty;
 }
 
@@ -154,7 +153,7 @@ binding_empty(binding bnd)
 option
 binding_get_option(binding bnd)
 {
-	assert(bnd != ERROR_PTR);
+	assert(bnd != NULL);
 	return bnd->option;
 }
 
@@ -162,7 +161,7 @@ binding_get_option(binding bnd)
 /**
  * Create a binding list.
  *
- * \return  The created binding list, or ERROR_PTR in case of error.
+ * \return  The created binding list, or NULL in case of error.
  *	      errno = ENOMEM if out of memory.
  *
  * \sa bind_list_destroy
@@ -172,8 +171,8 @@ bind_list_create(void)
 {
 	alist al;
 
-	if ((al = alist_create()) == ERROR_PTR)
-		return ERROR_PTR;
+	if ((al = alist_create()) == NULL)
+		return NULL;
 
 	return (bind_list)al;
 }
@@ -186,7 +185,7 @@ bind_list_create(void)
  * \param bl   The binding list in which to insert the binding.
  * \param bnd  The binding to insert.
  *
- * \return  The original bind_list, or ERROR_PTR if the data could not be
+ * \return  The original bind_list, or NULL if the data could not be
  *            inserted.  Original bind_list is still valid in case of error.
  *          errno = EINVAL if the variable is already bound.
  *	    errno = ENOMEM if out of memory.
@@ -200,15 +199,14 @@ bind_list_insert_uniq(bind_list bl, binding bnd)
 	gendata akey, avalue;
 	alist al;
 
-	assert(bl != ERROR_PTR);
-	assert(bnd != ERROR_PTR);
+	assert(bl != NULL);
+	assert(bnd != NULL);
 
 	akey.ptr = bnd->option;
 	avalue.ptr = bnd;
 
-	if ((al = alist_insert_uniq((alist)bl, akey, avalue, ptr_eq))
-	     == ERROR_PTR)
-		return ERROR_PTR;
+	if ((al = alist_insert_uniq((alist)bl, akey, avalue, ptr_eq)) == NULL)
+		return NULL;
 
 	return (bind_list)al;
 }
@@ -272,7 +270,7 @@ bind_list_walk(bind_list bl, bind_walk_func walk, gendata data)
  * \param t      The requested type of the option.
  * \param value  The value of the option (ignored if t == OTYPE_EMPTY)
  *
- * \return  The new bindings list, or ERROR_PTR in case of error.
+ * \return  The new bindings list, or NULL in case of error.
  *	      errno = ENOMEM if out of memory.
  *	      errno = EINVAL if option type does not match requested type.
  */
@@ -281,12 +279,12 @@ option_bind(bind_list bl, option opt, option_type t, gendata value)
 {
 	binding bnd;
 
-	assert(bl != ERROR_PTR);
+	assert(bl != NULL);
 
-	if ((bnd = binding_create(opt, t, value)) == ERROR_PTR)
-		return ERROR_PTR;
+	if ((bnd = binding_create(opt, t, value)) == NULL)
+		return NULL;
 
-	if ((bl = bind_list_insert_uniq(bl, bnd)) == ERROR_PTR)
+	if ((bl = bind_list_insert_uniq(bl, bnd)) == NULL)
 		binding_destroy(bnd);
 
 	return bl;
