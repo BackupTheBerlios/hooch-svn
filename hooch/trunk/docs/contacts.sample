@@ -5,6 +5,39 @@
 #
 
 #
+# ABNF of the grammar (see RFC 2234 for a definition of ABNF):
+#
+# XXX: Check thoroughly for errors and try to minimise the size of this
+#       (mainly by removing extraneous LWSPs)
+#
+# contact-list		=  *(LWSP (contact / group) LWSP)
+#
+# contact		=  "contact" LWSP contact-name LWSP
+#			    "{" contact-contents "}"
+#
+# group			=  "group" LWSP group-name LWSP "{" *group-contents "}"
+# group-contents	=  *id-contents members *id-contents
+#
+# members		=  "members" LWSP "=" members-list LWSP ";"
+# members-list		=  *(LWSP member)
+# member		=  contact-identifier
+#
+# contact-contents	=  *(id-contents / id)
+# id			=  LWSP "id" LWSP id-name LWSP "{" *id-contents "}" LWSP
+# id-contents		=  LWSP (option / struct) LWSP
+#
+# option		=  option-name LWSP "=" LWSP option_value LWSP ";"
+# struct		=  struct-name "." (struct / option)
+# struct		/= struct-name LWSP "{" *id-contents "}"
+#
+# option-name		=  identifier
+# contact-identifier	=  identifier [":" identifier]
+# group-identifier	=  identifier
+#
+# identifier		=  *(ALPHA / DIGIT / "-" / "_")		; Is this OK?
+#
+
+#
 # Multiple identities per contact are possible, by defining id-blocks for a contact.
 #
 contact homer {
@@ -26,7 +59,7 @@ contact homer {
 # Now we can access homer's work address with `homer:work'
 # Specifying a contact's specific e-mail address in a group can be also done easily now:
 #
-group employees { contacts = homer:work, smithers; }
+group employees { members = homer:work, smithers; }
 
 #
 # We might even get rid of the annoying notation that links addresses to pgp
@@ -53,14 +86,14 @@ contact homer {
 
 # Groups are defined like this:
 group parents {
-	contacts = marge, homer;
+	members = marge, homer;
 	option1 = y;
 	option2 = foo;
 }
 
 #
 # If after reading and parsing all config files there are still contacts in a
-# `contacts' field of a group which do not exist, we get an error.  It is legal
+# `members' field of a group which do not exist, we get an error.  It is legal
 # to forward-reference the contacts in a group.
 #
 
