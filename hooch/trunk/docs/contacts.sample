@@ -8,12 +8,7 @@
 # Defaults
 #
 defaults {
-	#
-	# No name or address setting, as that would not be logical.
-	# Probably it is wise to generalise and allow it anyway.  Let's
-	# provide the user enough rope to hang himself with, ok? ;)
-	#
-	picture = ~/pics/questionmark.png	# No photo
+	use_html_mime_mail = no;
 	pgp {
 		# No key_id, would be stupid to have one. (aka key_id = empty;)
 		sign = yes;
@@ -23,7 +18,7 @@ defaults {
 
 	#
 	# Only behavioural settings are allowed to be defaulted.
-	# Informational settings are not.
+	# Informational settings are not:
 	#
 	phone_number = "555-ACME";	# Illegal, user would get error message.
 }
@@ -34,7 +29,12 @@ defaults {
 contact homer {
 	# XXX Internally these are just the `primary' id.
 	address = "homer@simpsons.net";
-	pgp.key_id = empty;
+
+	# Strings are enclosed within double or single quotes (there is no difference
+	# in behaviour)
+	company = "ACME, Inc.";
+	picture = '~/pics/homer.png';	# No photo
+	pgp.key_id = empty;		# `empty' means unset (NOT the empty string "")
 
 	id work {
 		address = "homer@powerplant.net";
