@@ -48,18 +48,8 @@ int
 main(int argc, char **argv)
 {
 	extern char *optarg;
-	char *str = NULL;
 	int ch;
-
-	/* Default options */
-	int i;
-
-	/*
-	if (argc <= 1) {
-		usage();
-		return 1;
-	}
-	*/
+	addrbook a;
 
 	printf("$Id$\n");
 	printf("Running test... Go your gang.\n");
@@ -72,8 +62,9 @@ main(int argc, char **argv)
 		}
 
 	/* Perform tests */
-	addrbook_parse_file(stdin);
-	printf("Done\n");
+	a = addrbook_parse_file(stdin);
+	printf("Done parsing.  Resulting addressbook:\n");
+	addrbook_dump(a);
 
 	return 0;
 }
