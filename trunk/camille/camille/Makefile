@@ -4,25 +4,12 @@
 # Camille library Makefile
 #
 
-LIB= camille
-CAMILLESRCS=  addrbook.c group.c contact.c contact_id.c parser.y option.c
-CAMILLESRCS+= binding.c
-GENSRCS= parser.c parser_lex.c parser.h
-SRCS= ${CAMILLESRCS} ${GENSRCS}
+SCSH=scsh
+SCSH_FLAGS=-lel exceptions/load.scm
+LOAD_FLAGS=-lm camille.scm
+OPEN_FLAGS=-o addressbook -o parser
 
-# Yacc settings
-YHEADER=1
-YFLAGS+= -v
+.PHONY: test
 
-LDADD= -lgune
-CFLAGS+= -I.. ${DEFS}
-LINTFLAGS+= -I..
-
-# XXX HACK: Clean this up
-LINTFLAGS+= -I../../../gune
-LDADD+= -R../../../gune -L../../../gune
-CFLAGS+= -I../../../gune
-
-CLEANFILES+= ${GENSRCS} y.output
-
-.include <bsd.lib.mk>
+test:
+	${SCSH} ${SCSH_FLAGS} ${LOAD_FLAGS} ${OPEN_FLAGS} -lm test.scm -o test

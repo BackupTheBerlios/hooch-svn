@@ -1,0 +1,15 @@
+(defaults
+  (option html-mail #f))
+
+(contact lamer
+  (id sublamer
+     (option tast foo))
+  (option name "Patrick van Rens"))
+
+(contact joepchen
+  (option name "Joep Verkoelen"))
+
+(contact nvie
+  (option name "Vincent Driessen"))
+
+(group uni (lamer nvie joepchen))
