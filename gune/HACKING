@@ -1,0 +1,314 @@
+/*
+ * $Id: HACKING,v 1.5 2003/10/07 18:22:23 airhead Exp $
+ *
+ * The revision control tag appears first, with a blank line after it.
+ * Copyright text, as defined in COPYING appears after the revision control
+ * tag. Copy the COPYING text manually.
+ *
+ * Note that this file heavily borrows from the NetBSD coding style document,
+ * which can be found at /usr/share/misc/style on a NetBSD system.
+ */
+
+/*
+ * Here comes a short descriptive text that explains the purpose of the file.
+ */
+
+#include <foo.h>        /* All header inclusions come after a single line */
+#include <sys/bar.h>
+
+#include "baz.h"        /* After another empty line, all local header */
+#include "qux/lame.h"   /* inclusions */
+
+/*
+ * VERY important single-line comments look like this.
+ */
+
+/* Most single-line comments look like this. */
+
+/*
+ * Multi-line comments look like this.  Make them real sentences.  Fill
+ * them so they look like real paragraphs.
+ */
+
+/*
+ * Attempt to wrap lines longer than 80 characters appropriately.
+ * Refer to the examples below for more information.
+ */
+
+/*
+ * XXX: Things which need to be fixed ASAP need to marked XXX.
+ * FIXME: Things which need fixing can also be marked with FIXME.
+ * HACK: Things which are a hack should be marked with HACK.
+ * NOTE: Important things which require attention of the reader should be
+ *       indicated by NOTE.
+ * DO NOT assume there always is a colon at the end of the 'keyword'.
+ * If things speak for themselves, a simple /* XXX */ should suffice.
+ */
+
+/*
+ * EXAMPLE HEADER FILE:
+ *
+ * A header file should protect itself against multiple inclusion.
+ * E.g, <my/file.h> would contain something like:
+ */
+#ifndef GUNE_MY_FILE_H
+#define GUNE_MY_FILE_H
+
+/*
+ * Contents of #include file go here.
+ */
+
+#endif /* GUNE_MY_FILE_H */
+/*
+ * END OF EXAMPLE HEADER FILE.
+ */
+
+/*
+ * ANSI function declarations for private functions (i.e. functions not used
+ * elsewhere) and the main() function go at the top of the source module. 
+ * All other function declarations go in the header file with the same name
+ * as the code file, with .h extension in stead of .c.
+ * Don't associate a name with the types.  I.e. use:
+ *	void function(int);
+ * Use your discretion on indenting between the return type and the name, and
+ * how to wrap a prototype too long for a single line.  In the latter case,
+ * lining up under the initial left parenthesis may be more readable.  Lining
+ * up may be done by prefixing spaces, or tabs, assuming a tab width of 8
+ * characters.
+ * In any case, consistency is important!
+ */
+static char *function(int, int, float, int);
+static int dirinfo(const char *, struct stat *, struct dirent *,
+		   struct statfs *, int *, char **[]);
+static void usage(void);
+int main(int, char *[]);
+
+/*
+ * Macros are capitalized, parenthesized, and should avoid side-effects.
+ * If they are an inline expansion of a function, the function is defined
+ * all in lowercase, the macro has the same name all in uppercase.
+ * If the macro is an expression, wrap the expression in parenthesis.
+ * If the macro is more than a single statement, use ``do { ... } while (0)'',
+ * so that a trailing semicolon works.  Right-justify the backslashes; it
+ * makes it easier to read. The CONSTCOND comment is to satisfy lint(1).
+ */
+#define	MACRO(v, w, x, y)						\
+do {									\
+	v = (x) + (y);							\
+	w = (y) + 2;							\
+} while (/* CONSTCOND */ 0)
+
+#define	DOUBLE(x) ((x) * 2)
+
+/*
+ * Enum types are capitalized.  No comma on the last element.
+ * Always typedef enums.
+ */
+typedef enum {
+	ONE,
+	TWO
+} enumtype;
+
+/*
+ * When declaring variables in structures, declare them organized by use in a
+ * manner to attempt to minimize memory wastage because of compiler alignment
+ * issues, then by size, and then by alphabetical order. E.g, don't use ``int
+ * a; char *b; int c; char *d''; use ``int a; int b; char *c; char *d''.  Each
+ * variable gets its own type and line, although an exception can be made when
+ * declaring bitfields (to clarify that it's part of the one bitfield).  Note
+ * that the use of bitfields in general is discouraged.
+ *
+ * Major structures should be declared at the top of the file in which they are
+ * used, or in separate header files, if they are used in multiple source
+ * files. Variables of types should be prefixed by the ``extern'' keyword if
+ * the declaration is made in a header file.
+ */
+struct foo {
+	struct foo *next;	/* List of active foo */
+	struct mumble amumble;	/* Comment for mumble */
+	int bar;
+	unsigned int baz:1,	/* Bitfield; line up entries if desired */
+		     fuz:5,
+		     zap:2;
+	u_int8_t flag;
+};
+struct foo *foohead;		/* Head of global foo list */
+
+/*
+ * Make the structure name match the typedef. If the struct itself is not used
+ * as type for a member, it is not required to declare a structure name.
+ * Structs in libs should be typedef'ed, internal ones not necessarily.
+ */
+typedef struct FOO {
+	int level;
+	struct FOO bar;
+} FOO;
+
+typedef struct {
+	int member;
+} QUX;
+
+/*
+ * All major routines should have a comment briefly describing what
+ * they do here. We are using Doxygen, so the comment opening statement should
+ * have two asterisks.
+ *
+ * \param argc  Variable name. A short description on its semantics.
+ * \param argv  Same here.  These texts should be intented two spaces to the
+ *              right of the longest argument name.
+ *
+ * \return      An empty line, followed by the return type. If no return type,
+ *              end the comment one line below the last parameter.
+ */
+int
+main(int argc, char *argv[])
+{
+	long num;
+	int a, b, c;		/* Grouping vars of the same type is allowed */
+	int *d, *e;		/* Do not group pointers and nonpointers of */
+				/* the same type since it slows down reading. */
+
+	/*
+	 * For consistency, getopt should be used to parse options.  Options
+	 * should be sorted in the getopt call and the switch statement, unless
+	 * parts of the switch cascade.  Elements in a switch statement that
+	 * cascade should have a FALLTHROUGH comment.  Numerical arguments
+	 * should be checked for accuracy.  Code that cannot be reached should
+	 * have a NOTREACHED comment.
+	 */
+	while ((ch = getopt(argc, argv, "abn")) != -1) {
+		switch (ch) {		/* Indent the switch. */
+		case 'a':		/* Don't indent the case. */
+			aflag = 1;
+			/* FALLTHROUGH */
+		case 'b':
+			bflag = 1;
+			break;
+		case 'n':
+			num = strtol(optarg, &ep, 10);
+			if (num <= 0 || *ep != '\0')
+				errx(1, "illegal number -- %s", optarg);
+			break;
+		case '?':
+		default:
+			usage();
+			/* NOTREACHED */
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	/*
+	 * Space after keywords (while, for, return, switch).  No braces are
+	 * used for control statements with zero or only a single statement,
+	 * unless it's a long statement.
+	 *
+	 * Forever loops are done with for's, not while's.
+	 */
+	for (p = buf; *p != '\0'; ++p)
+		continue;		/* Explicit no-op */
+	for (;;)
+		stmt;
+
+	/*
+	 * Parts of a for loop may be left empty.  Don't put declarations
+	 * inside blocks unless the routine is unusually complicated.
+	 */
+	for (; cnt < 15; cnt++) {
+		stmt1;
+		stmt2;
+	}
+
+	while (cnt < 20)
+		z = a + really + long + statement + that + needs + two lines +
+		    gets + indented + four + spaces + on + the + second +
+		    and + subsequent + lines;
+
+	/*
+	 * Closing and opening braces go on the same line as the else.
+	 * Don't add braces that aren't necessary except in cases where
+	 * there are ambiguity or readability issues.
+	 */
+	if (test) {
+		/*
+		 * I have a long comment here.
+		 */
+#ifdef zorro
+		z = 1;
+#else
+		b = 3;
+#endif
+	} else if (bar) {
+		stmt;
+		stmt;
+	} else
+		stmt;
+
+	/* No spaces after function names. */
+	if ((result = function(a1, a2, a3, a4)) == NULL)
+		exit(1);
+
+	/*
+	 * Unary operators don't require spaces, binary operators do.
+	 * Don't excessively use parentheses, but they should be used if
+	 * statement is really confusing without them, such as:
+	 * a = b->c[0] + ~d == (e || f) || g && h ? i : j >> 1;
+	 */
+	a = ((b->c[0] + ~d == (e || f)) || (g && h)) ? i : (j >> 1);
+	k = !(l & FLAGS);
+
+	/*
+	 * Exits should be 0 on success, and 1 on failure.  Don't denote
+	 * all the possible exit points, using the integers 1 through 300.
+	 * Avoid obvious comments such as "Exit 0 on success."
+	 */
+	exit(0);
+}
+
+/*
+ * The function type must be declared on a line by itself
+ * preceding the function.
+ */
+static char *
+function(int a1, int a2, float fl, int a4)
+{
+	/*
+	 * When declaring variables in functions declare them sorted by size,
+	 * then in alphabetical order; multiple ones per line are okay.
+	 * If a line overflows reuse the type keyword.
+	 */
+	extern u_char one;
+	extern char two;
+	struct foo three, *four;
+	double five;
+	int *six, seven;
+	char *eight, *nine, ten, eleven, twelve, thirteen;
+	char fourteen, fifteen, sixteen;
+
+	/*
+	 * Casts and sizeof's are not followed by a space.  NULL is any
+	 * pointer type, and doesn't need to be cast, so use NULL instead
+	 * of (struct foo *)0 or (struct foo *)NULL.  Also, test pointers
+	 * against NULL.  I.e. use:
+	 *
+	 *	(p = f()) == NULL
+	 * not:
+	 *	!(p = f())
+	 *
+	 * Don't use `!' for tests unless it's a boolean.
+	 * E.g. use "if (*p == '\0')", not "if (!*p)".
+	 *
+	 * Routines returning void * should not have their return values cast
+	 * to any pointer type.
+	 */
+	if ((four = malloc(sizeof(struct foo))) == NULL)
+		err(1, NULL);
+	if ((six = (int *)overflow()) == NULL)
+		errx(1, "Number overflowed.");
+
+	/*
+	 * No parentheses around the return value unless necessary. Return is
+	 * not a function.
+	 */
+	return eight;
+}
