@@ -12,7 +12,7 @@
 # Without pkgsrc, default is /usr
 #PREFIX=		/usr/local
 
-CFLAGS+=	-ansi -pedantic-errors -Wall
+CFLAGS+=	-g -ansi -pedantic-errors -Wall
 
 ########################
 # Compile-time options #
