@@ -49,7 +49,7 @@ void group_destroy(group);
 char *group_name(group);
 
 #ifdef DEBUG
-group_dump(group);
+void group_dump(group);
 #endif
 
 #ifdef __cplusplus

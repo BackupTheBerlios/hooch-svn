@@ -56,7 +56,7 @@ void contact_destroy(contact);
 char *contact_name(contact);
 
 #ifdef DEBUG
-contact_dump(contact);
+void contact_dump(contact);
 #endif
 
 #ifdef __cplusplus
