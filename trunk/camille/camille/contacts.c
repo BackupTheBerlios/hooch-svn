@@ -34,10 +34,12 @@
  * Contact list manipulation functions
  */
 
+#include <camille/contacts.h>
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 void
 test_parse(void)
 {
 	yyparse();
 }
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
