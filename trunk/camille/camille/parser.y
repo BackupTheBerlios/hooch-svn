@@ -63,11 +63,13 @@ extern int yylex(void);
 
 extern int lineno;
 
-static binding try_bind(option_hier, char *, option_type, gendata);
-static void defaults_walker(binding, gendata);
-static bind_list try_insert_binding(bind_list, binding);
+static addrbook try_add_contact(addrbook, contact);
+static addrbook try_add_group(addrbook, group);
 static alist try_insert_contact_id(alist, contact_id);
 static contact try_create_primary_id(contact, bind_list);
+static binding try_bind(option_hier, char *, option_type, gendata);
+static bind_list try_insert_binding(bind_list, binding);
+static void defaults_walker(binding, gendata);
 
 %}
 
@@ -78,7 +80,6 @@ static contact try_create_primary_id(contact, bind_list);
 	int integer;
 	bind_list bindlist;
 	binding bnd;
-	alist assoclist;
 	contact_id id;
 	contact cnt;
 	temp_contact tmp_cnt;
@@ -95,13 +96,11 @@ static contact try_create_primary_id(contact, bind_list);
 %token EMPTY;
 
 /* Statement blocks */
-%type <bindlist> defaults_stms
-%type <bindlist> identity_stms
-%type <bindlist> group_stms
-%type <bindlist> stms
-%type <bnd> stm
+%type <bindlist> defaults_body
+%type <bindlist> identity_body
+%type <bindlist> group_body
+%type <bnd> statement
 %type <tmp_cnt> contact_body
-%type <assoclist> identities
 %type <id> identity
 %type <cnt> contact_block
 %type <grp> group_block
@@ -126,22 +125,7 @@ static contact try_create_primary_id(contact, bind_list);
 
 blocks:	contact_block blocks
 		{
-			addrbook a;
-
-			a = addrbook_add_contact($2, $1);
-			if (a == NULL) {
-				if (errno == EINVAL)
-					yyerror("Redefinition of contact %s",
-						contact_get_name($1));
-				else
-					yyerror("Error adding contact %s; %s",
-						contact_get_name($1),
-						strerror(errno));
-				contact_destroy($1);
-				$$ = $2;
-			} else {
-				$$ = a;
-			}
+			$$ = try_add_contact($2, $1);
 		}
 	| defaults_block blocks
 		{
@@ -151,24 +135,7 @@ blocks:	contact_block blocks
 		}
 	| group_block blocks
 		{
-			addrbook a;
-
-			/* TODO: Check whether group has a members field */
-			/* If so: */
-			a = addrbook_add_group($2, $1);
-			if (a == NULL) {
-				if (errno == EINVAL)
-					yyerror("Redefinition of group %s",
-						group_get_name($1));
-				else
-					yyerror("Error adding group %s: %s",
-						group_get_name($1),
-						strerror(errno));
-				group_destroy($1);
-				$$ = $2;
-			} else {
-				$$ = a;
-			}
+			$$ = try_add_group($2, $1);
 		}
 	| /* Empty */
 		{
@@ -191,7 +158,7 @@ contact_body:
 			$$.primary_bl = $2.primary_bl;
 			$$.ids = try_insert_contact_id($2.ids, $1);
 		}
-	| stm contact_body
+	| statement contact_body
 		{
 			$$.primary_bl = try_insert_binding($2.primary_bl, $1);
 			$$.ids = $2.ids;
@@ -204,7 +171,7 @@ contact_body:
 	;
 
 identity:
-	IDENTITY IDENTIFIER '{' identity_stms '}'
+	IDENTITY IDENTIFIER '{' identity_body '}'
 		{
 			$$ = contact_id_create($2);
 
@@ -217,16 +184,38 @@ identity:
 		}
 	;
 
+identity_body:
+	statement identity_body
+		{
+			$$ = try_insert_binding($2, $1);
+		}
+	| /* Empty */
+		{
+			$$ = bind_list_create();
+		}
+	;
+
 group_block:
-	GROUP IDENTIFIER '{' group_stms '}'
+	GROUP IDENTIFIER '{' group_body '}'
 		{
 			$$ = group_create($2, $4);
 			free($2);
 		}
 	;
 
+group_body:
+	statement group_body
+		{
+			$$ = try_insert_binding($2, $1);
+		}
+	| /* Empty */
+		{
+			$$ = bind_list_create();
+		}
+	;
+
 defaults_block:
-	DEFAULTS '{' defaults_stms '}'
+	DEFAULTS '{' defaults_body '}'
 		{
 			gendata dummy_data;
 
@@ -242,12 +231,8 @@ defaults_block:
 		}
 	;
 
-identity_stms: stms		{ $$ = $1; };
-defaults_stms: stms		{ $$ = $1; };
-group_stms:    stms		{ $$ = $1; };	/* XXX Allow multi_stms, too */
-
-stms:
-	stm stms
+defaults_body:
+	statement defaults_body
 		{
 			$$ = try_insert_binding($2, $1);
 		}
@@ -257,7 +242,7 @@ stms:
 		}
 	;
 
-stm:
+statement:
 	';'
 		{
 			/*
@@ -353,6 +338,61 @@ try_bind(option_hier h, char *name, option_type t, gendata d)
 		}
 	}
 	return bnd;
+}
+
+
+/*
+ * Add a contact to an addressbook.  If that's not possible, emit
+ *  an error, destroy the contact and return the old addressbook.
+ */
+addrbook
+try_add_contact(addrbook ab, contact ct)
+{
+	addrbook ab_tmp;
+
+	ab_tmp = addrbook_add_contact(ab, ct);
+	if (ab_tmp == NULL) {
+		if (errno == EINVAL)
+			yyerror("Redefinition of contact %s",
+				contact_get_name(ct));
+		else
+			yyerror("Error adding contact %s; %s",
+				contact_get_name(ct),
+				strerror(errno));
+		contact_destroy(ct);
+	} else {
+		ab = ab_tmp;
+	}
+
+	return ab;
+}
+
+
+/*
+ * Add a group to an addressbook.  If that's not possible, emit
+ *  an error, destroy the group and return the old addressbook.
+ */
+addrbook
+try_add_group(addrbook ab, group gr)
+{
+	addrbook ab_tmp;
+
+	/* TODO: Check whether group has a members field */
+	/* If so: */
+	ab_tmp = addrbook_add_group(ab, gr);
+	if (ab_tmp == NULL) {
+		if (errno == EINVAL)
+			yyerror("Redefinition of group %s", group_get_name(gr));
+		else
+			yyerror("Error adding group %s: %s",
+				group_get_name(gr),
+				strerror(errno));
+		group_destroy(gr);
+	} else {
+		ab = ab_tmp;
+	}
+
+	return ab;
 }
 
 
@@ -467,6 +507,7 @@ try_create_primary_id(contact ct, bind_list bl)
 			ct = ct_tmp;
 		}
 	} else {
+		/* Empty binding lists need to be destroyed too */
 		bind_list_destroy(bl);
 	}
 
