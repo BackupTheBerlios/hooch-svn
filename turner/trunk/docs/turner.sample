@@ -99,4 +99,53 @@ match {
 
 	# NOTE: Every `match' should have at least one `incoming' or
 	# `outgoing'.
+
+	#
+	# An execute block is executed in the order it is presented
+	# so execute { x y z } will execute x first, then y, then z
+	# A match may contain only one execute block
+	#
+	# The begin block is run as the very last thing.  So settings AFTER
+	# a begin block still hold inside the bagin block.
+	#
+	# Example:
+	# match {
+	#	begin {
+	#		echo "Foo!";
+	#	}
+	#	from marge;
+	# }
+	# will trigger on mail from marge and print `Foo'.
+	#
+	begin {
+		# Stuff in an exec block is a shell script (or perhaps some
+		# other program, depending on .turnerrc!!)
+		exec {
+			# anything the shell (or whatever interpreter
+			# one chooses to invoke on exec blocks) accepts.
+			/usr/local/bin/beep		# on mail arrival
+		}
+		# pipe blocks are like exec blocks, but stdin is open and
+		# offers the e-mail.
+		pipe {
+			#
+			# Problem: How can we make information from turner
+			# available within this block?
+			# Use the environment???
+			#
+			/usr/bin/mail -s "One of your employees received \
+					  an e-mail" boss@powerplant.net
+		}
+
+		# filter blocks are exactly like pipe blocks, only everything
+		# below the block uses stdout from the block as the new
+		# e-mail.
+		filter {
+			# something that transforms the e-mail
+			/usr/bin/remove-pink-color-tags
+		}
+
+		# Now, any pink color tags are gone! (we're still in the
+		# begin { } block, so the order of things is important.
+	}
 }
