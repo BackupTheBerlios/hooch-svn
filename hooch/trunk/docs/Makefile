@@ -4,6 +4,6 @@
 # $Id$
 #
 
-NAME = func_spec
+NAME = func_spec rationale
 
 .include "/usr/pkg/share/latex-mk/latex.mk"
