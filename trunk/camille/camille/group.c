@@ -36,7 +36,8 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <gune/gune.h>
+#include <gune/error.h>
+#include <gune/string.h>
 #include <camille/group.h>
 
 group_t * const ERROR_GROUP = (void *)error_dummy_func;

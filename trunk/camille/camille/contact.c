@@ -36,7 +36,8 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <gune/gune.h>
+#include <gune/error.h>
+#include <gune/string.h>
 #include <camille/contact.h>
 
 contact_t * const ERROR_CONTACT = (void *)error_dummy_func;

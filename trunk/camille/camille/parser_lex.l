@@ -49,9 +49,9 @@ wspace		[ \t]
 
 #include <errno.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <gune/gune.h>
+#include <gune/stack.h>
+#include <gune/string.h>
 #include "parser.h"
 
 void yyerror(char *, ...);
@@ -156,8 +156,12 @@ empty			{	return EMPTY;		}
 
 	/*** Identifiers ***/
 {alpha}{idchars}+	{
-				char *buf = (char *)malloc((unsigned int)yyleng + 1);
-				strcpy(buf, yytext);
+				char *buf = str_cpy(yytext);
+				if (buf == NULL)
+					yyerror("%s while trying to copy "
+						"string '%s'", strerror(errno),
+						yytext);
+				/* XXX FIXME Now what if buf == NULL? */
 				yylval.identifier = buf;
 				return IDENTIFIER;
 			}
