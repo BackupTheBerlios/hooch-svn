@@ -263,8 +263,11 @@ stm:
 		}
 	| field '=' EMPTY ';'
 		{
-			/* XXX TODO */
-			printf("Storing empty field \"%s\"\n", $1);
+			gendata dummy;
+			dummy.ptr = ERROR_PTR;		/* Shut up compiler */
+
+			try_bind(curr_bind_list, curr_opthier, $1,
+				       OTYPE_EMPTY, dummy);
 		}
 	;
 
@@ -318,7 +321,7 @@ try_bind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
 	if ((opt = option_hier_lookup(h, name)) == ERROR_PTR) {
 		yyerror("option %s not recognised", name);
 	} else {
-		if ((bl = option_bind(bl, opt, t, 0, d)) == ERROR_PTR) {
+		if ((bl = option_bind(bl, opt, t, d)) == ERROR_PTR) {
 			if (errno == EINVAL) {
 				otype = option_get_type(opt);
 				yyerror("%s is of type %s", name,

@@ -47,6 +47,7 @@ typedef enum {
 	OTYPE_STRING,
 	OTYPE_BOOL,
 	OTYPE_NUMBER,
+	OTYPE_EMPTY,		/* Not really an option.  Empty binding */
 	NUM_OTYPES
 } option_type;
 
@@ -89,7 +90,7 @@ option_type option_get_type(option o);
 
 bind_list bind_list_create(void);
 void bind_list_destroy(bind_list);
-bind_list option_bind(bind_list, option, option_type, int, gendata);
+bind_list option_bind(bind_list, option, option_type, gendata);
 bind_list option_unbind(bind_list, option);
 
 #ifdef DEBUG

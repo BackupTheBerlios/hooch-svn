@@ -8,7 +8,8 @@
 contact sjamaan {
 	id primary {
 		name = "Peter";
-		address = "hisemail@foobar.net";
+		# address = "hisemail@foobar.net";
+		address = empty;
 		field = "Some field
 					that spans multiple          \
 				lines";

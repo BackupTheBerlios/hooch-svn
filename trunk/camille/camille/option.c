@@ -47,10 +47,11 @@ static char *option_type_names[NUM_OTYPES + 1] = {
 	"string",
 	"boolean",
 	"number",
+	"empty",
 	"unknown"
 };
 
-static binding binding_create(option, option_type, int, gendata);
+static binding binding_create(option, option_type, gendata);
 static void binding_destroy(binding);
 
 #ifdef DEBUG
@@ -189,6 +190,7 @@ option_hier_lookup(option_hier h, char *name)
  *
  * \return  The created option, or ERROR_PTR in case of error.
  *	      errno = ENOMEM if out of memory.
+ *	      errno = EINVAL if type has invalid value.
  *
  * \sa option_destroy
  */
@@ -204,10 +206,21 @@ option_create(char *name, option_type type, option_data data)
 	o->name = str_cpy(name);
 	o->type = type;
 
-	if (type == OTYPE_STRING)
-		o->data.def.ptr = str_cpy(data.def.ptr);
-	else
-		o->data = data;
+	switch(type) {
+		case OTYPE_STRING:
+			o->data.def.ptr = str_cpy(data.def.ptr);
+			break;
+		case OTYPE_BOOL:
+			/* FALLTHROUGH */
+		case OTYPE_NUMBER:
+			/* FALLTHROUGH */
+		case OTYPE_HIER:
+			o->data = data;
+			break;
+		default:
+			errno = EINVAL;
+			return ERROR_PTR;
+	}
 
 	return o;
 }
@@ -261,8 +274,7 @@ option_get_type(option opt)
  *
  * \param opt    The option to bind.
  * \param t      The requested type of the option.
- * \param empty  Whether the option is empty (nonzero) or not (zero).
- * \param value  The value of the option (ignored if empty != 0).
+ * \param value  The value of the option (ignored if t == OTYPE_EMPTY).
  *
  * \return  The binding, or ERROR_PTR in case of error.
  *	      errno = ENOMEM if out of memory.
@@ -271,14 +283,14 @@ option_get_type(option opt)
  * \sa binding_destroy
  */
 static binding
-binding_create(option opt, option_type t, int empty, gendata value)
+binding_create(option opt, option_type t, gendata value)
 {
 	binding_t *bnd;
 
 	assert(opt != ERROR_PTR);
 	assert(opt != NULL);
 
-	if (t != opt->type) {
+	if (t != opt->type && t != OTYPE_EMPTY) {
 		errno = EINVAL;
 		return ERROR_PTR;
 	}
@@ -287,15 +299,17 @@ binding_create(option opt, option_type t, int empty, gendata value)
 		return ERROR_PTR;
 
 	bnd->option = opt;
-	bnd->empty = empty;
-	bnd->value = value;
+	bnd->empty = (t == OTYPE_EMPTY);
+
+	if (t != OTYPE_EMPTY)
+		bnd->value = value;
 
 	return (binding)bnd;
 }
 
 
-/*
- * Destroy an binding of an option.
+/**
+ * Destroy a binding of an option.
  *
  * \param bnd  The binding to destroy.
  *
@@ -348,15 +362,14 @@ bind_list_destroy(bind_list bl)
  * \param bl     Binding list in which to insert the new binding.
  * \param opt    The option to bind.
  * \param t      The requested type of the option.
- * \param empty  Whether the option is empty (nonzero) or not (zero).
- * \param value  The value of the option (ignored if empty != 0).
+ * \param value  The value of the option (ignored if t == OTYPE_EMPTY)
  *
  * \return  The new bindings list, or ERROR_PTR in case of error.
  *	      errno = ENOMEM if out of memory.
  *	      errno = EINVAL if option type does not match requested type.
  */
 bind_list
-option_bind(bind_list bl, option opt, option_type t, int empty, gendata value)
+option_bind(bind_list bl, option opt, option_type t, gendata value)
 {
 	alist al;
 	gendata akey, avalue;
@@ -364,7 +377,7 @@ option_bind(bind_list bl, option opt, option_type t, int empty, gendata value)
 
 	assert(bl != ERROR_PTR);
 
-	if ((bnd = binding_create(opt, t, empty, value)) == ERROR_PTR)
+	if ((bnd = binding_create(opt, t, value)) == ERROR_PTR)
 		return ERROR_PTR;
 
 	akey.ptr = bnd->option;
@@ -431,19 +444,25 @@ binding_walk(gendata *key, gendata *value)
 void
 binding_dump(binding bnd)
 {
+	gendata data = bnd->value;
+
 	printf("%s = ", bnd->option->name);
+	if (bnd->empty) {
+		printf("(empty), default = ");
+		data = bnd->option->data.def;
+	}
 	switch (bnd->option->type) {
 		case OTYPE_BOOL:
-			if (bnd->value.num == 0)
+			if (data.num == 0)
 				printf("false");
 			else
 				printf("true");
 			break;
 		case OTYPE_STRING:
-			printf("'%s'", (char *)bnd->value.ptr);
+			printf("'%s'", (char *)data.ptr);
 			break;
 		case OTYPE_NUMBER:
-			printf("%i", bnd->value.num);
+			printf("%i", data.num);
 			break;
 		default:
 			printf("unknown");
