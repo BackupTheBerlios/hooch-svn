@@ -70,7 +70,6 @@ static void defaults_walker(binding, gendata);
 	char *string;
 	int boolean;
 	int integer;
-	int amount;
 	bind_list bindlist;
 	binding bnd;
 	alist assoclist;
@@ -252,9 +251,8 @@ defaults_block:
 				read_defaults = 1;
 				data.ptr = curr_opthier;
 				bind_list_walk($4, defaults_walker, data);
-			} else {
-				bind_list_destroy($4);
 			}
+			bind_list_destroy($4);
 		}
 	;
 
