@@ -230,7 +230,7 @@ start:
 
 %%
 
-static void
+void
 yyerror(char *err, ...) {
 	va_list ap;
 	va_start(ap, err);
