@@ -44,6 +44,16 @@ the semicolon is explicitly disallowed after closing braces.
 For consistency with many other Unix tools, a hash symbol (\#) marks the
 beginning of a comment that runs until the end of a line.
 
+Because in some situations options are inherited from structures higher
+up in the hierarchy (CSS-like), there has to be a way to unset some
+options which are set in the parent structure.  The clearest example is
+probably the PGP key ID which is set on some contact's primary email
+address, but a secondary address does not have PGP at all.  Here, the
+secondary address' PGP key ID value should be unset to prevent Hooch's
+PGP plugin from signing an email.  For this reason, the \texttt{empty}
+keyword was introduced.  This resets the field for this substructure to
+what it would be if it or its parent had never been set in the first place.
+
 
 \section{Contact list design rationale}
 
