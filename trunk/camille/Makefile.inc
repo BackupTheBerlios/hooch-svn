@@ -8,9 +8,11 @@
 # System dependent options #
 ############################
 
-# Uncomment if necessary.  pkgsrc, for example, will set this for you.
-# Without pkgsrc, default is /usr
-#PREFIX=		/usr/local
+# Change if necessary.  pkgsrc, for example, will set this for you.
+PREFIX?=		/usr/local
+LIBDIR=			${PREFIX}/lib
+BINDIR=			${PREFIX}/bin
+MANDIR=			${PREFIX}/share/man
 
 # Treat C and lint warnings as errors.
 CFLAGS+=	-g -ansi -pedantic-errors -Wall -Werror
