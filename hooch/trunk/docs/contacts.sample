@@ -5,6 +5,11 @@
 #
 
 #
+# Reserved keywords are:
+# id, contact, group, primary, true, false, yes, no, defaults, empty
+#
+
+#
 # Defaults
 #
 defaults {
@@ -27,7 +32,7 @@ defaults {
 # Multiple identities per contact are possible, by defining id-blocks for a contact.
 #
 contact homer {
-	# XXX Internally these are just the `primary' id.
+	# Internally these are just the `primary' id.
 	address = "homer@simpsons.net";
 
 	# Strings can be enclosed within all three quoting styles (", ` and ').
@@ -73,7 +78,7 @@ contact homer {
 		pgp.key_id = empty;			# empty sets the item
 							# to be undefined
 	}
-}
+'}
 
 #
 # The user's e-mail addresses are simply recorded with a special
