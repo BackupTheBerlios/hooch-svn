@@ -1,0 +1,10 @@
+#
+# $Id: TODO,v 1.1.1.1 2003/10/07 18:47:24 airhead Exp $
+#
+# TODO list for Hooch
+#
+# TODO items are prefixed "- " and indented with two spaces if the lines are
+# any longer than 80 characters.
+#
+- Write initial project goals document
+- Write specification
