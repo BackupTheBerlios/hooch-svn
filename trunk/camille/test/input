@@ -37,7 +37,10 @@ contact sjamaan {
 contact nvie {	name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }
 
 defaults {
-	somefield = "somestring with backslashes, like \\ <- this, or single ('), double (\") or backtick (`) quotes";
+	string_test = `Enclosed in backticks, test: { ', ", \`, \\ }`;
+	string_test2 = 'Enclosed in single quotes, test: { \', ", `, \\ }';
+	string_test3 = "Enclosed in double quotes, test: { \', \", `, \\ }";
+	empty = "";
 }
 
 contact SomeEmptyContactAfterADefaultsBlock {

@@ -34,6 +34,7 @@ digit		[0-9]
 hexdigit	[A-Fa-f0-9]
 alpha		[A-Za-z]
 idchars		[A-Za-z0-9_-]
+strdelim	['"`]
 wspace		[ \t]
 
 %{
@@ -49,6 +50,7 @@ int lineno = 1;
 int defaults_found = 0;
 stack s;
 int ssize;
+char str_begin;
 
 void push_char(char);
 char *pop_string(void);
@@ -67,8 +69,9 @@ char *pop_string(void);
 \n		lineno++;	/* Keep track of line numbers */
 
 	/*** Strings ***/
-\"		{
+{strdelim}	{
 			BEGIN STR_ENV;
+			str_begin = yytext[0];
 			ssize = 0;
 			s = stack_create();
                 }
@@ -80,12 +83,19 @@ char *pop_string(void);
 				push_char(yytext[1]);
 			}
 
-<STR_ENV>\"	{
-			yylval.string = pop_string();
-
-			BEGIN 0;	/* Leave the STR_ENV environment */
-			return STRING;
-		}
+<STR_ENV>{strdelim}	{
+				/* End of string? */
+				if (yytext[0] == str_begin) {
+					yylval.string = pop_string();
+	
+					/* Leave the STR_ENV environment */
+					BEGIN 0;
+					return STRING;
+				} else {
+					/* Otherwise, it's a normal character */
+					push_char(yytext[0]);
+				}
+			}
 
 <STR_ENV>\n	{
 			/* Keep track of line numbers, even in STR_ENV! */
@@ -96,8 +106,8 @@ char *pop_string(void);
 <STR_ENV>.	{	push_char(yytext[0]);	 }
 
 	/*** Language keywords ***/
-(yes|true)		{ yylval.boolean = 1; return BOOLEAN; }
-(no|false|neener)	{ yylval.boolean = 0; return BOOLEAN; }
+(yes|true)		{	yylval.boolean = 1; return BOOLEAN;	}
+(no|false|neener)	{	yylval.boolean = 0; return BOOLEAN;	}
 
 \-?0x{hexdigit}+	{
 				yylval.integer = strtol(yytext, NULL, 16);
@@ -126,11 +136,11 @@ contact		{	return CONTACT;		}
 
 	/*** Identifiers ***/
 {alpha}{idchars}+	{
-			char *buf = (char *)malloc((unsigned int)yyleng + 1);
-			strcpy(buf, yytext);
-			yylval.identifier = buf;
-			return IDENTIFIER;
-		}
+				char *buf = (char *)malloc((unsigned int)yyleng + 1);
+				strcpy(buf, yytext);
+				yylval.identifier = buf;
+				return IDENTIFIER;
+			}
 
 .		{
 			yyerror("Unknown character on line %d: ``%c''\n", lineno, yytext[0]);
