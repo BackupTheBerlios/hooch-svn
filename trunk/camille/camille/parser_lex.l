@@ -48,7 +48,7 @@ void yyerror(char *, ...);
 /* Values internally used in lexicographical analysis */
 int lineno = 1;
 stack s;
-int ssize;
+unsigned int ssize;
 char delim_opened;
 
 void push_char(char);
@@ -152,10 +152,12 @@ yywrap(void) {
 void
 push_char(char c)
 {
+	gendata d;
+	d.sym = c;	/* Can't these lines be written as one? */
+
 	ssize++;
 	/* printf("read %c... setting ssize to %d\n", c, ssize); */
-	stack_push(s, (void *) (int) c);
-	/* NOTE: This ----^ is rans */
+	stack_push(s, d);
 }
 
 char *
@@ -164,7 +166,6 @@ pop_string(void)
 	char *str = (char *)malloc(ssize + 1);
 	str[ssize] = '\0';
 	while (ssize > 0)
-		str[--ssize] = (char) (int) stack_pop(s);
-		/* NOTE: This ----^ is rans */
+		str[--ssize] = stack_pop(s).sym;
 	return str;
 }
