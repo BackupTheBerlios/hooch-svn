@@ -48,6 +48,8 @@ contact_t * const ERROR_CONTACT = (void *)error_dummy_func;
  * \param name  The (symbolic, identifier) name of the contact
  *
  * \return  The new contact, or ERROR_CONTACT if there was an error.
+ *
+ * \sa contact_destroy
  */
 contact
 contact_create(const char *name)
@@ -68,13 +70,46 @@ contact_create(const char *name)
 }
 
 
-/*
+/**
  * Destroy a contact.
  *
  * \param cont  The contact to destroy.
+ *
+ * \sa contact_create
  */
 void
 contact_destroy(contact cont)
 {
+	free(cont->name);
 	free(cont);
 }
+
+
+/**
+ * Retrieve the name of a contact.
+ *
+ * \param cont  The contact to get the name of.
+ */
+/*
+ * XXX Actually we would like this to return a const ptr... We can't unless we
+ *  we want to cast around while using the name as hash key.
+ */
+char *
+contact_name(contact cont)
+{
+	return cont->name;
+}
+
+
+#ifdef DEBUG
+/**
+ * Prints a dump of a contact.
+ *
+ * \param ct  The contact to print.
+ */
+void
+contact_dump(contact ct)
+{
+	printf("Contact %s:\n", ct->name);
+}
+#endif /* DEBUG */

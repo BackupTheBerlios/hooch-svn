@@ -69,6 +69,8 @@ addrbook_parse_file(FILE *fp)
  * Create a new, empty, addressbook
  *
  * \return  The newly created addressbook, or ERROR_ADDRBOOK if out of memory.
+ *
+ * \sa addrbook_destroy
  */
 addrbook
 addrbook_create(void)
@@ -107,11 +109,18 @@ addrbook_create(void)
  * defaults associated with it.
  *
  * \param ab  The addressbook to destroy.
+ *
+ * \sa addrbook_create
  */
 void
 addrbook_destroy(addrbook ab)
 {
-	/* Casting to free_func is ok */
+	/* Casting to free_func is ok here */
+	/* 
+	 * We don't free the hash keys because these ptrs are copies
+	 * of the `name' entries in the contacts/groups.  Their _destroy
+	 * funcs handle that for us.
+	 */
 	ht_destroy(ab->contacts, NULL, (free_func)contact_destroy);
 	ht_destroy(ab->groups, NULL, (free_func)group_destroy);
 	alist_destroy(ab->defaults, NULL, NULL);
@@ -126,9 +135,111 @@ addrbook_destroy(addrbook ab)
  * \param ct  The contact to add to the addressbook.
  *
  * \return  The addressbook
+ *
+ * \sa addrbook_add_group, addrbook_del_contact
  */
 addrbook
 addrbook_add_contact(addrbook ab, contact ct)
 {
+	/* XXX a better name is addrbook_insert_contact??? */
+	/*
+	 * Give this some thought.  Note that if we do this, we should also
+	 * actually change addrbook_del_contact into addrbook_delete_contact
+	 * This is more consistent with some Gune functions (ht/alist, but
+	 * not, for example, queue), but do you really ``insert''
+	 * something into an addressbook?
+	 */
+	gendata key, value;
+
+	key.ptr = contact_name(ct);
+	value.ptr = ct;
+
+	/* Hmm, this key/value gendata nonsense should be easier */
+	ht_insert(ab->contacts, key, value, str_eq, (free_func)contact_destroy);
+
 	return ab;
 }
+
+
+/**
+ * Delete a contact from an addressbook.
+ *
+ * \param ab    The addressbook to delete the contact from.
+ * \param name  The name of the contact to delete.
+ *
+ * \return  The addressbook
+ *
+ * \sa addrbook_del_group, addrbook_add_contact
+ */
+addrbook
+addrbook_del_contact(addrbook ab, char *name)
+{
+	gendata key;
+	key.ptr = name;
+
+	ht_delete(ab->contacts, key, str_eq, NULL, (free_func)contact_destroy);
+
+	return ab;
+}
+
+
+/**
+ * Add a group to an addressbook, or update an existing group.
+ *
+ * \param ab  The addressbook to add the group to.
+ * \param gr  The group to add to the addressbook.
+ *
+ * \return  The addressbook
+ *
+ * \sa addrbook_add_contact, addrbook_del_group
+ */
+addrbook
+addrbook_add_group(addrbook ab, group gr)
+{
+	/* XXX a better name is addrbook_insert_group??? */
+	gendata key, value;
+
+	key.ptr = group_name(gr);
+	value.ptr = gr;
+
+	/* Hmm, this key/value gendata nonsense should be easier */
+	ht_insert(ab->groups, key, value, str_eq, (free_func)group_destroy);
+
+	return ab;
+}
+
+
+/**
+ * Delete a group from an addressbook.
+ *
+ * \param ab    The addressbook to delete the group from.
+ * \param name  The name of the group to delete.
+ *
+ * \return  The addressbook
+ *
+ * \sa addrbook_del_contact, addrbook_add_group
+ */
+addrbook
+addrbook_del_group(addrbook ab, char *name)
+{
+	gendata key;
+	key.ptr = name;
+
+	ht_delete(ab->groups, key, str_eq, NULL, (free_func)group_destroy);
+
+	return ab;
+}
+
+
+#ifdef DEBUG
+/**
+ * Prints a dump of an addressbook.
+ *
+ * \param ab  The addressbook to print.
+ */
+void
+addrbook_dump(addrbook ab)
+{
+	/* Dump contacts, groups etc */
+}
+#endif /* DEBUG */

@@ -49,6 +49,8 @@ group_t * const ERROR_GROUP = (void *)error_dummy_func;
  * \param name  The (symbolic, identifier) name of the group
  *
  * \return  The new group, or ERROR_GROUP if there was an error.
+ *
+ * \sa group_destroy
  */
 group
 group_create(const char *name)
@@ -69,13 +71,46 @@ group_create(const char *name)
 }
 
 
-/*
+/**
  * Destroy a group.
  *
  * \param gr  The group to destroy.
+ *
+ * \sa group_create
  */
 void
 group_destroy(group gr)
 {
+	free(gr->name);
 	free(gr);
 }
+
+
+/**
+ * Retrieve the name of a group.
+ *
+ * \param gr  The group to get the name of.
+ */
+/*
+ * XXX Actually we would like this to return a const ptr... We can't unless we
+ *  we want to cast around while using the name as hash key.
+ */
+char *
+group_name(group gr)
+{
+	return gr->name;
+}
+
+
+#ifdef DEBUG
+/**
+ * Prints a dump of a group.
+ *
+ * \param gr  The group to print.
+ */
+void
+group_dump(group gr)
+{
+	printf("Group %s:\n", gr->name);
+}
+#endif /* DEBUG */

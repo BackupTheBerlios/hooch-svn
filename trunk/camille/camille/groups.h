@@ -46,6 +46,11 @@ typedef struct group_t {
 
 group group_create(const char *);
 void group_destroy(group);
+char *group_name(group);
+
+#ifdef DEBUG
+group_dump(group);
+#endif
 
 #ifdef __cplusplus
 }

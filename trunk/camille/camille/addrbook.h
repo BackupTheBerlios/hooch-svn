@@ -62,8 +62,15 @@ typedef struct addrbook_t {
 addrbook addrbook_create(void);
 void addrbook_destroy(addrbook);
 addrbook addrbook_add_contact(addrbook, contact);
+addrbook addrbook_del_contact(addrbook, char *);
+addrbook addrbook_add_group(addrbook, group);
+addrbook addrbook_del_group(addrbook, char *);
 
 addrbook addrbook_parse_file(FILE *);
+
+#ifdef DEBUG
+addrbook_dump(addrbook);
+#endif
 
 #ifdef __cplusplus
 }
