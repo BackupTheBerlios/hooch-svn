@@ -169,12 +169,9 @@ blocks:	contact_block blocks
 	;
 
 contact_block:
-	CONTACT IDENTIFIER
+	CONTACT IDENTIFIER '{' contact_body '}'
 		{
-		}
-	'{' contact_body '}'
-		{
-			$$ = contact_create($2, $5);
+			$$ = contact_create($2, $4);
 			free($2);
 		}
 	;
@@ -223,47 +220,36 @@ identities:
 	;
 
 identity:
-	IDENTITY IDENTIFIER
+	IDENTITY IDENTIFIER '{' identity_stms '}'
 		{
-			/* curr_bind_list = contact_id_get_bindings(curr_id); */
-		}
-	'{' identity_stms '}'
-		{
-			$$ = contact_id_create($2, $5);
+			$$ = contact_id_create($2, $4);
 			free($2);
 			/* TODO: Check that this identity has name and address */
 		}
 	;
 
 group_block:
-	GROUP IDENTIFIER
+	GROUP IDENTIFIER '{' group_stms '}'
 		{
-			/* curr_bind_list = group_get_bindings(curr_group); */
-		}
-	'{' group_stms '}'
-		{
-			$$ = group_create($2, $5);
+			$$ = group_create($2, $4);
 			free($2);
 		}
 	;
 
 defaults_block:
-	DEFAULTS
-		{
-			if (read_defaults)
-				yyerror("Error: More than one defaults-block"
-				         " is not allowed.");
-		}
-	'{' defaults_stms '}'
+	DEFAULTS '{' defaults_stms '}'
 		{
 			gendata data;
 
-			if (!read_defaults) {
+			if (read_defaults) {
+				yyerror("Error: More than one defaults-block"
+				         " is not allowed.");
+			} else {
 				read_defaults = 1;
 				data.ptr = curr_opthier;
-				bind_list_walk($4, defaults_walker, data);
+				bind_list_walk($3, defaults_walker, data);
 			}
-			bind_list_destroy($4);
+			bind_list_destroy($3);
 		}
 	;
 
