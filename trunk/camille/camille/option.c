@@ -203,9 +203,6 @@ option_create(char *name, option_type type, option_data data)
 	if ((o = malloc(sizeof(option_t))) == NULL)
 		return ERROR_PTR;
 
-	o->name = str_cpy(name);
-	o->type = type;
-
 	switch(type) {
 		case OTYPE_STRING:
 			o->data.def.ptr = str_cpy(data.def.ptr);
@@ -218,9 +215,13 @@ option_create(char *name, option_type type, option_data data)
 			o->data = data;
 			break;
 		default:
+			free(o);
 			errno = EINVAL;
 			return ERROR_PTR;
 	}
+
+	o->name = str_cpy(name);
+	o->type = type;
 
 	return o;
 }
