@@ -1,15 +1,23 @@
 (defaults
-  (option html-mail #f))
+  (option html-mail #f)
+  (struct pgp
+    (option encrypt #t)
+    (option sign #t)))
 
 (contact lamer
   (id sublamer
-     (option tast foo))
+     (option tast foo)
+     (struct pgp
+       (option encrypt #f)
+       (option sign #f)))
   (option name "Patrick van Rens"))
 
 (contact joepchen
   (option name "Joep Verkoelen"))
 
 (contact nvie
-  (option name "Vincent Driessen"))
+  (option name "Vincent Driessen")
+  (struct pgp
+    (option key-id 12345)))
 
 (group uni (lamer nvie joepchen))

@@ -260,7 +260,7 @@
 	      struct
 	      (next (cdr details)
 		    (struct-add-detail
-		      (parse-struct-detail (car details))
+		      (parse-struct-detail struct (car details))
 		      struct)))))))
 
 ;;
