@@ -13,12 +13,14 @@ SRCS= ${CAMILLESRCS} ${GENSRCS}
 YHEADER=1
 YFLAGS+= -v
 
-CFLAGS+= -I.. -lgune
+LDADD= -lgune
+CFLAGS+= -I..
 LINTFLAGS+= -I..
 
 # XXX HACK: Clean this up
 LINTFLAGS+= -I../../../gune
-CFLAGS+= -I../../../gune -R../../../gune -L../../../gune
+LDADD+= -R../../../gune -L../../../gune
+CFLAGS+= -I../../../gune
 
 CLEANFILES+= ${GENSRCS} y.output
 

@@ -43,10 +43,12 @@
 
 %union {
 	char *identifier;
+	char *string;
 	int result;
 };
 
 %token <identifier> IDENTIFIER;
+%token <string> STRING;
 %token CONTACT, DEFAULTS;
 
 %type <result> loc defaults_fields contact_fields fields
@@ -89,7 +91,7 @@ fields:
 	| /* Empty */ { $$ = 0; };
 
 field_assignment:
-	IDENTIFIER '=' IDENTIFIER ';'	/* Should be fieldname '=' string */
+	IDENTIFIER '=' STRING ';'	/* Should be fieldname '=' string */
 		{
 			printf("Storing \"%s\" => \"%s\" in contact buffer.\n",
 			       $1, $3);

@@ -6,19 +6,23 @@
 
 # Nice indenting supported...
 contact sjamaan {
-	name = Peter;
-	address = hisemail;
+	name = "Peter\'s Adresje\"s";
+	address = "hisemail@foobar.net";
+	field = "Some field
+				that spans multiple          \
+			lines";
 }
 
 # ...or we could write it in a one-liner
-contact nvie {	name = Vinnie; address = hisemail; }
+# Note that we can stuff a string with backslashes, without them having any effect
+contact nvie {	name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }
 
 # <scriptkiddy_mode>
 # /us can even type commentz here! w00t! ;-)
 # </scriptkiddy_mode>
 
 defaults {
-	somefield = somevalue;
+	somefield = "somestring with backslashes, like \\ <- this";
 }
 
 contact SomeEmptyContactAfterADefaultsBlock {

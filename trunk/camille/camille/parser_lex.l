@@ -39,28 +39,70 @@ wspace	[ \t]
 %{
 
 #include <stdio.h>
+#include <gune/gune.h>
 #include "parser.h"
+
 void yyerror(char *, ...);
 
+/* Values internally used in lexicographical analysis */
 int lineno = 1;
 int defaults_found = 0;
+stack s;
+int ssize;
+
+void add_to_str(char);
 
 %}
 
+%x STR_ENV
+
 %%
 
-	/*
-	 * Whitespaces and comments
-	 */
+	/*** Whitespaces and comments ***/
 #.*		;		/* Skip over comments, starting with # until \n */
 
 {wspace}+	;       	/* Skip whitespaces */
 
 \n		lineno++;	/* Keep track of line numbers */
 
-	/*
-	 * Language keywords
-	 */
+	/*** Strings ***/
+\"		{
+			BEGIN STR_ENV;
+			ssize = 0;
+			s = stack_create();
+			printf("creating stack, setting ssize = 0\n");
+                }
+
+<STR_ENV>\\(.|\n)	{
+			if (yytext[1] == '\n')
+				lineno++;	/* Keep track of line numbers,
+						   even in STR_ENV! */
+			add_to_str(yytext[1]);
+		}
+
+<STR_ENV>\"	{
+			char *str = (char *)malloc(ssize + 1);
+			printf("\nend of string occured\nssize = %d\n", ssize);
+			str[ssize] = '\0';
+			while (ssize > 0)
+				str[--ssize] = (char) (int) stack_pop(s);
+			        /* NOTE: This ----^ is rans */
+			printf("resulting string: \"%s\"\n", str);
+			yylval.string = str;
+
+			BEGIN 0;	/* Leave the STR_ENV environment */
+			return STRING;
+		}
+
+<STR_ENV>\n	{
+			/* Keep track of line numbers, even in STR_ENV! */
+			lineno++;
+			add_to_str(yytext[0]);
+		}
+
+<STR_ENV>.	{ add_to_str(yytext[0]); }
+
+	/*** Language keywords ***/
 defaults	{
 			if (defaults_found++ > 0) {
 				/* XXX: Maybe print file name, too? */
@@ -72,14 +114,10 @@ defaults	{
 		}
 contact		return CONTACT;
 
-	/*
-	 * Interpunction
-	 */
-[{}=;]		return *yytext;
+	/*** Interpunction ***/
+[{}=;]		return yytext[0];
 
-	/*
-	 * Identifiers
-	 */
+	/*** Identifiers ***/
 {letter}+	{
 			char *buf = (char *)malloc((unsigned int)yyleng + 1);
 			strcpy(buf, yytext);
@@ -88,7 +126,7 @@ contact		return CONTACT;
 		}
 
 .		{
-			yyerror("Unknown character on line %d: ``%c''\n", lineno, *yytext);
+			yyerror("Unknown character on line %d: ``%c''\n", lineno, yytext[0]);
 			exit(1);
 		}
 
@@ -97,4 +135,12 @@ contact		return CONTACT;
 int
 yywrap(void) {
         return 1;
+}
+
+void add_to_str(char c)
+{
+	ssize++;
+	printf("read %c... setting ssize to %d\n", c, ssize);
+	stack_push(s, (void *) (int) c);
+	/* NOTE: This ----^ is rans */
 }
