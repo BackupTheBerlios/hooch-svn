@@ -1,7 +1,7 @@
 #
 # Sample Turner/Hooch address book
 #
-# $Id: addresses.sample,v 1.14 2004/05/24 21:42:10 airhead Exp $
+# $Id$
 #
 
 #
@@ -79,19 +79,6 @@ group parents {
 # With the behaviour of when addressing the group, the group settings are in
 # effect, but when addressing the contact directly, those settings have effect.
 #
-# Suppose we have user `burns' in group `bosses' and in group `evil'.
-# `bosses' has property `pgp.sign = yes' and `evil' has `pgp.sign = no'.  Now,
-# when we mail to `burns', `pgp.sign' will be whatever the selected burns
-# identity property `pgp.sign' has been set to.  If we would mail to group
-# `bosses', then `pgp.sign' will be `yes' for burns.  If we mail to `evil',
-# then `pgp.sign' will be `no' for burns.  If two settings will conflict, for
-# example, when we mail to both groups, or to one group and the contact burns
-# itself in addition, the contact will get two mails, one signed and one
-# unsigned.  This behaviour is pgp-plugin specific though.
-#
-# Note: this behaviour should not be allowed by Hooch, but should be enabled in
-# the .hoochrc file, because this behaviour is pretty non-standard and the user
-# should use it only when fully concious.
 
 #
 # Subsystems/extensions can be handled with ease.  They simply register which
