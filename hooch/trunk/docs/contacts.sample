@@ -5,11 +5,9 @@
 #
 
 #
-# OK, what to do about default settings?
+# Defaults
 #
-# Possibility 1:
-#
-contact default {		# Another `magic contact'?
+defaults {
 	#
 	# No name or address setting, as that would not be logical.
 	# Probably it is wise to generalise and allow it anyway.  Let's
@@ -25,97 +23,22 @@ contact default {		# Another `magic contact'?
 }
 
 #
-# Possibility 2:
-#
-# Just allow the user to sprinkle the defaults in between the contact
-# definitions.
-#
-# Possibility 3:
-#
-# Make a `contacts' section (or something like that) in the hoochrc file
-# with the defaults.
-#
-
-#
-# Review of the options:
-# 1) pros:
-#     - Keeps the defaults nicely grouped together
-#    cons:
-#     - Not compatible with the `cascade' idea we already use in contact/id
-#         situations.  So it's a bit of a hack.
-#     - We should minimise the number of `magic' contacts, I think.
-# 2) pros:
-#     - Is in line with the `cascade' concept:  default -> contact -> id.
-#        Syntactically speaking, because semantically the `default' magic
-#        keyword is the template of which other contacts inherit settings,
-#        anyway.  Always nice to have syntax mirror semantics.
-#    cons:
-#     - Defeats the whole idea of grouping stuff together.  The user can
-#        define a few contacts, then some options, then some more contacts
-#        and some more options, etc.  This would make a big mess out of the
-#        config files.
-# 3) pros:
-#     - Easy and familiar (it's like mutt)
-#    cons:
-#     - Separation of contacts-related things in two files
-#     - What if some options can also be used by Turner?  Should Turner
-#        suddenly read .hoochrc?  Should we split the Turner specific options
-#        into .turnerrc?  What if the options can be used by both programs?
-#
-# Option 2 is more academic, but also a little nasty.
-# Option 3 doesn't have much going for it, and its cons are very heavy.
-# Probably option 1 is the best.  Not that that means I like it, or anything.
-#
-# Just a note:  We could specify a magic group called `all', which
-# includes these defaults.  But groups are like contacts with the
-# only difference that they have members.
-#
-
-#
-# ABNF of the grammar (see RFC 2234 for a definition of ABNF):
-#
-# XXX: Check thoroughly for errors and try to minimise the size of this
-#       (mainly by removing extraneous LWSPs)
-#
-# contact-list		=  *(LWSP (contact / group) LWSP)
-#
-# contact		=  "contact" LWSP contact-name LWSP
-#			    "{" contact-contents "}"
-#
-# group			=  "group" LWSP group-name LWSP "{" *group-contents "}"
-# group-contents	=  *id-contents members *id-contents
-#
-# members		=  "members" LWSP "=" members-list LWSP ";"
-# members-list		=  *(LWSP member)
-# member		=  subcontact-name
-#
-# contact-contents	=  *(id-contents / id)
-# id			=  LWSP "id" LWSP id-name LWSP "{" *id-contents "}" LWSP
-# id-contents		=  LWSP (option / struct) LWSP
-#
-# option		=  option-name LWSP "=" LWSP option_value LWSP ";"
-# struct		=  struct-name "." (struct / option)
-# struct		/= struct-name LWSP "{" *id-contents "}"
-#
-# option-name		=  identifier
-# contact-name		=  identifier
-# id-name		=  identifier
-# subcontact-name	=  contact-name [":" id-name]
-# group-name		=  identifier
-#
-# identifier		=  *(ALPHA / DIGIT / "-" / "_")		; Is this OK?
-#
-
-#
 # Multiple identities per contact are possible, by defining id-blocks for a contact.
 #
 contact homer {
+	# XXX Internally these are just the `primary' id.
 	address = "homer@simpsons.net";
 	pgp.key_id = empty;
 
 	id work {
 		address = "homer@powerplant.net";
 		pgp.key_id = "0xBABE2ADE5BED";
+
+		# XXX: Consider this
+		info { ... }
+		behaviour { ... }	# <-- These things should be allowed
+					#     to be defined in the `defaults'
+					#     block and in `groups' blocks
 	}
 }
 
