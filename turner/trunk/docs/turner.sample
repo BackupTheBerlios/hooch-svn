@@ -232,14 +232,24 @@ rule {
 		< "/usr/bin/remove-pink-color-tags";
 		> "incoming/kids";
 
+		#
 		# This can be useful when dealing with commands that contain
 		# quotes.  Like in many programs, you need to escape quotes
 		# used in strings somehow.  Because we make no difference *at
-		# all* between these two types of strings, this leaves the user
-		# with the possibility of easy escaping strings.  Examples:
+		# all* between these three types of strings, this leaves the
+		# user with the possibility of easy escaping strings.  Examples:
+		#
 		| "/usr/bin/mail -s \"Here's a mail\"";
 		| '/usr/bin/mail -s "Here\'s a mail"';
 		| "/usr/bin/mail -s 'Here\'s a mail'";
+		| `/usr/bin/mail -s "Here's a mail"`;
+		#
+		# NOTE: The backtick can still be used in the shell line:
+		#
+		< 'sed -E "s/Subject: .*/Subject: `date` \1/"';
+		#
+		# Will put today's date in the Subject line.
+		#
 
 		# XXX: RANS:
 		# Mind the subtle difference in the \'s-part of the two strings
@@ -260,6 +270,9 @@ rule {
 		# So I vote for the shell-way, and inserting a literal \ always
 		#  with \\.  No context-sensitive behaviour, that will
 		#  inevitably confuse people.
+		#
+		# NOTE:
+		# We both voted for the shell way, so that is how it shall be.
 		#
 
 		# Strings may be spread across lines, in standard C-fashion:
