@@ -50,6 +50,7 @@ contact_id_t * const ERROR_CONTACT_ID = (void *)error_dummy_func;
  * \param name  The (symbolic, identifier) name of the contact id
  *
  * \return  The new contact id, or ERROR_CONTACT_ID if there was an error.
+ *	      errno = ENOMEM if out of memory.
  *
  * \sa contact_id_destroy
  */

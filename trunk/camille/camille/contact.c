@@ -54,6 +54,7 @@ static void contact_id_walk(gendata *, gendata *);
  * \param name  The (symbolic, identifier) name of the contact
  *
  * \return  The new contact, or ERROR_CONTACT if there was an error.
+ *	      errno = ENOMEM if out of memory.
  *
  * \sa contact_destroy
  */
