@@ -3,9 +3,22 @@
 #
 # $Id$
 #
+# <sjamaan>
+# NOTE: We should clean this file up a bit.  It is chock full of comments.
+#        Time to move rationale.tex from hooch's doc dir to a dedicated
+#        dir in the project's rootdir?  Then we can move stuff we've
+#        already decided in there.  (to find all I've typed among the many
+#        comments, grep for <sjamaan>)
+#
 
 #
 # Q: We only match on mail headers, right? Or mail body content as well?
+#
+# <sjamaan>
+# A: Hmm, I think it should be possible to grep for words in an e-mail, but
+#     let's defer this, since we are still considering a way to do things
+#     depending on program exit code.  We could check for success from using
+#     grep on the e-mail body.
 #
 
 #
@@ -41,14 +54,47 @@
 # XXX: In the rule-block below, where do we allow for send and recv mode
 #      control options?
 #
+# <sjamaan> Anywhere?  I don't see a reason to restrict the send {} and recv {}
+#            block position.  Even AROUND a rule (meaning the rule is not even
+#            considered in the mode), around a match, inside a match(!),
+#            around a `perform' block(?).  This last should imply we can
+#            have two `perform' blocks inside a rule.  This would normally
+#            not be allowed, but since the program does not consider things
+#            wrapped in a block of the other mode, it is possible.
+#
+#           Since we would rather obviously also allow send/recv checks inside
+#            a `perform' (I hate this name already) block, we might consider
+#            not allowing them around perform blocks, but I personally think
+#            that would destroy some consistency.
+#
+#           One of the nicer things is that we can also allow conditional
+#            option-setting.  Like so:
+recv {
+	maildir = "~/Mail/inbox";
+	# ... other options ...
+}
+send {
+	maildir = "~/Mail/outbox";
+	# ... other options ...
+}
+#
+# But of course, we can do this only if we actually allow turner options
+#  in this rules file as well...  This might be a good reason to allow it,
+#  come to think of it.  On the other hand, we could also allow send/recv
+#  blocks in a separate `.turnerrc' and allow only rules in this file.
+# That might be cleaner, unless there simply are only a handful of options
+#  for Turner at all.  It is rather silly to have a .turnerrc contain only
+#  one line ;)  (but very academical, though, since this rule file can be
+#  re-used for other programs as it would contain no Turner-specific things)
+#
 rule {
 	#
-	# First, we can define some patterns that should be matched
+	# First, we can define some patterns that should be matched.
 	# Every match-block should be matched in order to proceed with the
-	# script.
+	# script.  (implicit AND between matches)
 	#
 	# A `match' is matched when any of the pattern-declarations in it are
-	# matched in the input mail headers.
+	# matched in the input mail headers.  (implicit OR within matches)
 	#
 	match {
 		#
@@ -56,18 +102,68 @@ rule {
 		#
 		# Q: How can we specify "homer:work, but no-one else"? :}
 		#
+		# <sjamaan>
+		# A: The key to the answer possibly lies in a NOT operator
+		#     Either that, or we should swap the AND/OR behaviour
+		#
+		# Another way to do it, which I definately do NOT prefer,
+		#  is creating a new operator, a `unique-equals' operator:
+		#
+		from == homer:work;
+		# 
+		# or, in spirit of the `Precisely one' existential quantifier
+		# in maths:
+		#
+		from != homer:work;
+		#
+		# (but this is very confusing to C programmers)
+		#
+		#
 		from = homer:work		# Either homer's work account..
 		     | marge:*			# any address of marge..
 		     | "someone@else\.com";	# or a regular expression
 
 		# The match is also valid if X-Custom is set to `foo'
+		#
+		# <sjamaan>
+		# Q: Why the `header' keyword?  Isn't it enough to look for
+		#     quotes?  Quotes mean the literal header, the from/to etc
+		#     identifiers are declared internally.  This is also
+		#     more consistent with how we make the distinction between
+		#     literal e-mail addresses or symbolic ones from contacts.
+		#
 		header "X-Custom" = "foo";
+		#
+		# I'd suggest just this:
+		#
+		"X-Custom" = "foo";
+		#
+		# XXX: Are these things the same?
+		# to = "foo";
+		# "to" = "foo";
+		# It would be nice to allow to to be mapped to `cc', `bcc' or
+		# `to'.  Well, it's not important yet, we simply can define
+		# what they mean when we are done with the rest of the syntax.
+		#
 
 		#
 		# Q: This just slipped into my mind.  Should we allow for
 		#    such "high-level" constructs?
 		#
 		num_addressees >= 5;
+		#
+		# <sjamaan>
+		# A: I don't like it a bit, but it's way cleaner to use this
+		#     than to do a regex-match on the number of @-signs in a
+		#    from/to line, like I do in my .procmailrc. :-(
+		#    I would really like a different notation though.
+		#
+		#    Something along the lines of `{3,5}*'   but the problem
+		#     here is that this would allow only 3 to 5 addresses
+		#     from the /contact list/... We need to be able to count
+		#     just the number of addresses, including those not in
+		#     the list.
+		#
 	}
 
 	match {
@@ -91,6 +187,9 @@ rule {
 	#    instead of a "containment"?
 	#    ``Confusion is drawing near...  I can feel it.''
 	#
+	# <sjamaan>
+	# Shit
+	#
 
 	#
 	# XXX: The name ``begin'' is very general.  We could be much more
@@ -98,6 +197,16 @@ rule {
 	# it: execute, batch, perform, run, action, etc.
 	# (I changed it to ``perform'', which I like best.  Agree on it, or
 	# should we consider another name?)
+	#
+	# <sjamaan>
+	# I was thinking about `act' or `action'/`actions'.  When I was
+	#  annotating/reviewing the rest of this file just now, I started
+	#  disliking the name `perform' more and more.  Don't really know
+	#  why, though. ;)
+	# `batch' is OK, too, but might remind people of DOS too much ;)
+	#
+	# I do think the perfect name would stress the fact that these
+	# things are executed top to bottom in the order they appear.
 	#
 	perform {
 		#
@@ -113,14 +222,55 @@ rule {
 		# example, allows "exec" to be written for short using the "!"
 		# notation.  (Just for good ol' Unix-convenience.)
 		#
+		# <sjamaan>
+		# Do we really need such a botch?  Why not always allow it?
+		# ``!'' is an alias for exec, ``>'' for store, etc.
+		# Don't forget, just because these things are `unusual'
+		#  characters does not mean they are not allowed as identifiers.
+		# (look at Scheme, there almost anything except whitespaces
+		#   or parentheses is allowed in an identifier)
+		#
+		# We might even consider discarding those names entirely.
+		# I originally wanted to use names, because that is clearer
+		# to read when it is followed by a { sign.  Consider
+		# < { # Send this through my favorite filter
+		# 	...
+		# }
+		# That simply looks bad, three of those weird characters in
+		#  a row  ( `<', `{' and `#' ) while the body itself contains
+		#  more descriptive words, perhaps.
+		# But with our new notation, it's not as bad IMHO.
+		#
 
 		# Execute a command, no stdin, stdout is ignored.
 		exec /usr/local/bin/beep
 		! /usr/local/bin/beep
 
 		# Execute a command, stdin is the mail, stdout is ignored.
+		#
 		pipe /usr/bin/mail -s "..."
 		< /usr/bin/mail -s "..."
+		#
+		# <sjamaan>
+		# Hmm, now I noticed something that I don't like.
+		# `/usr/bin/mail' is not a Turner language keyword, nor is `-s'.
+		# Is it not so that we send a string to the shell, which it
+		# will execute?  Like so:
+		#
+		< "/usr/bin/mail -s \"...\""
+		#
+		# And here we have a nasty problem.  Those \" things look
+		# rather ugly.
+		#
+		# NOTE:!!!
+		# Why are you representing a `pipe' by a `<' symbol?  A slip?
+		# `< x' on the shell denotes that stdin should come from file x.
+		# The pipe symbol is `|', of course.
+		#
+		# I'd say it's more logical to use `<' as the symbol for
+		# `filter', as the `new stdin' (the new email contents) come
+		# from the stdout of the command after <.
+		#
 
 		# Filter the mail through an external program, stdin is the
 		# mail, the mail body is replaced by stdout
@@ -131,4 +281,48 @@ rule {
 		store incoming/kids
 		> incoming/kids
 	}
+}
+
+
+#
+# <sjamaan>
+# XXX: How do we indicate that a match is halting or non-halting when it is
+#       matched?  Here's a possible way (which I prefer):
+#
+terminal rule {				# Simply an extra keyword
+	match {
+		from = spammers;
+	}
+	> /dev/null
+}
+
+#
+# Another way to do this:
+#
+rule {
+	match {
+		from = spammers;
+	}
+	> "/dev/null";
+
+	terminal = yes;
+}
+
+
+#
+# Something to consider:
+# What do we do by default?  How many times would one want a match NOT
+#  to terminate versus how many times one would want a match to terminate?
+#
+# Perhaps it is better to have a rule terminate by default unless specified
+# otherwise?  Then change the keyword to something else:
+#
+non-terminal rule {
+	match {	}			# XXX: An empty block always matches?
+					# Note that a missing match { } block
+					# conceptually means that the rule
+					# should never match, so that's
+					# something completely different.
+	# Beep on new mail
+	! "beep";
 }
