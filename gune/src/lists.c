@@ -766,11 +766,13 @@ stack_new(void)
 
 
 /**
- * Pop the top element off the stack and returns it.
+ * Pop the top element off the stack and return it.
  *
  * \param s  The stack object to pop the element off.
  *
  * \return   The element that was popped off.
+ *
+ * \see stack_peek
  */
 void *
 stack_pop(stack s)
@@ -788,6 +790,35 @@ stack_pop(stack s)
 	s->head = hd->next;
 	free(hd);
 	return res;
+}
+
+
+/**
+ * Peek at the top element on the stack and return it, without actually
+ * popping it.
+ *
+ * \param s  The stack object to peek at.
+ *
+ * \return   The element that is on top of the stack.
+ *
+ * \see stack_pop
+ */
+void *
+stack_peek(stack s)
+{
+	/*
+	 * NOTE: Should we return NULL?  Pop is an illegal operation on
+	 * an empty stack, but peeking isnt (?).
+	 * Also, it currently is possible to push NULL pointers as data,
+	 * so returning NULL on an empty stack would be ambiguous.
+	 */
+	assert(s != NULL);
+
+	if (stack_is_empty(s))
+		log_entry(WARN_ERROR, "Cannot peek at top element of an"
+			   " empty stack.");
+
+	return s->head->data;
 }
 
 
@@ -900,15 +931,15 @@ queue_enqueue(queue q, void *data)
 
 
 /**
- * Remove the element first in line from the queue. This function throws an
- * error if the queue is empty. Therefore, always check with the queue_empty()
- * function to see whether a queue is empty or not.
+ * Remove the element at the head of the queue from the queue. This function
+ * throws an error if the queue is empty. Therefore, always check with the
+ * queue_empty() function to see whether a queue is empty or not.
  *
  * \param q  The queue to dequeue the data from.
  *
  * \return   The data dequeued from the queue.
  *
- * \see queue_empty
+ * \see queue_empty, queue_peek
  */
 void *
 queue_dequeue(queue q)
@@ -917,6 +948,9 @@ queue_dequeue(queue q)
 	queue_elem *el;
 
 	assert(q != NULL);
+
+	if (queue_is_empty(q))
+		log_entry(WARN_ERROR, "Cannot dequeue from an empty queue.");
 
 	el = q->bgn;
 	res = el->data;
@@ -927,6 +961,36 @@ queue_dequeue(queue q)
 	return res;
 }
 
+
+/**
+ * Look at the element at the head of the queue without dequeueing it.
+ * This function throws an error if the queue is empty. Therefore, always
+ * check with the queue_empty() function to see whether a queue is empty or
+ * not.
+ *
+ * \param q  The queue to peek at.
+ *
+ * \return   The data at the head of the queue.
+ *
+ * \see queue_empty, queue_dequeue
+ */
+void *
+queue_peek(queue q)
+{
+	/*
+	 * NOTE: Should we return NULL?  Dequeue is an illegal operation on
+	 * an empty queue, but peeking isnt (?).
+	 * Also, it currently is possible to enqueue NULL pointers as data,
+	 * so returning NULL on an empty queue would be ambiguous.
+	 */
+	assert(q != NULL);
+
+	if (queue_is_empty(q))
+		log_entry(WARN_ERROR, "Cannot peek at the head of an "
+			   "empty queue.");
+
+	return q->bgn->data;
+}
 
 /**
  * Check whether the queue is empty.

@@ -121,6 +121,7 @@ typedef struct stack_t {
 
 stack stack_new(void);
 void *stack_pop(stack);
+void *stack_peek(stack);
 stack stack_push(stack, void *);
 bool stack_is_empty(stack);
 void stack_free(stack);
@@ -141,6 +142,7 @@ typedef struct queue_t {
 queue queue_new(void);
 queue queue_enqueue(queue, void *);
 void *queue_dequeue(queue);
+void *queue_peek(queue);
 bool queue_is_empty(queue);
 void queue_free(queue);
 
