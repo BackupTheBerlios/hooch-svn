@@ -204,155 +204,72 @@ rule {
 	# <sjamaan>
 	# Shit
 	#
-
-	#
-	# XXX: The name ``begin'' is very general.  We could be much more
-	# specific and call ``the animal by its name'', for example, by calling
-	# it: execute, batch, perform, run, action, etc.
-	# (I changed it to ``perform'', which I like best.  Agree on it, or
-	# should we consider another name?)
-	#
-	# <sjamaan>
-	# I was thinking about `act' or `action'/`actions'.  When I was
-	#  annotating/reviewing the rest of this file just now, I started
-	#  disliking the name `perform' more and more.  Don't really know
-	#  why, though. ;)
-	# `batch' is OK, too, but might remind people of DOS too much ;)
-	#
 	# <nvie>
-	# Hmm.  Perform is a buzz-word frequently used in Windows-marketing
-	# terms.  Might be related with your feeling ;)
-	# But seriously, I think ``batch'' was a better name in the first
-	# place.  Fuck DOS.  Batch is just an English word that indicates the
-	# job to be done.  Con, tho, is that it closely bears resemblance to
-	# the name ``match''.
+	# My point remains.  Overthink this.
 	#
-	# But, since we both like ``act'', I changed it.  For now, at least.
+
 	#
 	# I do think the perfect name would stress the fact that these
 	# things are executed top to bottom in the order they appear.
 	#
-	# <nvie> Agree.  But names are appealing as well.  And: if they become
-	# legacy, the become terribly rancid.  (car, cdr, anyone?)  Keep an
-	# open mind.  Now is the time we can easily change it.
+	# <nvie>
+	# Agree.  But names are appealing as well.  And: if they become legacy,
+	# the become terribly rancid.  (car, cdr, anyone?)  Keep an open mind.
+	# Now is the time we can easily change it.
 	#
 	act {
 		#
-		# I still favor the short syntax used before.  It's much more
-		# in Unix-style, like the rest of our program will be.  Why use
-		# the Mickey Mouse names "exec" when a simple "!" fits?
-		#
-		# However, torn as always between academics and insolent,
-		# practical hacking, I like the "clear" declarative style also.
-		#
-		# Therefore, this is my suggestion:  We allow for an option
-		# allow_short_script_cmds (``yes'' per default) that, for
-		# example, allows "exec" to be written for short using the "!"
-		# notation.  (Just for good ol' Unix-convenience.)
-		#
-		# <sjamaan>
-		# Do we really need such a botch?  Why not always allow it?
-		# ``!'' is an alias for exec, ``>'' for store, etc.
-		# Don't forget, just because these things are `unusual'
-		#  characters does not mean they are not allowed as identifiers.
-		# (look at Scheme, there almost anything except whitespaces
-		#   or parentheses is allowed in an identifier)
-		#
-		# <nvie>
-		# Hmm.  Better, even! :)
-		#
-		# We might even consider discarding those names entirely.
-		# I originally wanted to use names, because that is clearer
-		# to read when it is followed by a { sign.  Consider
-		# < { # Send this through my favorite filter
-		# 	...
-		# }
-		# That simply looks bad, three of those weird characters in
-		#  a row  ( `<', `{' and `#' ) while the body itself contains
-		#  more descriptive words, perhaps.
-		# But with our new notation, it's not as bad IMHO.
-		#
-		# <nvie>
-		# Good argument to allow both.
-		#
-
-		# Execute a command, no stdin, stdout is ignored.
-		exec /usr/local/bin/beep
-		! /usr/local/bin/beep
-
-		# Execute a command, stdin is the mail, stdout is ignored.
-		#
-		pipe /usr/bin/mail -s "..."
-		< /usr/bin/mail -s "..."
-		#
-		# <sjamaan>
-		# Hmm, now I noticed something that I don't like.
-		# `/usr/bin/mail' is not a Turner language keyword, nor is `-s'.
-		# Is it not so that we send a string to the shell, which it
-		# will execute?  Like so:
-		#
-		< "/usr/bin/mail -s \"...\""
-		#
-		# And here we have a nasty problem.  Those \" things look
-		# rather ugly.
-		#
-		# <nvie>
-		# I was thinking of it more like a sh script that simply
-		# follows the identifier.  Good that you point it out now.
-		# Example of what I had in mind:
-		< /bin/ls -a /some/long/path/to/a/freaky/dir | grep -v \
-			".htaccess" | grep -v ".htpasswd"
+		# Every command in an act-block is executed in the order they
+		# are stated.  Every command is of the following form:
+		cmd "command(s) in shell syntax";
+		# or
+		cmd 'command(s) in shell syntax';
 
 		#
-		# NOTE:!!!
-		# Why are you representing a `pipe' by a `<' symbol?  A slip?
-		# `< x' on the shell denotes that stdin should come from file x.
-		# The pipe symbol is `|', of course.
+		# Possible cmd-identifiers:
 		#
-		# I'd say it's more logical to use `<' as the symbol for
-		# `filter', as the `new stdin' (the new email contents) come
-		# from the stdout of the command after <.
+		# !	Execute a command, no stdin, stdout is ignored.
+		# <	Execute a command, stdin is the mail, mail gets
+		# 	replaced by stdout.
+		# |	Execute a command, stdin is the mail, stdout ignored.
+		# >	Store the mail to the given mailbox.
 		#
-		# <nvie>
-		# Well, it was on purpose, not a slip.  But... I was typing a
-		# rationale here why my way was better, until it occurred to
-		# me that your way indeed is the right one.
-		#
-		# So summarizing we find:
+		# Some examples:
+		! "beep";		# The PATH is searched for ``beep''
+		| "mail -s \"Here's a mail\"";
+		< "/usr/bin/remove-pink-color-tags";
+		> "incoming/kids";
 
-		# Filter the mail by performing "| cmd" internally, replacing
-		# the mail by the contents of cmd
-		< cmd
-		# In shell terms, we could read it as: cmd < mail > mail
-		#                                  or: cat mail | cmd
-		#
-		# See?  That second line is what got me confused, I guess.
+		# This can be useful when dealing with commands that contain
+		# quotes.  Like in many programs, you need to escape quotes
+		# used in strings somehow.  Because we make no difference *at
+		# all* between these two types of strings, this leaves the user
+		# with the possibility of easy escaping strings.  Examples:
+		| "/usr/bin/mail -s \"Here's a mail\"";
+		| '/usr/bin/mail -s "Here\'s a mail"';
+		| "/usr/bin/mail -s 'Here\'s a mail'";
 
-		# Pipe the mail by performing "| cmd" internally,
-		# discarding output.
-		| cmd
-		# In shell terms, we could read it as: cat mail | cmd
-		#                                  or: cmd < mail
-		#
-		# See?  That second line is what got me confused, I guess.
+		# XXX: RANS:
+		# Mind the subtle difference in the \'s-part of the two strings
+		# above!  In the first case, the ' is escaped, meaning that the
+		# single quote is just passed to the shell (w/o backslash).  In
+		# the latter case the \ represents a regular \, since it is not
+		# directly followed by a valid special character (only " would
+		# be in this case).  Therefore, the backslash is passed along
+		# with the string and is necessary for the shell to be
+		# interpreted correctly.
 
-		# Invokes echo by performing "echo" internally, discarding
-		# output.
-		! cmd
-		# In shell terms: cmd
+		# Strings may be spread across lines, in standard C-fashion:
+		! "/usr/local/bin/b"
+			"e"
+		    "e"
+		    			   "p";
+		! '/usr/bin/mail -s "Some very long subject'
+			'that needs at least two lines"';
 
-		# Writes the mailbox to the given file
-		> file
-		# In shell terms: cat mail > file
-
-		# Filter the mail through an external program, stdin is the
-		# mail, the mail body is replaced by stdout
-		filter /usr/bin/remove-pink-color-tags
-		| /usr/bin/remove-pink-color-tags
-
-		# Write to the mailbox
-		store incoming/kids
-		> incoming/kids
+		# Because all of this is executed by the shell, it is allowed to
+		# specify multiple commands in a chain:
+		< "sort | head -n 50";
 	}
 }
 
@@ -370,7 +287,7 @@ terminal rule {				# Simply an extra keyword
 	match {
 		from = spammers;
 	}
-	> /dev/null
+	> "/dev/null";
 }
 
 
@@ -391,13 +308,10 @@ non-terminal rule {
 
 	# <nvie>
 	# I fully agree.  Maybe add some syntactic sugar for this? Like so:
-	match always	# or..
 	match always;
-	# I favor the non-semi-colon notation, for it's consistancy with the
-	# !, |, <, >-ops.
 
 	# Beep on new mail
-	! beep
+	! "beep";
 }
 
 #
@@ -425,18 +339,18 @@ non-terminal rule {
 
 # Implicit non-terminal, since ">" is not used.
 rule {
-	match always
-	! beep
+	match always;
+	! "beep";
 }
 
 # Explicit non-terminal required here, if one could have friends at work :)
 non-terminal rule {	
 	match { from = friends:*; }
-	> friends
+	> "friends";
 }
 
 # This rule is a terminal again
 rule {
 	match { from = acme:*; }
-	> acme
+	> "acme";
 }
