@@ -7,3 +7,17 @@
 # any longer than 80 characters.
 #
 - Fix Makefile, so that ``make clean'' is not required, every time.
+- Add parser features:
+	* Drop notion of single/multiple stms (instead, what we need is
+		another datatype that may be listed on the right side of the
+		assignment, namely a set (comma-separated atomic fields)).
+	* Allow declaration of the members = { id1:*, id2:work, id3 };
+		statement.
+- Error detection:
+	* Build in error detection mechanism with nice errors.  An example:
+		
+		contact { name = "Something"; }
+	
+	  This now simply gives a "syntax error", but does not say why.  A
+	  message like "expecting contact name after keyword `contact'" is no
+	  superfluous luxery.
