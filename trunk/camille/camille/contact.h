@@ -29,8 +29,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Contact list
+/**
+ * \brief Contact list interface.
+ *
+ * \file contact.h
+ * A contact is just a list of contact_ids with a name.
+ *
+ * In the address book format, it appears as if there can also be settings
+ * for the contact itself, but that is just a convenient way to set the
+ * options for the `primary' contact_id.
  */
 #ifndef CAMILLE_CONTACT_H
 #define CAMILLE_CONTACT_H
@@ -42,9 +49,10 @@ extern "C" {
 #include <gune/alist.h>
 #include <camille/contact_id.h>
 
+/** \brief Contact implementation */
 typedef struct contact_t {
-	char *name;
-	alist ids;				/* alist of contact_ids */
+	char *name;			/**< The contact's name */
+	alist ids;			/**< contact_ids in this contact */
 } contact_t, *contact;
 
 contact contact_create(const char *, alist);

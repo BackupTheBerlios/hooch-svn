@@ -29,8 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Address book manipulation functions
+/**
+ * \brief Address book interface.
+ *
+ * \file addrbook.h
  */
 #ifndef CAMILLE_ADDRBOOK_H
 #define CAMILLE_ADDRBOOK_H
@@ -55,10 +57,11 @@ extern "C" {
 #define CONTACTS_RANGE		255
 #define GROUPS_RANGE		16
 
+/** \brief Address book implementation */
 typedef struct addrbook_t {
-	ht contacts;
-	ht groups;
-	bind_list defaults;			/* Default bindings */
+	ht contacts;				/**< List of contacts */
+	ht groups;				/**< List of groups */
+	bind_list defaults;			/**< Default bindings */
 } addrbook_t, *addrbook;
 
 addrbook addrbook_create(void);

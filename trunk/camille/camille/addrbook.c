@@ -30,8 +30,9 @@
  */
 
 /**
+ * \brief Address book implementation.
+ *
  * \file addrbook.c
- * Address book manipulation functions
  */
 
 #include <assert.h>
@@ -55,12 +56,12 @@ static void group_walk(gendata *, gendata *, gendata);
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * Parse an address book file.
+ * \brief Parse an address book file.
  *
  * \param fp  The file to parse.
  * \param h   The options hierarchy to use while parsing.
  *
- * \return  The file's contents, as addrbook, or NULL if the file
+ * \return  The file's contents, as addrbook, or \c NULL if the file
  *	     could not be parsed.
  */
 addrbook
@@ -75,9 +76,12 @@ addrbook_parse_file(FILE *fp, option_hier h)
 
 
 /**
- * Create a new, empty, addressbook
+ * \brief Create a new empty addressbook.
  *
- * \return  The newly created addressbook, or NULL if out of memory.
+ * \return  The newly created addressbook, or \c NULL if an error occurred.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
  *
  * \sa addrbook_destroy
  */
@@ -112,6 +116,8 @@ addrbook_create(void)
 
 
 /**
+ * \brief Destroy an address book.
+ *
  * Free all memory allocated for an addressbook and all contacts, groups and
  * defaults associated with it.
  *
@@ -138,15 +144,17 @@ addrbook_destroy(addrbook ab)
 
 
 /**
- * Add a contact to an addressbook.
+ * \brief Add a contact to an addressbook.
  *
  * \param ab  The addressbook to add the contact to.
  * \param ct  The contact to add to the addressbook.
  *
- * \return  The addressbook, or NULL if an error occurred.
- *	     errno = EINVAL if there already was a contact with the same name
- *		      in the address book.
- *	     errno = ENOMEM if out of memory.
+ * \return  The addressbook, or \c NULL if an error occurred.
+ *
+ * \par Errno values:
+ * - \b EINVAL if there already was a contact with the same name in
+ *              the address book.
+ * - \b ENOMEM if out of memory.
  *
  * \sa addrbook_add_group, addrbook_del_contact
  */
@@ -170,12 +178,15 @@ addrbook_add_contact(addrbook ab, contact ct)
 
 
 /**
- * Delete a contact from an addressbook.
+ * \brief Delete a contact from an addressbook.
  *
  * \param ab    The addressbook to delete the contact from.
  * \param name  The name of the contact to delete.
  *
- * \return  The addressbook, or NULL if the contact does not exist.
+ * \return  The addressbook, or \c NULL if an error occurred.
+ *
+ * \par Errno values:
+ * - \b EINVAL if no contact with the given \c name could be found.
  *
  * \sa addrbook_del_group, addrbook_add_contact
  */
@@ -197,15 +208,17 @@ addrbook_del_contact(addrbook ab, char *name)
 
 
 /**
- * Add a group to an addressbook.
+ * \brief Add a group to an addressbook.
  *
  * \param ab  The addressbook to add the group to.
  * \param gr  The group to add to the addressbook.
  *
- * \return  The addressbook, or NULL in case of error.
- *	     errno = EINVAL if there already was a group with the same name
- *		      in the address book.
- *	     errno = ENOMEM if out of memory.
+ * \return  The addressbook, or \c NULL in case of error.
+ *
+ * \par Errno values:
+ * - \b EINVAL if there already was a group with the same name in the
+ *              address book.
+ * - \b ENOMEM if out of memory.
  *
  * \sa addrbook_add_contact, addrbook_del_group
  */
@@ -229,12 +242,15 @@ addrbook_add_group(addrbook ab, group gr)
 
 
 /**
- * Delete a group from an addressbook.
+ * \brief Delete a group from an addressbook.
  *
  * \param ab    The addressbook to delete the group from.
  * \param name  The name of the group to delete.
  *
- * \return  The addressbook, or NULL if the group does not exist.
+ * \return  The addressbook, or \c NULL in case of an error.
+ *
+ * \par Errno values:
+ * - \b EINVAL if no group with the given \c name could be found.
  *
  * \sa addrbook_del_contact, addrbook_add_group
  */
@@ -257,7 +273,10 @@ addrbook_del_group(addrbook ab, char *name)
 
 #ifdef DEBUG
 /**
- * Prints a dump of an addressbook.
+ * \brief Print a dump of an addressbook.
+ *
+ * \attention
+ * This function is intended for debugging purposes only.
  *
  * \param ab  The addressbook to print.
  */

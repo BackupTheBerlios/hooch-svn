@@ -29,8 +29,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Bindings of options to values.
+/**
+ * \brief Option bindings interface.
+ *
+ * \file binding.h
+ * A binding is an object which combines an option with a value.  It allows
+ * us to `bind' the value to the option, so to speak.
  */
 #ifndef CAMILLE_BINDING_H
 #define CAMILLE_BINDING
@@ -43,17 +47,18 @@ extern "C" {
 #include <gune/types.h>
 #include <gune/alist.h>
 
-/** Option binding */
+/** \brief Option binding implementation */
 typedef struct binding_t {
-	option option;			/* The bound option */
-	int empty;			/* empty, "override back to default" */
-	gendata value;			/* The bound value */
+	option option;		/**< The bound option */
+	int empty;		/**< empty? ("override back to default") */
+	gendata value;		/**< The bound value */
 } binding_t, * binding;
 
-/** Option binding list */
+/** \brief Option binding list implementation */
 typedef alist bind_list;
 typedef alist_t bind_list_t;
 
+/** \brief Function type for walking a binding list */
 typedef void (*bind_walk_func) (binding, gendata);
 
 binding binding_create(option, option_type, gendata);

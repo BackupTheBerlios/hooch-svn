@@ -30,8 +30,9 @@
  */
 
 /**
+ * \brief Option implementation.
+ *
  * \file option.c
- * Option storage
  */
 
 #include <assert.h>
@@ -52,7 +53,7 @@ static char *option_type_names[NUM_OTYPES + 1] = {
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * Lookup the string name of an option type.
+ * \brief Look up the string name of an option type.
  *
  * \param t  The option type to look up.
  *
@@ -69,10 +70,12 @@ option_type_name(option_type t)
 
 
 /**
- * Create a new option hierarchy.
+ * \brief Create a new option hierarchy.
  *
- * \return  The options hierarchy, or NULL if it failed.
- *	      errno = ENOMEM if out of memory.
+ * \return  The options hierarchy, or \c NULL if it failed.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
  *
  * \sa option_hier_destroy
  */
@@ -89,8 +92,13 @@ option_hier_create(void)
 
 
 /**
- * Destroy an option hierarchy.  Be sure to destroy all bindings to the options
- *  in the hierarchy first.
+ * \brief Destroy an option hierarchy.
+ *
+ * \attention
+ * Be sure to destroy all bindings to the options in the hierarchy first.
+ * If you try to reference the option a binding belongs to, you'll
+ * get into serious trouble since the address where the option once was
+ * stored is now invalid.
  *
  * \param h  The hierarchy to destroy.
  *
@@ -106,15 +114,17 @@ option_hier_destroy(option_hier h)
 
 
 /**
- * Insert option into hierarchy.
+ * \brief Insert an option into a hierarchy.
  *
  * \param h  The hierarchy under which to directly insert the option.
  * \param o  The option to insert.
  *
- * \return  The option hierarchy, or NULL if an error occurred.
- *	      errno = ENOMEM if out of memory.
- *	      errno = EINVAL if the option already exists at this place in the
- *				hierarchy.
+ * \return  The option hierarchy, or \c NULL if an error occurred.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
+ * - \b EINVAL if there already is an option with the given name at this
+ *              level in the hierarchy.
  *
  * \sa option_hier_lookup
  */
@@ -139,13 +149,15 @@ option_hier_insert(option_hier h, option o)
 
 
 /**
- * Get an option from a hierarchy by name.
+ * \brief Get an option from a hierarchy by name.
  *
  * \param h     The hierarchy in which the option must be located.
  * \param name  The name of the option to return.
  *
- * \return   The requested option, or NULL if the option could not be found.
- *	        errno = EINVAL if the option could not be found.
+ * \return   The requested option, or \c NULL if the option could not be found.
+ *
+ * \par Errno values:
+ * - \b EINVAL if the option could not be found.
  *
  * \sa option_hier_insert
  */
@@ -167,19 +179,21 @@ option_hier_lookup(option_hier h, char *name)
 
 
 /**
- * Create a new option.
+ * \brief Create a new option.
  *
  * \param name  The (symbolic, identifier) name of the option.  This will get
- *		  copied, so you can free the original or pass const strings.
+ *		  copied, so you can free the original or pass \c const strings.
  * \param type  The type of option.
- * \param data  Either the value of the option or, if the type is
- *		  OTYPE_HIER, the hierarchy under this.  If the type is
- *		  OTYPE_STRING, the data gets copied, so you can free the
+ * \param data  Either the value of the option or, if \p type is
+ *		  \c OTYPE_HIER, the hierarchy under this.  If \p type is
+ *		  \c OTYPE_STRING, the data gets copied, so you can free the
  *		  original input or pass const strings.
  *
- * \return  The created option, or NULL in case of error.
- *	      errno = ENOMEM if out of memory.
- *	      errno = EINVAL if type has invalid value.
+ * \return  The created option, or \c NULL in case of error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
+ * - \b EINVAL if \p type has invalid value.
  *
  * \sa option_destroy
  */
@@ -217,7 +231,13 @@ option_create(char *name, option_type type, option_data data)
 
 
 /**
- * Destroy an option.  Be sure to destroy all bindings to the option first.
+ * \brief Destroy an option.
+ *
+ * \attention
+ * Be sure to destroy all bindings to the option first.
+ * If you try to reference the option a binding belongs to, you'll
+ * get into serious trouble since the address where the option once was
+ * stored is now invalid.
  *
  * \param o  The option to destroy.
  *
@@ -245,7 +265,7 @@ option_destroy(option o)
 
 
 /**
- * Get an option's type.
+ * \brief Get an option's type.
  *
  * \param opt  The option to get the type of.
  *
@@ -259,7 +279,7 @@ option_get_type(option opt)
 
 
 /**
- * Get an option's default value.
+ * \brief Get an option's default value.
  *
  * \param opt  The option to get the default value of.
  *
@@ -275,9 +295,11 @@ option_get_default(option opt)
 
 
 /**
- * Set an option's default value.  If the option is of type OTYPE_HIER, the
- *  operation is invalid and will not do anything.  If the option is of type
- *  OTYPE_STRING, the string will be copied.
+ * \brief Set an option's default value.
+ *
+ * If the option is of type \c OTYPE_HIER, the operation is invalid and
+ * will not do anything.  If the option is of type \c OTYPE_STRING, the
+ * string will be copied.
  *
  * \param opt  The option to set the default value of.
  * \param def  The new default value of the option.

@@ -29,8 +29,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Camille library main include file
+/**
+ * \brief Global include
+ *
+ * \file camille.h
+ * Header file to include all Camille functionality at once.  If you include
+ * this header, no other camille headers need to be included.
  */
 #ifndef CAMILLE_CAMILLE_H
 #define CAMILLE_CAMILLE_H
@@ -41,11 +45,19 @@ extern "C" {
 
 #include <gune/version.h>
 
+/** \brief Camille's major version */
 #define CAMILLE_MAJOR_VERSION	0
+/** \brief Camille's minor version */
 #define CAMILLE_MINOR_VERSION	1
 
+/**
+ * \brief Camille's `long' version
+ *
+ * \hideinitializers
+ */
 #define CAMILLE_VERSION		\
 		GEN_VERSION(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
+/** \brief Camille's version as a string */
 #define CAMILLE_VERSION_STRING	\
 		GEN_VERSION_STR(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
 

@@ -30,8 +30,9 @@
  */
 
 /**
+ * \brief Contact list implementation.
+ *
  * \file contact.c
- * Contact list manipulation functions
  */
 
 #include <assert.h>
@@ -47,14 +48,16 @@ static void contact_id_walk(gendata *, gendata *, gendata);
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * Create a contact with a given name, initialising all data to the defaults.
+ * \brief Create a contact.
  *
  * \param name  The (symbolic, identifier) name of the contact.  This will get
- *		  copied, so you can free the original or pass const strings.
- * \param ids   An alist of initial ids for the contact.
+ *		  copied, so you can free the original or pass \c const strings.
+ * \param ids   An \c alist of initial ids for the contact.
  *
- * \return  The new contact, or NULL if there was an error.
- *	      errno = ENOMEM if out of memory.
+ * \return  The new contact, or \c NULL if there was an error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
  *
  * \sa contact_destroy
  */
@@ -82,7 +85,7 @@ contact_create(const char *name, alist ids)
 
 
 /**
- * Destroy a contact.
+ * \brief Destroy a contact.
  *
  * \param ct  The contact to destroy.
  *
@@ -98,7 +101,7 @@ contact_destroy(contact ct)
 
 
 /**
- * Retrieve the name of a contact.
+ * \brief Retrieve the name of a contact.
  *
  * \param cont  The contact to get the name of.
  */
@@ -116,7 +119,7 @@ contact_get_name(contact ct)
 
 #ifdef DEBUG
 /**
- * Prints a dump of a contact.
+ * \brief Print a dump of a contact.
  *
  * \param ct  The contact to print.
  */
@@ -147,15 +150,16 @@ contact_id_walk(gendata *key, gendata *value, gendata data)
 
 
 /**
- * Add an id to a contact.
+ * \brief Add an id to a contact.
  *
  * \param ct  The contact to add the id to.
  * \param id  The id to add to the contact.
  *
- * \return  The contact, or NULL if the id already existed or another
- *	     error occurred.
- *	    errno = EINVAL if the id already existed
- *	    errno = ENOMEM if out of memory
+ * \return  The contact, or \c NULL if an error occurred.
+ *
+ * \par Errno values:
+ * - \b EINVAL if the id already existed.
+ * - \b ENOMEM if out of memory.
  *
  * \sa contact_del_id
  */
@@ -179,12 +183,12 @@ contact_add_id(contact ct, contact_id id)
 
 
 /**
- * Delete an id from a contact.
+ * \brief Delete an id from a contact.
  *
  * \param id    The contact to delete the id from.
  * \param name  The name of the id to delete.
  *
- * \return  The contact
+ * \return  The contact.
  *
  * \sa contact_add_id
  */

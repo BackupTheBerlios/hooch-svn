@@ -30,14 +30,16 @@
  */
 
 /**
+ * \brief Option bindings implementation.
+ *
  * \file binding.c
- * Binding of options.
  */
 
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <gune/error.h>
 #include <gune/misc.h>
 #include <camille/binding.h>
 
@@ -54,15 +56,17 @@ static void binding_dump(binding);
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * Create a binding for a certain option.
+ * \brief Create a binding for an option.
  *
  * \param opt    The option to bind.
  * \param t      The requested type of the option.
- * \param value  The value of the option (ignored if t == OTYPE_EMPTY).
+ * \param value  The value of the option (ignored if \p t == \c OTYPE_EMPTY).
  *
- * \return  The binding, or NULL in case of error.
- *	      errno = ENOMEM if out of memory.
- *	      errno = EINVAL if option type does not match requested type.
+ * \return  The binding, or \c NULL in case of error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
+ * - \b EINVAL if option type does not match requested type.
  *
  * \sa binding_destroy
  */
@@ -92,8 +96,10 @@ binding_create(option opt, option_type t, gendata value)
 
 
 /**
- * Destroy a binding of an option.  If the binding's option's type is
- *  OTYPE_STRING and the binding is not empty, the binding's value is freed.
+ * \brief Destroy a binding.
+ *
+ * If the binding's option's type is \c OTYPE_STRING and the binding is
+ * not empty, the binding's value is freed.
  *
  * \param bnd  The binding to destroy.
  *
@@ -109,12 +115,17 @@ binding_destroy(binding bnd)
 
 
 /**
- * Get the value of a binding if it's not empty.
+ * \brief Get the value of a binding.
+ *
+ * \attention
+ * This function logs an error at WARN_ERROR level if the binding is
+ * empty (which will exit the application).
+ * Therefore, always check with the binding_empty() function whether
+ * the binding is empty or not.
  *
  * \param bnd  The binding of which to get the value.
  *
- * \return  The value of the binding.  If the binding is empty, the
- *	     result is undefined.
+ * \return  The value of the binding.
  *
  * \sa binding_empty
  */
@@ -122,12 +133,16 @@ gendata
 binding_get_value(binding bnd)
 {
 	assert(bnd != NULL);
+
+	if (bnd->empty)
+		log_entry(WARN_ERROR, "Cannot read value of an empty binding.");
+
 	return bnd->value;
 }
 
 
 /**
- * Check if a binding is empty.
+ * \brief Check if a binding is empty.
  *
  * \param bnd  The binding to check for empty.
  *
@@ -144,7 +159,7 @@ binding_empty(binding bnd)
 
 
 /**
- * Get the option a binding gives a value.
+ * \brief Get the option of a binding.
  *
  * \param bnd  The binding to get the option of.
  *
@@ -161,8 +176,10 @@ binding_get_option(binding bnd)
 /**
  * Create a binding list.
  *
- * \return  The created binding list, or NULL in case of error.
- *	      errno = ENOMEM if out of memory.
+ * \return  The created binding list, or \c NULL in case of error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
  *
  * \sa bind_list_destroy
  */
@@ -179,17 +196,19 @@ bind_list_create(void)
 
 
 /**
- * Insert a binding in a binding list uniquely.  If the variable is already
- *  bound (in the supplied list), it is an error.
+ * \brief Insert a binding in a binding list (no replace).
+ *
+ * If the variable is already bound (in the supplied list), it is an error.
  *
  * \param bl   The binding list in which to insert the binding.
  * \param bnd  The binding to insert.
  *
- * \return  The original bind_list, or NULL if the data could not be
+ * \return  The original bind_list, or \c NULL if the data could not be
  *            inserted.  Original bind_list is still valid in case of error.
- *          errno = EINVAL if the variable is already bound.
- *	    errno = ENOMEM if out of memory.
  *
+ * \par Errno values:
+ * - \b EINVAL if the variable is already bound.
+ * - \b ENOMEM if out of memory.
  *
  * \sa bind_list_insert
  */
@@ -213,7 +232,7 @@ bind_list_insert_uniq(bind_list bl, binding bnd)
 
 
 /**
- * Destroy a binding list and every binding in it.
+ * \brief Destroy a binding list and every binding in it.
  *
  * \param bl  The binding list to destroy.
  *
@@ -240,7 +259,12 @@ bind_walk(gendata *key, gendata *value, gendata walk)
 
 
 /**
- * Walk a binding list, calling a user-specified function on each binding.
+ * \brief Walk a binding list.
+ *
+ * Walk over all bindings in a binding list, calling a user-specified
+ * function on each binding.
+ *
+ * \attention
  * While using this function, it is not allowed to remove entries other than
  * the current entry.  It is allowed to change the contents of the binding.
  *
@@ -263,16 +287,21 @@ bind_list_walk(bind_list bl, bind_walk_func walk, gendata data)
 
 
 /**
- * Bind an option to a value and insert it into a binding list.
+ * \brief Bind an option to a value and insert it into a binding list.
+ *
+ * This is a quick way to create a binding on-the-fly while insert it
+ * into a list.
  *
  * \param bl     Binding list in which to insert the new binding.
  * \param opt    The option to bind.
  * \param t      The requested type of the option.
- * \param value  The value of the option (ignored if t == OTYPE_EMPTY)
+ * \param value  The value of the option (ignored if \p t == \c OTYPE_EMPTY)
  *
- * \return  The new bindings list, or NULL in case of error.
- *	      errno = ENOMEM if out of memory.
- *	      errno = EINVAL if option type does not match requested type.
+ * \return  The new bindings list, or \c NULL in case of error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
+ * - \b EINVAL if option type does not match requested type.
  */
 bind_list
 option_bind(bind_list bl, option opt, option_type t, gendata value)
@@ -292,7 +321,7 @@ option_bind(bind_list bl, option opt, option_type t, gendata value)
 
 
 /**
- * Unbind an option.
+ * \brief Unbind an option.
  *
  * \param bl   The binding list in which to look.
  * \param opt  The option to unbind.
@@ -315,7 +344,7 @@ option_unbind(bind_list bl, option opt)
 
 #ifdef DEBUG
 /**
- * Prints a dump of a bind list
+ * \brief Print a dump of a bind list.
  *
  * \param  The bind list to print.
  */

@@ -30,8 +30,9 @@
  */
 
 /**
+ * \brief Group implementation.
+ *
  * \file group.c
- * Addressbook groups functionality
  */
 
 #include <assert.h>
@@ -43,14 +44,16 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * Create a group with a given name, initialising all data to the defaults.
+ * \brief Create a group.
  *
  * \param name  The (symbolic, identifier) name of the group.  This will get
  *		  copied, so you can free the original or pass const strings.
  * \param bl    The initial bindings for the group.
  *
- * \return  The new group, or NULL if there was an error.
- *	      errno = ENOMEM if out of memory.
+ * \return  The new group, or \c NULL if there was an error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
  *
  * \sa group_destroy
  */
@@ -77,7 +80,7 @@ group_create(const char *name, bind_list bl)
 
 
 /**
- * Destroy a group.
+ * \brief Destroy a group.
  *
  * \param gr  The group to destroy.
  *
@@ -94,9 +97,11 @@ group_destroy(group gr)
 
 
 /**
- * Retrieve the name of a group.
+ * \brief Retrieve the name of a group.
  *
  * \param gr  The group to get the name of.
+ *
+ * \sa group_get_bindings
  */
 /*
  * XXX Actually we would like this to return a const ptr... We can't unless we
@@ -111,9 +116,14 @@ group_get_name(group gr)
 
 
 /**
- * Retrieve the bindings of a group.  This may be modified directly.
+ * \brief Retrieve the bindings of a group.
+ *
+ * \note
+ * The bindings may be modified directly.
  *
  * \param gr  The group to get the bindings of.
+ *
+ * \sa group_get_name
  */
 bind_list
 group_get_bindings(group gr)
@@ -125,7 +135,7 @@ group_get_bindings(group gr)
 
 #ifdef DEBUG
 /**
- * Prints a dump of a group.
+ * \brief Print a dump of a group.
  *
  * \param gr  The group to print.
  */

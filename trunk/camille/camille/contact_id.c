@@ -30,8 +30,9 @@
  */
 
 /**
+ * \brief Contact id implementation.
+ *
  * \file contact_id.c
- * Contact id manipulation functions
  */
 
 #include <assert.h>
@@ -44,15 +45,17 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
- * Create a contact id with a given name, initialising all data to the defaults.
+ * \brief Create a contact id.
  *
  * \param name  The (symbolic, identifier) name of the contact id.  This will
- *		  get copied, so you can free the original or pass const
+ *		  get copied, so you can free the original or pass \c const
  *		  strings.
  * \param bl    The initial bindings for the id.
  *
- * \return  The new contact id, or NULL if there was an error.
- *	      errno = ENOMEM if out of memory.
+ * \return  The new contact id, or \c NULL if there was an error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
  *
  * \sa contact_id_destroy
  */
@@ -78,7 +81,7 @@ contact_id_create(const char *name, bind_list bl)
 
 
 /**
- * Destroy a contact id.
+ * \brief Destroy a contact id.
  *
  * \param id  The contact id to destroy.
  *
@@ -95,7 +98,7 @@ contact_id_destroy(contact_id id)
 
 
 /**
- * Retrieve the name of a contact id.
+ * \brief Retrieve the name of a contact id.
  *
  * \param id  The contact id to get the name of.
  */
@@ -112,7 +115,10 @@ contact_id_get_name(contact_id id)
 
 
 /**
- * Retrieve the bindings of a contact id.  This may be modified directly.
+ * \brief Retrieve the bindings of a contact id.
+ *
+ * \note
+ * The bindings may be modified directly.
  *
  * \param id  The contact id to get the bindings of.
  */
@@ -126,7 +132,7 @@ contact_id_get_bindings(contact_id id)
 
 #ifdef DEBUG
 /**
- * Prints a dump of a contact id.
+ * \brief Print a dump of a contact id.
  *
  * \param id  The contact id to print.
  */

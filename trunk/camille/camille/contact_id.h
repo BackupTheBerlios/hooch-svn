@@ -29,8 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Contact ids
+/**
+ * \brief Contact id interface.
+ *
+ * \file contact_id.h
  */
 #ifndef CAMILLE_CONTACT_ID_H
 #define CAMILLE_CONTACT_ID_H
@@ -41,9 +43,10 @@ extern "C" {
 
 #include <camille/binding.h>
 
+/** \brief Contact id implementation */
 typedef struct contact_id_t {
-	char *name;
-	bind_list bindings;
+	char *name;			/**< The name of the contact id */
+	bind_list bindings;		/**< The bindings of the contact id */
 } contact_id_t, *contact_id;
 
 contact_id contact_id_create(const char *, bind_list);

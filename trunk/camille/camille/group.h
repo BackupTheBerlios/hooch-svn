@@ -29,8 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Addressbook groups functionality
+/**
+ * \brief Group interface.
+ *
+ * \file group.h
  */
 #ifndef CAMILLE_GROUP_H
 #define CAMILLE_GROUP_H
@@ -42,9 +44,10 @@ extern "C" {
 #include <camille/contact.h>
 #include <camille/option.h>
 
+/** \brief Group implementation */
 typedef struct group_t {
-	char *name;
-	bind_list bindings;
+	char *name;			/**< The name of the group */
+	bind_list bindings;		/**< The bindings of the group */
 } group_t, *group;
 
 group group_create(const char *, bind_list);
