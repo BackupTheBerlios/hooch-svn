@@ -154,6 +154,72 @@ contact_id_set_bindings(contact_id id, bind_list bl)
 }
 
 
+/**
+ * \brief Add the bindings of a bind_list to a contact_id.
+ *
+ * If the bindings already were in the list, the existing ones are overwritten.
+ *
+ * \param id  The contact_id to which the bindings should be added.
+ * \param bl  The bindings to add to the contact_id.
+ *
+ * \return  The contact_id, or NULL in case of error.  The bind_list may not
+ *	     be used after this function has finished.  If there was an error,
+ *	     the original contact id is still valid.  The binding list will
+ *	     also be valid, but it is undefined which bindings both will
+ *	     contain.
+ *
+ * \par Errno values:
+ * - \b ENOMEM  Out of memory.
+ */
+contact_id
+contact_id_add_bindings(contact_id id, bind_list bl)
+{
+	bind_list bl_tmp;
+
+	if ((bl_tmp = bind_list_merge(id->bindings, bl)) == NULL)
+		return NULL;
+	else
+		id->bindings = bl_tmp;
+
+	return id;
+}
+
+
+/**
+ * \brief Add the bindings of a bind_list to a contact_id (no replace).
+ *
+ * If the bindings already were in the list, the existing ones will not be
+ *  overwritten.
+ *
+ * \param id  The contact_id to which the bindings should be added.
+ * \param bl  The bindings to add to the contact_id.
+ *
+ * \return  The contact_id, or NULL in case of error.  The bind_list may not
+ *	     be used after this function has finished.  If there was an error,
+ *	     the original contact id is still valid.  The binding list will
+ *	     also be valid, but it is undefined which bindings both will
+ *	     contain.
+ *	    The \p bl bind_list will have been modified so it still contains
+ *	     the entries which had matching options in the contact id.
+ *	    The \p bl bind_list will thus still be valid.
+ *
+ * \par Errno values:
+ * - \b ENOMEM  Out of memory.
+ */
+contact_id
+contact_id_add_bindings_uniq(contact_id id, bind_list bl)
+{
+	bind_list bl_tmp;
+
+	if ((bl_tmp = bind_list_merge_uniq(id->bindings, bl)) == NULL)
+		return NULL;
+	else
+		id->bindings = bl_tmp;
+
+	return id;
+}
+
+
 #ifdef DEBUG
 /**
  * \brief Print a dump of a contact id.

@@ -70,8 +70,12 @@ gendata binding_get_value(binding);
 bind_list bind_list_create(void);
 void bind_list_destroy(bind_list);
 int bind_list_empty(bind_list);
+bind_list bind_list_insert(bind_list, binding);
 bind_list bind_list_insert_uniq(bind_list, binding);
 void bind_list_walk(bind_list, bind_walk_func, gendata);
+
+bind_list bind_list_merge(bind_list, bind_list);
+bind_list bind_list_merge_uniq(bind_list, bind_list);
 
 /* Convenience functions.  May be deleted in the future */
 bind_list option_bind(bind_list, option, option_type, gendata);

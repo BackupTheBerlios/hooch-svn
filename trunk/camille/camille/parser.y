@@ -175,10 +175,7 @@ identity:
 		{
 			$$ = contact_id_create($2);
 
-			/* FIXME: This should possibly be done a lot cleaner */
-			bind_list_destroy(contact_id_get_bindings($$));
-
-			contact_id_set_bindings($$, $4);
+			contact_id_add_bindings($$, $4);
 			free($2);
 			/* TODO: Check that this identity has name and address?? */
 		}
@@ -485,22 +482,32 @@ static contact
 try_create_primary_id(contact ct, bind_list bl)
 {
 	contact ct_tmp;
+	char *name;
 
 	assert(ct != NULL);
 	assert(bl != NULL);
 
+	name = contact_get_name(ct);
+
 	if (!bind_list_empty(bl)) {
-		contact_id prim;
+		contact_id prim, prim_tmp;
 
 		prim = contact_id_create("primary");
-		/* FIXME: This should possibly be done a lot cleaner */
-		bind_list_destroy(contact_id_get_bindings(prim));
-		prim = contact_id_set_bindings(prim, bl);
+		if ((prim_tmp = contact_id_add_bindings(prim, bl)) == NULL) {
+			yyerror("Out of memory creating implicit "
+				"primary id for contact %s", name);
+			contact_id_destroy(prim);
+			bind_list_destroy(bl);
+			return ct;
+		} else {
+			prim = prim_tmp;
+		}
 
 		/* Try to add explicit primary id bindings */
 		if ((ct_tmp = contact_add_id(ct, prim)) == NULL) {
 			yyerror("Implicit primary contact id disallowed when "
-				"there is also an explicit primary");
+				"there is also an explicit primary for "
+				"contact %s", name);
 			/* This destroys the binding list as well */
 			contact_id_destroy(prim);
 		} else {

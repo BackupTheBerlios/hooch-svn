@@ -55,6 +55,9 @@ char *contact_id_get_name(contact_id);
 bind_list contact_id_get_bindings(contact_id);
 contact_id contact_id_set_bindings(contact_id, bind_list);
 
+contact_id contact_id_add_bindings(contact_id, bind_list);
+contact_id contact_id_add_bindings_uniq(contact_id, bind_list);
+
 #ifdef DEBUG
 void contact_id_dump(contact_id);
 #endif

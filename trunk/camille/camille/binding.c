@@ -210,6 +210,42 @@ bind_list_empty(bind_list bl)
 
 
 /**
+ * \brief Insert a binding in a binding list.
+ *
+ * Overwrites the binding if it already was present.
+ *
+ * \param bl   The binding list in which to insert the binding.
+ * \param bnd  The binding to insert.
+ *
+ * \return  The original bind_list, or \c NULL if the data could not be
+ *            inserted.  Original bind_list is still valid in case of error.
+ *
+ * \par Errno values:
+ * - \b ENOMEM if out of memory.
+ *
+ * \sa bind_list_insert_uniq
+ */
+bind_list
+bind_list_insert(bind_list bl, binding bnd)
+{
+	gendata akey, avalue;
+	alist al;
+
+	assert(bl != NULL);
+	assert(bnd != NULL);
+
+	akey.ptr = bnd->option;
+	avalue.ptr = bnd;
+
+	if ((al = alist_insert((alist)bl, akey, avalue, ptr_eq, NULL,
+				(free_func)binding_destroy)) == NULL)
+		return NULL;
+
+	return (bind_list)al;
+}
+
+
+/**
  * \brief Insert a binding in a binding list (no replace).
  *
  * If the variable is already bound (in the supplied list), it is an error.
@@ -353,6 +389,57 @@ option_unbind(bind_list bl, option opt)
 				      (free_func)binding_destroy);
 
 	return bl;
+}
+
+
+/**
+ * \brief Merge two bind lists (no replace).
+ *
+ * If the variable is already bound (in the supplied list), it is an error.
+ *
+ * \note
+ * This function is \f$ O(n \cdot m) \f$ with \f$ n \f$ the length of
+ * \p base and \f$ m \f$ the length of \p rest.
+ *
+ * \param base	      The binding list to insert the data in.
+ * \param rest        The binding list to be merged into \p base.
+ *
+ * \return  The \p base bind_list, merged with \p rest, or NULL in case of
+ *	     error.  If an error occurred, the \p base list is still valid, but
+ *           it is undefined which items from the \p rest list will have been
+ *           merged into the list and which haven't.
+ *	    The \p rest bind_list will have been modified so it still contains
+ *	     the entries which had matching options in the \p base bind_list.
+ *	    The \p rest bind_list will thus still be valid.
+ */
+bind_list
+bind_list_merge_uniq(bind_list base, bind_list rest)
+{
+	return (bind_list)alist_merge_uniq((alist)base, (alist)rest, ptr_eq);
+}
+
+
+/**
+ * \brief Merge two bind lists.
+ *
+ * \note
+ * This function is \f$ O(n \cdot m) \f$ with \f$ n \f$ the length of
+ * \p base and \f$ m \f$ the length of \p rest.
+ *
+ * \param base	      The binding list to insert the data in.
+ * \param rest        The binding list to be merged into \p base.
+ *
+ * \return  The \p base bind_list, merged with \p rest, or NULL in case of
+ *	     error.  If an error occurred, the \p base list is still valid, but
+ *           it is undefined which items from the \p rest list will have been
+ *           merged into the list and which haven't.  The \p rest list will
+ *	     not be valid after the function has finished.
+ */
+bind_list
+bind_list_merge(bind_list base, bind_list rest)
+{
+	return (bind_list)alist_merge((alist)base, (alist)rest, ptr_eq, NULL,
+					(free_func)binding_destroy);
 }
 
 
