@@ -11,6 +11,13 @@ contact sjamaan {
 	field = "Some field
 				that spans multiple          \
 			lines";
+
+	# Test booleans
+	rocks = true;
+	sign-pgp = yes;
+	is_healthy_in_the_brain = neener;
+	blah = no;
+	foo = false;
 }
 
 # ...or we could write it in a one-liner

@@ -30,10 +30,8 @@
  */
 
 /* Character classes */
-digit	[0-9]
-letter	[A-Za-z]
-upcase	[A-Z]
-lowcase	[a-z]
+alpha	[A-Za-z]
+idchars	[A-Za-z0-9_-]
 wspace	[ \t]
 
 %{
@@ -74,11 +72,11 @@ char *pop_string(void);
                 }
 
 <STR_ENV>\\(.|\n)	{
-			if (yytext[1] == '\n')
-				lineno++;	/* Keep track of line numbers,
-						   even in STR_ENV! */
-			push_char(yytext[1]);
-		}
+				/* Keep track of line numbers, even in STR_ENV! */
+				if (yytext[1] == '\n')
+					lineno++;
+				push_char(yytext[1]);
+			}
 
 <STR_ENV>\"	{
 			yylval.string = pop_string();
@@ -93,11 +91,12 @@ char *pop_string(void);
 			push_char(yytext[0]);
 		}
 
-<STR_ENV>.	{
-			push_char(yytext[0]);
-		}
+<STR_ENV>.	{	push_char(yytext[0]);	 }
 
 	/*** Language keywords ***/
+(yes|true)		{ yylval.boolean = 1; return BOOLEAN; }
+(no|false|neener)	{ yylval.boolean = 0; return BOOLEAN; }
+
 defaults	{
 			if (defaults_found++ > 0) {
 				/* XXX: Maybe print file name, too? */
@@ -107,13 +106,14 @@ defaults	{
 			else
 				return DEFAULTS;
 		}
-contact		return CONTACT;
+
+contact		{	return CONTACT;		}
 
 	/*** Interpunction ***/
-[{}=;]		return yytext[0];
+[{}=;]		{	return yytext[0];	}
 
 	/*** Identifiers ***/
-{letter}+	{
+{alpha}{idchars}+	{
 			char *buf = (char *)malloc((unsigned int)yyleng + 1);
 			strcpy(buf, yytext);
 			yylval.identifier = buf;

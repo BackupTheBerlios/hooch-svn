@@ -44,11 +44,13 @@
 %union {
 	char *identifier;
 	char *string;
+	int boolean;
 	int result;
 };
 
 %token <identifier> IDENTIFIER;
 %token <string> STRING;
+%token <boolean> BOOLEAN;
 %token CONTACT, DEFAULTS;
 
 %type <result> loc defaults_fields contact_fields fields
@@ -91,9 +93,14 @@ fields:
 	| /* Empty */ { $$ = 0; };
 
 field_assignment:
-	IDENTIFIER '=' STRING ';'	/* Should be fieldname '=' string */
+	IDENTIFIER '=' BOOLEAN ';'	/* Should be fieldname '=' string */
 		{
-			printf("Storing \"%s\" => \"%s\" in contact buffer.\n",
+			printf("Storing boolean \"%s\" => %d in contact buffer.\n",
+			       $1, $3);
+		}
+	| IDENTIFIER '=' STRING ';'	/* Should be fieldname '=' string */
+		{
+			printf("Storing string \"%s\" => \"%s\" in contact buffer.\n",
 			       $1, $3);
 		}
 	;
