@@ -91,6 +91,35 @@ secondary address, we just wish to send mail to that person's primary
 address.  Not having to specify a sub-id is more practical then.
 
 
+\subsection{Defaults}
+
+\subsubsection{Rejected ideas}
+
+Because it is inpractical to specify many options common to each contact
+every time a new contact is defined, there should be a way to define
+default options applicable to all contacts.
+We considered defining a special contact called `default', but this is
+not a good idea because this contact should not contain identities or an
+address field.
+The `cascade' idea of properties which fall down from the default to a
+contact to an identity does not apply here either.
+After all, defaults are not a contact at all.
+
+Putting the defaults among the contacts (intermixing them with contacts)
+is another option, but would not be consistent with the idea of grouping
+relevant settings together and result in a mess.
+
+Putting defaults in the \texttt{hoochrc} file is not a solution either,
+because this would also separate the settings relevant to contacts into
+two files, and if these settings might be useful to Turner (or another
+program), this is not desirable.
+
+\subsubsection{Accepted idea}
+
+The current solution is to allow exactly one \texttt{defaults} block
+which may contain only the behaviour settings of identities.
+
+
 \subsection{Groups}
 
 Groups are a very useful feature, since users often want to mail to
@@ -137,7 +166,7 @@ which settings make sense (for example, setting a group-wide PGP key ID for
 encryption probably isn't a very good idea, but who knows?  Perhaps some
 group one day decides they want to share a PGP key), we should not make any
 assumptions about which options may be overridden by a group.
-For this reason, all options that are legal inside a contact (or id) are
-also legal inside a group.  If it makes sense is up to the user.
+For this reason, all behaviour settings that are legal in identities are
+also legal inside a group.  If it actually makes sense is up to the user.
 
 \end{document}
