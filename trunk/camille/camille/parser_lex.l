@@ -144,6 +144,7 @@ empty			{	return EMPTY;		}
 
 int
 yywrap(void) {
+	stack_free(s);
         return 1;
 }
 
