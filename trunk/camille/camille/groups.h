@@ -30,29 +30,17 @@
  */
 
 /*
- * Camille library main include file
+ * Addressbook groups functionality
  */
-#ifndef CAMILLE_CAMILLE_H
-#define CAMILLE_CAMILLE_H
+#ifndef CAMILLE_GROUPS_H
+#define CAMILLE_GROUPS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <gune/gune.h>
-
-#define CAMILLE_MAJOR_VERSION	0
-#define CAMILLE_MINOR_VERSION	1
-
-#define CAMILLE_VERSION		\
-		GEN_VERSION(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
-#define CAMILLE_VERSION_STRING	\
-		GEN_VERSION_STR(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
-
-#include <camille/addrbook.h>
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CAMILLE_CAMILLE_H */
+#endif /* CAMILLE_GROUPS_H */

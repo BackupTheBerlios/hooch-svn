@@ -41,12 +41,17 @@ extern "C" {
 
 #include <gune/gune.h>
 
-struct address_book {
-	array contacts;
-	array groups;
-};
+typedef struct contact_id_t {
+	char *name;
+	alist options;				/* alist of addrbook_options */
+} contact_id_t, *contact_id;
 
-void test_parse(void);
+typedef struct contact_t {
+	char *name;
+	alist id_list;				/* alist of contact_ids */
+} contact_t, *contact;
+
+contact contact_create(const char *);
 
 #ifdef __cplusplus
 }

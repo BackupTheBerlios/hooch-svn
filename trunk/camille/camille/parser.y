@@ -32,6 +32,7 @@
 %{
 
 #include <stdarg.h>
+#include <camille/addrbook.h>
 
 #ifdef DEBUG
 #define TRACE printf("Reduce at line %d\n", __LINE__);
@@ -40,6 +41,9 @@
 #endif
 
 int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
+
+extern addrbook curr_addrbook;
+extern contact curr_contact;
 
 %}
 
@@ -99,12 +103,13 @@ block:	contact_block		{ }
 contact_block:
 	CONTACT IDENTIFIER
 		{
-			printf("===> Make contact \"%s\"\n", $2);
-			/* TODO: Check whether no contact with the same name exists */
+			curr_contact = contact_create($2);
 		}
 	'{' contact_body '}'
 		{
 			printf("===> Store contact \"%s\"\n", $2);
+			curr_addrbook = addrbook_add_contact(curr_addrbook,
+							     curr_contact);
 		}
 	;
 
@@ -207,7 +212,8 @@ field:
 	IDENTIFIER	{ $$ = $1; }
 	;
 
-start:	blocks
+start:
+	blocks
 		{
 			printf("\n");
 			printf("Summary:\n");
@@ -217,7 +223,8 @@ start:	blocks
 
 %%
 
-void yyerror(char *err, ...) {
+void
+yyerror(char *err, ...) {
 	va_list ap;
 	va_start(ap, err);
 
@@ -226,5 +233,9 @@ void yyerror(char *err, ...) {
 	printf("\n");
 
 	va_end(ap);
+	/*
+	 * XXX TODO FIXME What should we do here, exactly?  Not exit, that's
+	 * for sure.  At least, if we want to use this thing as a library.
+	 */
 	exit(1);
 }

@@ -34,12 +34,24 @@
  * Contact list manipulation functions
  */
 
+#include <gune/error.h>
 #include <camille/contacts.h>
+
+contact_t * const ERROR_CONTACT = (void *)error_dummy_func;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-void
-test_parse(void)
+/**
+ * Create a contact with a given name, initialising all data to the defaults.
+ *
+ * \param name  The (symbolic, identifier) name of the contact
+ *
+ * \return  The new contact, or ERROR_CONTACT if there was an error.
+ */
+contact
+contact_create(const char *name)
 {
-	yyparse();
+	contact_t *cont;
+
+	return (contact)cont;
 }

@@ -29,30 +29,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Camille library main include file
+/**
+ * \file groups.c
+ * Addressbook groups functionality
  */
-#ifndef CAMILLE_CAMILLE_H
-#define CAMILLE_CAMILLE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <gune/error.h>
+#include <camille/groups.h>
 
-#include <gune/gune.h>
+/*group_t * const ERROR_GROUP = (void *)error_dummy_func; */
 
-#define CAMILLE_MAJOR_VERSION	0
-#define CAMILLE_MINOR_VERSION	1
-
-#define CAMILLE_VERSION		\
-		GEN_VERSION(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
-#define CAMILLE_VERSION_STRING	\
-		GEN_VERSION_STR(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
-
-#include <camille/addrbook.h>
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* CAMILLE_CAMILLE_H */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
