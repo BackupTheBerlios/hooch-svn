@@ -18,10 +18,8 @@ contact homer {
 }
 
 #
-# x { } is synonymous for x;
-#
-# But /only/ if it is legal to put something inside those braces. (So
-# assignments to simple variables (bools, strings etc) MUST have a ; at the end)
+# Every declaration should either be of the form x { stuff here } or x = foo;
+# A block declaration like x { } should never be followed by a semi-colon.
 #
 
 #
@@ -44,7 +42,8 @@ contact homer {
 		# the settings from the main ID are cascaded over into
 		# the id things.
 		#
-		pgp.key_id = empty;			# Empty?
+		pgp.key_id = empty;			# empty sets the item
+							# to be undefined
 	}
 }
 
@@ -60,25 +59,33 @@ group parents {
 }
 
 #
-# If after reading and parsing all config files there are still contacts
-#  in a `contacts' field of a group which do not exist, we get an error.  So
-#  we can put people in groups in advance, and tell Hooch more about these
-#  contacts (put the `implementation' of the contacts) later in the file.
+# If after reading and parsing all config files there are still contacts in a
+# `contacts' field of a group which do not exist, we get an error.  It is legal
+# to forward-reference the contacts in a group.
 #
 
 #
-# Note that there may not be a contact with the same name as a group.  This is
-#  the desired effect, since the user can now type a mail, and on the `to' line
-#  type the name of either a group or a contact and get an unambiguous expansion
+# Note that there may not be a contact with the same name as a group, or else
+# we get an error.  This is the desired effect, since the user can now type a
+# mail, and on the `To:' line type the name of either a group or a contact and
+# get an unambiguous expansion.
 #
 
 #
 # We allow the exact same options for groups as for contacts, to provide
 # group-wide defaults for all contacts, with optional override in the contacts
-# themselves.
-# With the behaviour of when addressing the group, the group settings are in
-# effect, but when addressing the contact directly, those settings have effect.
+# themselves.  When addressing the group, the group settings will have effect,
+# but when addressing the contact directly, the contact's settings have effect.
 #
+# <nvie>: sjamaan, what do you mean by ``with optional override in the
+# contacts''?  Not fully clear to me.  Do you mean that in the following
+# example, when mailing ``To:'' ``non-kielp'', my pgp.id will be set to 0xf00?
+# Or did you mean ``risking possible'' instead of ``optional''.
+contact nvie {
+	address = "nvie@users.sf.net";
+	pgp.id = 0xf00;
+}
+group non-kielp = { contacts = nvie; pgp.id = 0x12345678; }
 
 #
 # Subsystems/extensions can be handled with ease.  They simply register which
