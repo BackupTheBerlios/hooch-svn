@@ -60,7 +60,7 @@ extern int yylex(void);
 
 extern int lineno;
 
-static void try_instabind(bind_list, option_hier, char *, option_type, gendata);
+static void try_bind(bind_list, option_hier, char *, option_type, gendata);
 
 %}
 
@@ -241,7 +241,7 @@ stm:
 			gendata d;
 			d.num = $3;
 
-			try_instabind(curr_bind_list, curr_opthier, $1,
+			try_bind(curr_bind_list, curr_opthier, $1,
 				       OTYPE_BOOL, d);
 		}
 	| field '=' INTEGER ';'
@@ -249,15 +249,20 @@ stm:
 			gendata d;
 			d.num = $3;
 
-			try_instabind(curr_bind_list, curr_opthier, $1,
+			try_bind(curr_bind_list, curr_opthier, $1,
 				       OTYPE_NUMBER, d);
 		}
 	| field '=' STRING ';'
 		{
-			printf("Storing string \"%s\" => \"%s\"\n", $1, $3);
+			gendata d;
+			d.ptr = $3;
+
+			try_bind(curr_bind_list, curr_opthier, $1,
+				       OTYPE_STRING, d);
 		}
 	| field '=' EMPTY ';'
 		{
+			/* XXX TODO */
 			printf("Storing empty field \"%s\"\n", $1);
 		}
 	;
@@ -293,8 +298,7 @@ yyerror(char *err, ...) {
 /*
  * NOTE: Not actual doxygen info, since it's static.
  *
- * Try to instantiate and directly bind an option, and do some error
- *  outputting if we failed.
+ * Try to look up and bind an option, and do some error outputting if we failed.
  *
  * \param bl    The binding list to add the binding to.
  * \param h     The option hierarchy under which to look for the option.
@@ -305,21 +309,23 @@ yyerror(char *err, ...) {
  * \return  The instantiation of the option.
  */
 static void
-try_instabind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
+try_bind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
 {
 	option opt;
-	opt_inst inst;
+	option_type otype;
 
 	if ((opt = option_hier_lookup(h, name)) == ERROR_OPTION) {
 		yyerror("option %s not recognised", name);
-	} else if ((option_get_type(opt)) != t) {
-		yyerror("%s is of type %s", name, option_type_name(t));
 	} else {
-		inst = opt_inst_create(opt, t, 0, d);
-		if ((bl = opt_inst_bind(bl, inst)) == ERROR_BIND_LIST) {
-			opt_inst_destroy(inst);
-			yyerror("%s while binding option %s", strerror(errno),
-				 name);
+		if ((bl = option_bind(bl, opt, t, 0, d)) == ERROR_BIND_LIST) {
+			if (errno == EINVAL) {
+				otype = option_get_type(opt);
+				yyerror("%s is of type %s", name,
+				option_type_name(otype));
+			} else {
+				yyerror("%s while binding option %s",
+					strerror(errno), name);
+			}
 		}
 	}
 }

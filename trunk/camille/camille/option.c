@@ -43,7 +43,7 @@
 #include <camille/option.h>
 
 option_t * const ERROR_OPTION = (void *)error_dummy_func;
-opt_inst_t * const ERROR_OPT_INST = (void *)error_dummy_func;
+binding_t * const ERROR_BINDING = (void *)error_dummy_func;
 bind_list_t * const ERROR_BIND_LIST = (void *)error_dummy_func;
 option_hier_t * const ERROR_OPTION_HIER = (void *)error_dummy_func;
 
@@ -55,9 +55,12 @@ static char *option_type_names[NUM_OTYPES + 1] = {
 	"unknown"
 };
 
+static binding binding_create(option, option_type, int, gendata);
+static void binding_destroy(binding);
+
 #ifdef DEBUG
-void opt_inst_walk(gendata *, gendata *);
-void opt_inst_dump(opt_inst);
+static void binding_walk(gendata *, gendata *);
+static void binding_dump(binding);
 #endif
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -257,59 +260,60 @@ option_get_type(option opt)
 }
 
 
-/**
- * Instantiate a certain option.
+/*
+ * Create a binding for a certain option.  Internal use only.
  *
- * \param opt    The option to instantiate.
+ * \param opt    The option to bind.
  * \param t      The requested type of the option.
  * \param empty  Whether the option is empty (nonzero) or not (zero).
  * \param value  The value of the option (ignored if empty != 0).
  *
- * \return  The instantiation, or ERROR_OPT_INST in case of error.
+ * \return  The binding, or ERROR_BINDING in case of error.
  *	      errno = ENOMEM if out of memory.
  *	      errno = EINVAL if option type does not match requested type.
  *
- * \sa opt_inst_destroy
+ * \sa binding_destroy
  */
-opt_inst
-opt_inst_create(option opt, option_type t, int empty, gendata value)
+static binding
+binding_create(option opt, option_type t, int empty, gendata value)
 {
-	opt_inst_t *inst;
+	binding_t *bnd;
 
 	assert(opt != ERROR_OPTION);
 	assert(opt != NULL);
 
 	if (t != opt->type) {
 		errno = EINVAL;
-		return ERROR_OPT_INST;
+		return ERROR_BINDING;
 	}
 
-	if ((inst = malloc(sizeof(opt_inst_t))) == NULL)
-		return ERROR_OPT_INST;
+	if ((bnd = malloc(sizeof(binding_t))) == NULL)
+		return ERROR_BINDING;
 
-	inst->empty = empty;
-	inst->value = value;
+	bnd->option = opt;
+	bnd->empty = empty;
+	bnd->value = value;
 
-	return (opt_inst)inst;
+	return (binding)bnd;
 }
 
 
-/**
- * Destroy an instantiation of an option.
+/*
+ * Destroy an binding of an option.
  *
- * \param inst  The instantiation to destroy.
+ * \param bnd  The binding to destroy.
  *
- * \sa opt_inst_create
+ * \sa binding_create
  */
 void
-opt_inst_destroy(opt_inst inst)
+binding_destroy(binding bnd)
 {
-	free(inst);
+	free(bnd);
 }
 
 
 /**
- * Create a binding list for option instantiations.
+ * Create a binding list.
  *
  * \return  The created binding list, or ERROR_BIND_LIST in case of error.
  *	      errno = ENOMEM if out of memory.
@@ -338,39 +342,69 @@ bind_list_create(void)
 void
 bind_list_destroy(bind_list bl)
 {
-	alist_destroy((alist)bl, NULL, (free_func)opt_inst_destroy);
+	alist_destroy((alist)bl, NULL, (free_func)binding_destroy);
 }
 
 
 /**
- * Bind an option instantiation to its value in a binding list.
+ * Bind an option to a value and insert it into a binding list.
  *
- * \param bl    Binding list in which to insert instantiation.
- * \param inst  Instantiation.
+ * \param bl     Binding list in which to insert the new binding.
+ * \param opt    The option to bind.
+ * \param t      The requested type of the option.
+ * \param empty  Whether the option is empty (nonzero) or not (zero).
+ * \param value  The value of the option (ignored if empty != 0).
  *
- * \return  The new binding list, or ERROR_BIND_LIST if an error occurred.
+ * \return  The new bindings list, or ERROR_BIND_LIST in case of error.
  *	      errno = ENOMEM if out of memory.
+ *	      errno = EINVAL if option type does not match requested type.
  */
 bind_list
-opt_inst_bind(bind_list bl, opt_inst inst)
+option_bind(bind_list bl, option opt, option_type t, int empty, gendata value)
 {
 	alist al;
-	gendata key, value;
+	gendata akey, avalue;
+	binding bnd;
 
 	assert(bl != ERROR_BIND_LIST);
-	assert(inst != ERROR_OPT_INST);
 
-	key.ptr = inst->option;
-	value.ptr = inst;
-
-	if ((al = alist_insert((alist)bl, key, value, ptr_eq,
-				(free_func)opt_inst_destroy)) == ERROR_ALIST)
+	if ((bnd = binding_create(opt, t, empty, value)) == ERROR_BINDING)
 		return ERROR_BIND_LIST;
+
+	akey.ptr = bnd->option;
+	avalue.ptr = bnd;
+
+	if ((al = alist_insert((alist)bl, akey, avalue, ptr_eq,
+				(free_func)binding_destroy)) == ERROR_ALIST) {
+		binding_destroy(bnd);
+		return ERROR_BIND_LIST;
+	}
 
 	return (bind_list)al;
 }
 
-/* TODO opt_inst_unbind */
+
+/**
+ * Unbind an option.
+ *
+ * \param bl   The binding list in which to look.
+ * \param opt  The option to unbind.
+ *
+ * \return  The binding list.
+ */
+bind_list
+option_unbind(bind_list bl, option opt)
+{
+	gendata key;
+
+	key.ptr = opt;
+
+	bl = (bind_list)alist_delete((alist)bl, key, ptr_eq, NULL,
+				      (free_func)binding_destroy);
+
+	return bl;
+}
+
 
 #ifdef DEBUG
 /**
@@ -381,39 +415,39 @@ opt_inst_bind(bind_list bl, opt_inst inst)
 void
 bind_list_dump(bind_list bl)
 {
-	alist_walk((alist)bl, opt_inst_walk);
+	alist_walk((alist)bl, binding_walk);
 }
 
 
 /*
- * Call opt_inst dumping function for all opt_insts in the bindings list.
+ * Call binding dumping function for all bindings in the bindings list.
  */
 void
-opt_inst_walk(gendata *key, gendata *value)
+binding_walk(gendata *key, gendata *value)
 {
-	opt_inst_dump((opt_inst)value->ptr);
+	binding_dump((binding)value->ptr);
 }
 
 
 /*
- * Dump an option instantiation.
+ * Dump a binding.
  */
 void
-opt_inst_dump(opt_inst inst)
+binding_dump(binding bnd)
 {
-	printf("%s = ", inst->option->name);
-	switch (inst->option->type) {
+	printf("%s = ", bnd->option->name);
+	switch (bnd->option->type) {
 		case OTYPE_BOOL:
-			if (inst->value.num == 0)
+			if (bnd->value.num == 0)
 				printf("false");
 			else
 				printf("true");
 			break;
 		case OTYPE_STRING:
-			printf("'%s'", (char *)inst->value.ptr);
+			printf("'%s'", (char *)bnd->value.ptr);
 			break;
 		case OTYPE_NUMBER:
-			printf("%i", inst->value.num);
+			printf("%i", bnd->value.num);
 			break;
 		default:
 			printf("unknown");

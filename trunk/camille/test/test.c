@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <gune/error.h>
 #include <camille/camille.h>
 
 void
@@ -41,6 +42,42 @@ usage(void)
 	printf("usage: test [options]\n");
 	printf("options:\n");
 	printf("-h    Print this help message.\n");
+}
+
+
+option_hier
+add_builtin_options(void)
+{
+	option_hier h;
+	option_hier hnew;
+	option o;
+	option_data d;
+
+	if ((h = option_hier_create()) == ERROR_OPTION_HIER)
+		log_entry(WARN_ERROR, "Cannot create option hierarchy");
+
+	/* Add some simple options to demonstrate that it works */
+	/*
+	 * NOTE: Maybe it is useful to add a callback which can check the
+	 * string's format.  This way we can verify if the entered data is not
+	 * nonsense.  OTOH, it can also be checked later when using it.
+	 */
+
+	d.def.ptr = "";			/* Empty string as default addr */
+
+	if ((o = option_create("address", OTYPE_STRING, d)) == ERROR_OPTION) {
+		option_hier_destroy(h);
+		log_entry(WARN_ERROR, "Cannot create option!");
+	}
+
+	if ((hnew = option_hier_insert(h, o)) == ERROR_OPTION_HIER) {
+		option_hier_destroy(h);
+		log_entry(WARN_ERROR, "Cannot insert option in hierarchy!");
+	}
+
+	h = hnew;
+
+	return h;
 }
 
 
@@ -63,7 +100,7 @@ main(int argc, char **argv)
 		}
 
 	/* Perform tests */
-	hier = option_hier_create();
+	hier = add_builtin_options();
 	a = addrbook_parse_file(stdin, hier);
 	printf("Done parsing.  Resulting addressbook:\n");
 	addrbook_dump(a);

@@ -71,15 +71,15 @@ typedef struct option_t {
 /** Invalid option, used as error in return value */
 extern option_t * const ERROR_OPTION;
 
-/** Option instantiation */
-typedef struct opt_inst_t {
-	option option;			/* The instantiated option */
+/** Option binding */
+typedef struct binding_t {
+	option option;			/* The bound option */
 	int empty;			/* empty, "override back to default" */
-	gendata value;			/* The value of the instantiated opt */
-} opt_inst_t, * opt_inst;
+	gendata value;			/* The bound value */
+} binding_t, * binding;
 
-/** Invalid instantiation, used as error in return value */
-extern opt_inst_t * const ERROR_OPT_INST;
+/** Invalid binding, used as error in return value */
+extern binding_t * const ERROR_BINDING;
 
 /** Option binding list */
 typedef alist bind_list;
@@ -99,12 +99,10 @@ option option_create(char *, option_type, option_data);
 void option_destroy(option);
 option_type option_get_type(option o);
 
-opt_inst opt_inst_create(option, option_type, int, gendata);
-void opt_inst_destroy(opt_inst);
-
 bind_list bind_list_create(void);
 void bind_list_destroy(bind_list);
-bind_list opt_inst_bind(bind_list, opt_inst);
+bind_list option_bind(bind_list, option, option_type, int, gendata);
+bind_list option_unbind(bind_list, option);
 
 #ifdef DEBUG
 void bind_list_dump(bind_list);
