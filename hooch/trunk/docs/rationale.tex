@@ -4,7 +4,6 @@
 % Quickly hacked together, may contain lots of too-long descriptions,
 % mistakes etc.  I just wanted to jot this down before we forgot it.
 %
-
 \documentclass[a4paper]{article}
 
 \title{Design rationale for Turner and Hooch}
@@ -64,7 +63,8 @@ name and an email address.  Because it is often the case that one
 person has multiple email addresses (like one for home, one for work),
 Hooch binds these addresses under one \emph{contact} to keep them together
 and perform operations on the basis of contacts instead of on email
-addresses.
+addresses.  These addresses are called contact identities, or
+\emph{identities}, for short.
 
 The system used for this is somewhat like CSS.  Settings that belong to a
 certain contact are stored in the contact's main id and optionally
