@@ -49,7 +49,7 @@ void yyerror(char *, ...);
 int lineno = 1;
 stack s;
 int ssize;
-char str_begin;
+char delim_opened;
 
 void push_char(char);
 char *pop_string(void);
@@ -70,7 +70,7 @@ char *pop_string(void);
 	/*** Strings ***/
 {strdelim}	{
 			BEGIN STR_ENV;
-			str_begin = yytext[0];
+			delim_opened = yytext[0];
 			ssize = 0;
 			s = stack_create();
                 }
@@ -84,7 +84,7 @@ char *pop_string(void);
 
 <STR_ENV>{strdelim}	{
 				/* End of string? */
-				if (yytext[0] == str_begin) {
+				if (yytext[0] == delim_opened) {
 					yylval.string = pop_string();
 	
 					/* Leave the STR_ENV environment */

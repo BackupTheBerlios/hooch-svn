@@ -1,5 +1,6 @@
 /*
  * $Id$
+ * $Camille$
  *
  * Copyright (c) 2004 Peter Bex and Vincent Driessen
  * All rights reserved.
@@ -97,7 +98,7 @@ contact_body:
 			printf("===> Check that there was at least a primary identity.\n");
 		}
 	/*
-	   XXX: TODO: Support direct identity field declarations in
+	   XXX TODO Support direct identity field declarations in
 	   contact_body, too, affecting the primary identity.  Note that in
 	   this case, there may be no explicit primary identity, then.
 	 */
@@ -142,22 +143,22 @@ fields:
 	| /* Empty */ { $$ = 0; };
 
 field_assignment:
-	IDENTIFIER '=' BOOLEAN ';'	/* Should be fieldname '=' boolean */
+	IDENTIFIER '=' BOOLEAN ';'	/* XXX Should be fieldname '=' boolean */
 		{
 			printf("Storing boolean \"%s\" => %d in contact buffer.\n",
 			       $1, $3);
 		}
-	| IDENTIFIER '=' INTEGER ';'	/* Should be fieldname '=' integer */
+	| IDENTIFIER '=' INTEGER ';'	/* XXX Should be fieldname '=' integer */
 		{
 			printf("Storing integer \"%s\" => %d in contact buffer.\n",
 			       $1, $3);
 		}
-	| IDENTIFIER '=' STRING ';'	/* Should be fieldname '=' string */
+	| IDENTIFIER '=' STRING ';'	/* XXX Should be fieldname '=' string */
 		{
 			printf("Storing string \"%s\" => \"%s\" in contact buffer.\n",
 			       $1, $3);
 		}
-	| IDENTIFIER '=' EMPTY ';'	/* Should be fieldname '=' empty */
+	| IDENTIFIER '=' EMPTY ';'	/* XXX Should be fieldname '=' empty */
 		{
 			printf("Storing empty field \"%s\" in contact buffer.\n",
 			       $1);
