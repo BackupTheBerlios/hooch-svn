@@ -52,6 +52,9 @@ wspace		[ \t]
 #include <stdlib.h>
 #include <gune/stack.h>
 #include <gune/string.h>
+#include <camille/addrbook.h>
+#include <camille/group.h>
+#include <camille/contact.h>
 #include <camille/contact_id.h>
 #include <camille/option.h>
 #include "parser.h"

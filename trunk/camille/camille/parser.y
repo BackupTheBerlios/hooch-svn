@@ -52,7 +52,6 @@
 /* Bool indicating whether we read a defaults block */
 static int read_defaults = 0;
 
-static contact	   curr_contact;
 extern addrbook curr_addrbook;
 option_hier curr_opthier;
 
@@ -74,6 +73,9 @@ static void defaults_walker(binding, gendata);
 	binding bnd;
 	alist assoclist;
 	contact_id id;
+	contact cnt;
+	group grp;
+	addrbook abook;
 };
 
 %token <identifier> IDENTIFIER;
@@ -93,6 +95,9 @@ static void defaults_walker(binding, gendata);
 %type <assoclist> contact_body
 %type <assoclist> identities
 %type <id> identity
+%type <cnt> contact_block
+%type <grp> group_block
+%type <abook> blocks
 
 /* Field names */
 %type <identifier> field
@@ -111,14 +116,56 @@ static void defaults_walker(binding, gendata);
  *
  */
 
-blocks:
-	block blocks		{ }
-	| /* Empty */		{ }
-	;
+blocks:	contact_block blocks
+		{
+			addrbook a;
 
-block:	contact_block		{ }
-	| defaults_block	{ }
-	| group_block		{ }
+			a = addrbook_add_contact($2, $1);
+			if (a == ERROR_PTR) {
+				if (errno == EINVAL)
+					yyerror("Redefinition of contact %s",
+						contact_get_name($1));
+				else
+					yyerror("Error adding contact %s; %s",
+						contact_get_name($1),
+						strerror(errno));
+				contact_destroy($1);
+				$$ = $2;
+			} else {
+				$$ = a;
+			}
+		}
+	| defaults_block blocks
+		{
+			/* XXX TODO FIXME trein train */
+			/* Add a set_defaults func to addrbook.c or soemthing */
+			$$ = $2;
+		}
+	| group_block blocks
+		{
+			addrbook a;
+
+			/* TODO: Check whether group has a members field */
+			/* If so: */
+			a = addrbook_add_group($2, $1);
+			if (a == ERROR_PTR) {
+				if (errno == EINVAL)
+					yyerror("Redefinition of group %s",
+						group_get_name($1));
+				else
+					yyerror("Error adding group %s: %s",
+						group_get_name($1),
+						strerror(errno));
+				group_destroy($1);
+				$$ = $2;
+			} else {
+				$$ = a;
+			}
+		}
+	| /* Empty */
+		{
+			$$ = curr_addrbook;
+		}
 	;
 
 contact_block:
@@ -127,24 +174,8 @@ contact_block:
 		}
 	'{' contact_body '}'
 		{
-			addrbook a;
-
-			curr_contact = contact_create($2, $5);
+			$$ = contact_create($2, $5);
 			free($2);
-
-			a = addrbook_add_contact(curr_addrbook, curr_contact);
-			if (a == ERROR_PTR) {
-				if (errno == EINVAL)
-					yyerror("Redefinition of contact %s",
-						contact_get_name(curr_contact));
-				else
-					yyerror("Error adding contact %s; %s",
-						contact_get_name(curr_contact),
-						strerror(errno));
-				contact_destroy(curr_contact);
-			} else {
-				curr_addrbook = a;
-			}
 		}
 	;
 
@@ -211,27 +242,8 @@ group_block:
 		}
 	'{' group_stms '}'
 		{
-			addrbook a;
-			group curr_group;
-
-			curr_group = group_create($2, $5);
+			$$ = group_create($2, $5);
 			free($2);
-
-			/* TODO: Check whether group has a members field */
-			/* If so: */
-			a = addrbook_add_group(curr_addrbook, curr_group);
-			if (a == ERROR_PTR) {
-				if (errno == EINVAL)
-					yyerror("Redefinition of group %s",
-						group_get_name(curr_group));
-				else
-					yyerror("Error adding group %s: %s",
-						group_get_name(curr_group),
-						strerror(errno));
-				group_destroy(curr_group);
-			} else {
-				curr_addrbook = a;
-			}
 		}
 	;
 
