@@ -276,6 +276,22 @@ rule {
 	}
 }
 
+#
+# A simple, real-life, example
+#
+rule {
+	match { from = krusty:*; }
+	act { > '/dev/null'; }	# F*ck that damned clown!
+}
+
+rule {
+	match { subject = "news"; }
+	act {
+		< "strip-html";	# Let the strip-html program clean the mail
+		> "newsletters";
+	}
+}
+
 
 #
 # XXX: How do we indicate that a match is halting or non-halting when it is
