@@ -1,5 +1,8 @@
-# $Id: Makefile,v 1.6 2003/12/01 18:44:15 airhead Exp $
+#
 # Hooch documentation Makefile
+#
+# $Id$
+#
 
 LATEX = latex
 PDFLATEX = pdflatex
