@@ -35,6 +35,10 @@
 #include <string.h>
 #include <stdarg.h>
 #include <camille/addrbook.h>
+#include <camille/contact.h>
+#include <camille/contact_id.h>
+#include <camille/group.h>
+#include <camille/option.h>
 
 #ifdef DEBUG
 #define TRACE printf("Reduce at line %d\n", __LINE__);
@@ -48,11 +52,15 @@ static int read_defaults = 0;
 static group	   curr_group;
 static contact	   curr_contact;
 static contact_id  curr_id;
+static bind_list   curr_bind_list;
 extern addrbook curr_addrbook;
+option_hier curr_opthier;
 
 extern int yylex(void);
 
 extern int lineno;
+
+static void try_instabind(bind_list, option_hier, char *, option_type, gendata);
 
 %}
 
@@ -113,6 +121,7 @@ contact_block:
 	CONTACT IDENTIFIER
 		{
 			curr_contact = contact_create($2);
+			free($2);
 		}
 	'{' contact_body '}'
 		{
@@ -155,6 +164,8 @@ identity:
 	IDENTITY IDENTIFIER
 		{
 			curr_id = contact_id_create($2);
+			free($2);
+			curr_bind_list = contact_id_get_bindings(curr_id);
 		}
 	'{' identity_stms '}'
 		{
@@ -168,6 +179,8 @@ group_block:
 	GROUP IDENTIFIER
 		{
 			curr_group = group_create($2);
+			free($2);
+			curr_bind_list = group_get_bindings(curr_group);
 		}
 	'{' group_stms '}'
 		{
@@ -225,11 +238,19 @@ stm:
 	';'			{ }
 	| field '=' BOOLEAN ';'
 		{
-			printf("Storing boolean \"%s\" => %d\n", $1, $3);
+			gendata d;
+			d.num = $3;
+
+			try_instabind(curr_bind_list, curr_opthier, $1,
+				       OTYPE_BOOL, d);
 		}
 	| field '=' INTEGER ';'
 		{
-			printf("Storing integer \"%s\" => %d\n", $1, $3);
+			gendata d;
+			d.num = $3;
+
+			try_instabind(curr_bind_list, curr_opthier, $1,
+				       OTYPE_NUMBER, d);
 		}
 	| field '=' STRING ';'
 		{
@@ -266,4 +287,39 @@ yyerror(char *err, ...) {
 	printf("\n");
 
 	va_end(ap);
+}
+
+
+/*
+ * NOTE: Not actual doxygen info, since it's static.
+ *
+ * Try to instantiate and directly bind an option, and do some error
+ *  outputting if we failed.
+ *
+ * \param bl    The binding list to add the binding to.
+ * \param h     The option hierarchy under which to look for the option.
+ * \param name  The name of the option to instantiate.
+ * \param t     Requested option type.
+ * \param d     The value of the option.
+ *
+ * \return  The instantiation of the option.
+ */
+static void
+try_instabind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
+{
+	option opt;
+	opt_inst inst;
+
+	if ((opt = option_hier_lookup(h, name)) == ERROR_OPTION) {
+		yyerror("option %s not recognised", name);
+	} else if ((option_get_type(opt)) != t) {
+		yyerror("%s is of type %s", name, option_type_name(t));
+	} else {
+		inst = opt_inst_create(opt, t, 0, d);
+		if ((bl = opt_inst_bind(bl, inst)) == ERROR_BIND_LIST) {
+			opt_inst_destroy(inst);
+			yyerror("%s while binding option %s", strerror(errno),
+				 name);
+		}
+	}
 }

@@ -39,6 +39,7 @@
 #include <gune/error.h>
 #include <gune/string.h>
 #include <camille/contact_id.h>
+#include <camille/option.h>
 
 contact_id_t * const ERROR_CONTACT_ID = (void *)error_dummy_func;
 
@@ -47,7 +48,9 @@ contact_id_t * const ERROR_CONTACT_ID = (void *)error_dummy_func;
 /**
  * Create a contact id with a given name, initialising all data to the defaults.
  *
- * \param name  The (symbolic, identifier) name of the contact id
+ * \param name  The (symbolic, identifier) name of the contact id.  This will
+ *		  get copied, so you can free the original or pass const
+ *		  strings.
  *
  * \return  The new contact id, or ERROR_CONTACT_ID if there was an error.
  *	      errno = ENOMEM if out of memory.
@@ -64,9 +67,13 @@ contact_id_create(const char *name)
 	if ((id = malloc(sizeof(contact_id_t))) == NULL)
 		return ERROR_CONTACT_ID;
 
-	id->name = str_cpy(name);
+	if ((id->name = str_cpy(name)) == NULL) {
+		free(id);
+		return ERROR_CONTACT_ID;
+	}
 
-	if (id->name == NULL) {
+	if ((id->bindings = bind_list_create()) == ERROR_BIND_LIST) {
+		free(id->name);
 		free(id);
 		return ERROR_CONTACT_ID;
 	}
@@ -87,6 +94,7 @@ contact_id_destroy(contact_id id)
 {
 	assert(id != ERROR_CONTACT_ID);
 	assert(id != NULL);
+	bind_list_destroy(id->bindings);
 	free(id->name);
 	free(id);
 }
@@ -110,6 +118,20 @@ contact_id_get_name(contact_id id)
 }
 
 
+/**
+ * Retrieve the bindings of a contact id.  This may be modified directly.
+ *
+ * \param id  The contact id to get the bindings of.
+ */
+bind_list
+contact_id_get_bindings(contact_id id)
+{
+	assert(id != ERROR_CONTACT_ID);
+	assert(id != NULL);
+	return id->bindings;
+}
+
+
 #ifdef DEBUG
 /**
  * Prints a dump of a contact id.
@@ -122,5 +144,6 @@ contact_id_dump(contact_id id)
 	assert(id != ERROR_CONTACT_ID);
 	assert(id != NULL);
 	printf("Id %s:\n", id->name);
+	bind_list_dump(id->bindings);
 }
 #endif /* DEBUG */

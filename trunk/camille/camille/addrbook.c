@@ -45,6 +45,7 @@ addrbook_t * const ERROR_ADDRBOOK = (void *)error_dummy_func;
 /* XXX There's prolly a cleaner way to do this */
 /* Parser data */
 addrbook curr_addrbook;
+extern option_hier curr_opthier;
 extern FILE *yyin;
 
 extern int yyparse(void);
@@ -60,15 +61,17 @@ static void group_walk(gendata *, gendata *);
  * Parse an address book file.
  *
  * \param fp  The file to parse.
+ * \param h   The options hierarchy to use while parsing.
  *
  * \return  The file's contents, as addrbook, or ERROR_ADDRBOOK if the file
  *	     could not be parsed.
  */
 addrbook
-addrbook_parse_file(FILE *fp)
+addrbook_parse_file(FILE *fp, option_hier h)
 {
 	yyin = fp;
 	curr_addrbook = addrbook_create();
+	curr_opthier = h;
 	yyparse();
 	return curr_addrbook;
 }
@@ -281,7 +284,7 @@ addrbook_dump(addrbook ab)
 	ht_walk(ab->groups, group_walk);
 }
 
-/**
+/*
  * Call contact dumping function for all contacts in the addressbook.
  */
 static void
@@ -291,7 +294,7 @@ contact_walk(gendata *key, gendata *value)
 }
 
 
-/**
+/*
  * Call group dumping function for all groups in the addressbook.
  */
 static void

@@ -39,9 +39,9 @@
 extern "C" {
 #endif
 
-#include <gune/alist.h>
 #include <gune/ht.h>
 #include <camille/contact.h>
+#include <camille/option.h>
 #include <camille/group.h>
 #include <stdio.h>
 
@@ -58,7 +58,7 @@ extern "C" {
 typedef struct addrbook_t {
 	ht contacts;
 	ht groups;
-	alist defaults;				/* alist of addrbook_options */
+	bind_list defaults;			/* Default bindings */
 } addrbook_t, *addrbook;
 
 /** Invalid addressbook, used as error in return value */
@@ -71,7 +71,7 @@ addrbook addrbook_del_contact(addrbook, char *);
 addrbook addrbook_add_group(addrbook, group);
 addrbook addrbook_del_group(addrbook, char *);
 
-addrbook addrbook_parse_file(FILE *);
+addrbook addrbook_parse_file(FILE *, option_hier);
 
 #ifdef DEBUG
 void addrbook_dump(addrbook);

@@ -50,6 +50,7 @@ main(int argc, char **argv)
 	extern char *optarg;
 	int ch;
 	addrbook a;
+	option_hier hier;
 
 	printf("$Id$\n");
 	printf("Running test... Go your gang.\n");
@@ -62,7 +63,8 @@ main(int argc, char **argv)
 		}
 
 	/* Perform tests */
-	a = addrbook_parse_file(stdin);
+	hier = option_hier_create();
+	a = addrbook_parse_file(stdin, hier);
 	printf("Done parsing.  Resulting addressbook:\n");
 	addrbook_dump(a);
 

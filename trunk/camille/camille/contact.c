@@ -51,7 +51,8 @@ static void contact_id_walk(gendata *, gendata *);
 /**
  * Create a contact with a given name, initialising all data to the defaults.
  *
- * \param name  The (symbolic, identifier) name of the contact
+ * \param name  The (symbolic, identifier) name of the contact.  This will get
+ *		  copied, so you can free the original or pass const strings.
  *
  * \return  The new contact, or ERROR_CONTACT if there was an error.
  *	      errno = ENOMEM if out of memory.
@@ -136,7 +137,7 @@ contact_dump(contact ct)
 }
 
 
-/**
+/*
  * Call id dumping function for all ids in the contact.
  */
 static void

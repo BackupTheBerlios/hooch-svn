@@ -47,7 +47,8 @@ group_t * const ERROR_GROUP = (void *)error_dummy_func;
 /**
  * Create a group with a given name, initialising all data to the defaults.
  *
- * \param name  The (symbolic, identifier) name of the group
+ * \param name  The (symbolic, identifier) name of the group.  This will get
+ *		  copied, so you can free the original or pass const strings.
  *
  * \return  The new group, or ERROR_GROUP if there was an error.
  *
@@ -63,9 +64,13 @@ group_create(const char *name)
 	if ((gr = malloc(sizeof(group_t))) == NULL)
 		return ERROR_GROUP;
 
-	gr->name = str_cpy(name);
+	if ((gr->name = str_cpy(name)) == NULL) {
+		free(gr);
+		return ERROR_GROUP;
+	}
 
-	if (gr->name == NULL) {
+	if ((gr->bindings = bind_list_create()) == ERROR_BIND_LIST) {
+		free(gr->name);
 		free(gr);
 		return ERROR_GROUP;
 	}
@@ -86,6 +91,7 @@ group_destroy(group gr)
 {
 	assert(gr != ERROR_GROUP);
 	assert(gr != NULL);
+	bind_list_destroy(gr->bindings);
 	free(gr->name);
 	free(gr);
 }
@@ -109,6 +115,20 @@ group_get_name(group gr)
 }
 
 
+/**
+ * Retrieve the bindings of a group.  This may be modified directly.
+ *
+ * \param gr  The group to get the bindings of.
+ */
+bind_list
+group_get_bindings(group gr)
+{
+	assert(gr != ERROR_GROUP);
+	assert(gr != NULL);
+	return gr->bindings;
+}
+
+
 #ifdef DEBUG
 /**
  * Prints a dump of a group.
@@ -121,5 +141,6 @@ group_dump(group gr)
 	assert(gr != ERROR_GROUP);
 	assert(gr != NULL);
 	printf("Group %s:\n", gr->name);
+	bind_list_dump(gr->bindings);
 }
 #endif /* DEBUG */
