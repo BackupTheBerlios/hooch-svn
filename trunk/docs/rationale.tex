@@ -127,9 +127,9 @@ contact jose {
 }
 \end{verbatim}
 
-Note that is can only be one of these two types of \texttt{primary} identity
-declarations.  For example, the contact declaration below would be a false
-one, and should result in a parsing error:
+Note that only one of these two types of \texttt{primary} identity
+declarations are allowed per contact.  For example, the contact declaration
+below would be a false one, and should result in a parsing error:
 
 \begin{verbatim}
 contact jose {
@@ -253,6 +253,20 @@ group one day decides they want to share a PGP key), we should not make any
 assumptions about which options may be overridden by a group.
 For this reason, all behaviour settings that are legal in identities are
 also legal inside a group.  If it actually makes sense is up to the user.
+
+%
+% XXX TODO FIXME: We still haven't defined what the hell should happen in
+% case of conflicting settings.
+%
+% I vote for treating every conflicted setting as if it was set to `empty',
+%  thus picking the default in case of conflict.  Of course, if the group
+%  overrides it we can simply use that setting.  Maybe... maybe we should
+%  not even allow settings to be taken from group members.  That might
+%  make things easier and more predictable from the user's POV.  On the
+%  other hand, it is rather cool to have an e-mail client that's intelligent
+%  enough to understand that all contacts in a group think HTML
+%  attachments are a Good Thing, thus setting that option to true.
+%
 
 \part{Turner}
 
