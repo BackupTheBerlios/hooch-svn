@@ -8,13 +8,81 @@
 #
 # Q: Perhaps in a turner { } block?  Although that actually should imply
 # settings for Turner, but these need to be made in .turnerrc.
+#
+# A: I think that's a bad idea for two reasons:
+# 1 - The file will get very indented without good reason, since 99% or so
+#      of it will be inside the { } block.
+# 2 - We don't have the contacts in some contacts { } block either, do we?
+#
+
+#
+# This is a good idea to support, but I don't think we should focus on it now
+# We should have sensible defaults anyway (search ~/.contacts, ~/.hooch/contacts
+# etc)
+#
 contacts-file = ~/.hooch/contacts
 
+#
 # A mailbox prefix?
+# Once again, we shouldn't focus on these features.  We should try to create
+# a decent notation for the mail rules.  But of course, we need to support this.
+#
+# If we have a .turnerrc as well, this sort of stuff should go there and we
+# can have only rules in this file.
+#
 mailbox = ~/Mail
 
 #
-# We should make a distinction between incoming and outgoing mails from the user.
+# We should make a distinction between incoming and outgoing mails from the user
+# This can be done with a switch to turner, or perhaps calling the binary
+# a different name or something.  It doesn't matter, as long as turner knows
+# in which mode it is.
+#
+
+#
+# If we only have rules in this file, the `match' keyword is superfluous.
+#
+# If that is the case, we can define the from fields right before the braces
+# like so:
+#
+
+from (bart:fun | "blah@foo.com") |
+to (lisa) {
+	# Execute the beep program without using the e-mail as stdin
+	! "beep";
+
+	# Pipe the e-mail to another program.  The stuff in quotes is executed
+	#  by /bin/sh.
+	| "(echo 'Hey, news from the kids!:'; cat)";
+
+	# Receive mode?
+	recv {
+		$target = "incoming";
+	}
+	send {
+		$target = "outgoing";
+	}
+	# And store the mail in incoming/guys or outgoing/guys
+	> "${target}/kids"
+}
+
+to (maggy | "bar@qux.com") |
+from (marge:home) {
+	# Process the e-mail with a filter
+	< "filter-out-pink-color-tags";
+	# Store it in the `girls' mbox
+	> "girls"
+}
+
+#
+# But I like this notation much more (more readable).  Perhaps we
+# can find a `golden midway' :P
+#
+# We really need a way to invoke external programs (optionally piping the mail
+# to the program, but an empty stdin must be possible too), and we also must
+# find a way to /optionally/ use that output as the new mail (filtering).
+#
+# Perhaps we even need to do things based on exit code??
 #
 match {
 	# First, we can define some patterns that should be matched
