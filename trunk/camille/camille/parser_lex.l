@@ -47,7 +47,7 @@ void yyerror(char *, ...);
 
 /* Values internally used in lexicographical analysis */
 int lineno = 1;		/* Keep track of line numbers to produce friendly error messages */
-stack s;		/* Stack used to store strings that are in analysis */
+stack s = NULL;		/* Stack used to store strings that are in analysis */
 unsigned int ssize;	/* The size of the string that is in analysis */
 char delim_opened;	/* The character that opened the string in analysis */
 
@@ -144,7 +144,8 @@ empty			{	return EMPTY;		}
 
 int
 yywrap(void) {
-	stack_destroy(s, NULL);
+	if (s != NULL)
+		stack_destroy(s, NULL);
         return 1;
 }
 
@@ -165,5 +166,7 @@ pop_string(void)
 	str[ssize] = '\0';
 	while (ssize > 0)
 		str[--ssize] = stack_pop(s).sym;
+	stack_destroy(s, NULL);
+	s = NULL;
 	return str;
 }
