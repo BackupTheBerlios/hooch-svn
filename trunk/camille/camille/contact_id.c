@@ -49,6 +49,7 @@
  * \param name  The (symbolic, identifier) name of the contact id.  This will
  *		  get copied, so you can free the original or pass const
  *		  strings.
+ * \param bl    The initial bindings for the id.
  *
  * \return  The new contact id, or ERROR_PTR if there was an error.
  *	      errno = ENOMEM if out of memory.
@@ -56,7 +57,7 @@
  * \sa contact_id_destroy
  */
 contact_id
-contact_id_create(const char *name)
+contact_id_create(const char *name, bind_list bl)
 {
 	contact_id_t *id;
 
@@ -70,11 +71,7 @@ contact_id_create(const char *name)
 		return ERROR_PTR;
 	}
 
-	if ((id->bindings = bind_list_create()) == ERROR_PTR) {
-		free(id->name);
-		free(id);
-		return ERROR_PTR;
-	}
+	id->bindings = bl;
 
 	return (contact_id)id;
 }

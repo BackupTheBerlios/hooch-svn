@@ -31,10 +31,12 @@
 
 %{
 
+#include <assert.h>
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
 #include <gune/error.h>
+#include <gune/string.h>
 #include <camille/addrbook.h>
 #include <camille/contact.h>
 #include <camille/contact_id.h>
@@ -50,10 +52,7 @@
 /* Bool indicating whether we read a defaults block */
 static int read_defaults = 0;
 
-static group	   curr_group;
 static contact	   curr_contact;
-static contact_id  curr_id;
-static bind_list   curr_bind_list;
 extern addrbook curr_addrbook;
 option_hier curr_opthier;
 
@@ -61,7 +60,8 @@ extern int yylex(void);
 
 extern int lineno;
 
-static void try_bind(bind_list, option_hier, char *, option_type, gendata);
+static binding try_bind(option_hier, char *, option_type, gendata);
+static void defaults_walker(binding, gendata);
 
 %}
 
@@ -71,6 +71,10 @@ static void try_bind(bind_list, option_hier, char *, option_type, gendata);
 	int boolean;
 	int integer;
 	int amount;
+	bind_list bindlist;
+	binding bnd;
+	alist assoclist;
+	contact_id id;
 };
 
 %token <identifier> IDENTIFIER;
@@ -81,15 +85,15 @@ static void try_bind(bind_list, option_hier, char *, option_type, gendata);
 %token CONTACT, IDENTITY, DEFAULTS, GROUP;
 %token EMPTY;
 
-/* Lists of blocks */
-%type <amount> blocks
-%type <amount> identities
-
 /* Statement blocks */
-%type <amount> defaults_stms
-%type <amount> identity_stms
-%type <amount> group_stms
-%type <amount> stms
+%type <bindlist> defaults_stms
+%type <bindlist> identity_stms
+%type <bindlist> group_stms
+%type <bindlist> stms
+%type <bnd> stm
+%type <assoclist> contact_body
+%type <assoclist> identities
+%type <id> identity
 
 /* Field names */
 %type <identifier> field
@@ -109,8 +113,8 @@ static void try_bind(bind_list, option_hier, char *, option_type, gendata);
  */
 
 blocks:
-	block blocks		{ $$ = 1 + $2; }
-	| /* Empty */		{ $$ = 0; }
+	block blocks		{ }
+	| /* Empty */		{ }
 	;
 
 block:	contact_block		{ }
@@ -121,12 +125,13 @@ block:	contact_block		{ }
 contact_block:
 	CONTACT IDENTIFIER
 		{
-			curr_contact = contact_create($2);
-			free($2);
 		}
 	'{' contact_body '}'
 		{
 			addrbook a;
+
+			curr_contact = contact_create($2, $5);
+			free($2);
 
 			a = addrbook_add_contact(curr_addrbook, curr_contact);
 			if (a == ERROR_PTR) {
@@ -148,6 +153,7 @@ contact_body:
 	identities
 		{
 			/* Check that there was at least a primary identity */
+			$$ = $1;
 		}
 	/*
 	   XXX TODO Support direct identity field declarations in
@@ -157,35 +163,60 @@ contact_body:
 	;
 
 identities:
-	identity identities	{ $$ = 1 + $2; }
-	| /* Empty */		{ $$ = 0; }
+	identity identities
+		{
+			gendata key, value;
+
+			/* Skip error ids */
+			if ($1 != ERROR_PTR) {
+				key.ptr = contact_id_get_name($1);
+				value.ptr = $1;
+				$$ = alist_insert_uniq($2, key, value, str_eq);
+				if ($$ == ERROR_PTR) {
+					if (errno == EINVAL) {
+						yyerror("Duplicate entry for"
+							 " id %s", key.ptr);
+					}
+					yyerror("%s adding %s to list",
+						 strerror(errno), key.ptr);
+					contact_id_destroy($1);
+					$$ = $2;
+				}
+			} else {
+				$$ = $2;
+			}
+		}
+	| /* Empty */
+		{
+			$$ = alist_create();
+		}
 	;
 
 identity:
 	IDENTITY IDENTIFIER
 		{
-			curr_id = contact_id_create($2);
-			free($2);
-			curr_bind_list = contact_id_get_bindings(curr_id);
+			/* curr_bind_list = contact_id_get_bindings(curr_id); */
 		}
 	'{' identity_stms '}'
 		{
+			$$ = contact_id_create($2, $5);
+			free($2);
 			/* TODO: Check that this identity has name and address */
-			/* If so: */
-			contact_add_id(curr_contact, curr_id);
 		}
 	;
 
 group_block:
 	GROUP IDENTIFIER
 		{
-			curr_group = group_create($2);
-			free($2);
-			curr_bind_list = group_get_bindings(curr_group);
+			/* curr_bind_list = group_get_bindings(curr_group); */
 		}
 	'{' group_stms '}'
 		{
 			addrbook a;
+			group curr_group;
+
+			curr_group = group_create($2, $5);
+			free($2);
 
 			/* TODO: Check whether group has a members field */
 			/* If so: */
@@ -209,20 +240,20 @@ defaults_block:
 	DEFAULTS
 		{
 			if (read_defaults) {
-				yyerror("Error: More than one defaults-block is not allowed.\n");
+				yyerror("Error: More than one defaults-block is not allowed.");
 			}
-			read_defaults = 1;
 			printf("===> Make new 'default settings'\n");
 		}
 	'{' defaults_stms '}'
 		{
-			/* XXX: Hmm, apparently need to use $4 here.  Why does
-			 * the code block above seem to be $2?  Do some
-			 * research. */
-			if ($4 > 0) {
-				printf("===> Found default settings! Store 'em!\n");
+			gendata data;
+
+			if (!read_defaults) {
+				read_defaults = 1;
+				data.ptr = curr_opthier;
+				bind_list_walk($4, defaults_walker, data);
 			} else {
-				printf("===> Found no defaults settings (empty block)\n");
+				bind_list_destroy($4);
 			}
 		}
 	;
@@ -232,42 +263,69 @@ defaults_stms: stms		{ $$ = $1; };
 group_stms:    stms		{ $$ = $1; };	/* XXX Allow multi_stms, too */
 
 stms:
-	stm stms		{ $$ = 1 + $2; }
-	| /* Empty */		{ $$ = 0; };
+	stm stms
+		{
+			printf("THERE!\n");
+			assert ($2 != ERROR_PTR);
+
+			/*
+			 * Simply skip error values.  We've emitted errors
+			 *  when we encountered them, anyway.
+			 */
+			if ($1 != ERROR_PTR) {
+				$$ = bind_list_insert_uniq($2, $1);
+				if ($$ == ERROR_PTR) {
+					yyerror("%s adding %s to list",
+						 strerror(errno), $1);
+					binding_destroy($1);
+					$$ = $2;
+				}
+			} else {
+				$$ = $2;
+			}
+		}
+	| /* Empty */
+		{
+			$$ = bind_list_create();
+			printf("HERE!\n");
+		}
+	;
 
 stm:
-	';'			{ }
+	';'
+		{
+			/*
+			 * Just pretend we encountered an error binding.
+			 */
+			$$ = ERROR_PTR;
+		}
 	| field '=' BOOLEAN ';'
 		{
 			gendata d;
 			d.num = $3;
 
-			try_bind(curr_bind_list, curr_opthier, $1,
-				       OTYPE_BOOL, d);
+			$$ = try_bind(curr_opthier, $1, OTYPE_BOOL, d);
 		}
 	| field '=' INTEGER ';'
 		{
 			gendata d;
 			d.num = $3;
 
-			try_bind(curr_bind_list, curr_opthier, $1,
-				       OTYPE_NUMBER, d);
+			$$ = try_bind(curr_opthier, $1, OTYPE_NUMBER, d);
 		}
 	| field '=' STRING ';'
 		{
 			gendata d;
 			d.ptr = $3;
 
-			try_bind(curr_bind_list, curr_opthier, $1,
-				       OTYPE_STRING, d);
+			$$ = try_bind(curr_opthier, $1, OTYPE_STRING, d);
 		}
 	| field '=' EMPTY ';'
 		{
 			gendata dummy;
 			dummy.ptr = ERROR_PTR;		/* Shut up compiler */
 
-			try_bind(curr_bind_list, curr_opthier, $1,
-				       OTYPE_EMPTY, dummy);
+			$$ = try_bind(curr_opthier, $1, OTYPE_EMPTY, dummy);
 		}
 	;
 
@@ -277,12 +335,7 @@ field:
 
 start:
 	blocks
-		{
-			printf("\n");
-			printf("Summary:\n");
-			printf("Number of contacts: %d\n", $1);
-			printf("Found NO defaults\n");
-		}
+	;
 
 %%
 
@@ -304,7 +357,6 @@ yyerror(char *err, ...) {
  *
  * Try to look up and bind an option, and do some error outputting if we failed.
  *
- * \param bl    The binding list to add the binding to.
  * \param h     The option hierarchy under which to look for the option.
  * \param name  The name of the option to instantiate.
  * \param t     Requested option type.
@@ -312,16 +364,18 @@ yyerror(char *err, ...) {
  *
  * \return  The instantiation of the option.
  */
-static void
-try_bind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
+static binding
+try_bind(option_hier h, char *name, option_type t, gendata d)
 {
 	option opt;
 	option_type otype;
+	binding bnd;
 
 	if ((opt = option_hier_lookup(h, name)) == ERROR_PTR) {
 		yyerror("option %s not recognised", name);
+		bnd = ERROR_PTR;
 	} else {
-		if ((bl = option_bind(bl, opt, t, d)) == ERROR_PTR) {
+		if ((bnd = binding_create(opt, t, d)) == ERROR_PTR) {
 			if (errno == EINVAL) {
 				otype = option_get_type(opt);
 				yyerror("%s is of type %s", name,
@@ -331,5 +385,17 @@ try_bind(bind_list bl, option_hier h, char *name, option_type t, gendata d)
 					strerror(errno), name);
 			}
 		}
+	printf("Just bound %s\n", name);
 	}
+	return bnd;
+}
+
+
+static void
+defaults_walker(binding bnd, gendata data)
+/* ARGSUSED1 */
+{
+	if (!binding_empty(bnd))
+		option_set_default(binding_get_option(bnd),
+				   binding_get_value(bnd));
 }

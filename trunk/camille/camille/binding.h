@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: contact.h 122 2004-10-24 17:25:52Z sjamaan $
  *
  * Copyright (c) 2004 Peter Bex and Vincent Driessen
  * All rights reserved.
@@ -30,34 +30,53 @@
  */
 
 /*
- * Addressbook groups functionality
+ * Bindings of options to values.
  */
-#ifndef CAMILLE_GROUP_H
-#define CAMILLE_GROUP_H
+#ifndef CAMILLE_BINDING_H
+#define CAMILLE_BINDING
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <camille/contact.h>
 #include <camille/option.h>
+#include <gune/types.h>
+#include <gune/alist.h>
 
-typedef struct group_t {
-	char *name;
-	bind_list bindings;
-} group_t, *group;
+/** Option binding */
+typedef struct binding_t {
+	option option;			/* The bound option */
+	int empty;			/* empty, "override back to default" */
+	gendata value;			/* The bound value */
+} binding_t, * binding;
 
-group group_create(const char *, bind_list);
-void group_destroy(group);
-char *group_get_name(group);
-bind_list group_get_bindings(group);
+/** Option binding list */
+typedef alist bind_list;
+typedef alist_t bind_list_t;
+
+typedef void (*bind_walk_func) (binding, gendata);
+
+binding binding_create(option, option_type, gendata);
+void binding_destroy(binding);
+option binding_get_option(binding);
+int binding_empty(binding);
+gendata binding_get_value(binding);
+
+bind_list bind_list_create(void);
+void bind_list_destroy(bind_list);
+bind_list bind_list_insert_uniq(bind_list, binding);
+void bind_list_walk(bind_list, bind_walk_func, gendata);
+
+/* Convenience functions.  May be deleted in the future */
+bind_list option_bind(bind_list, option, option_type, gendata);
+bind_list option_unbind(bind_list, option);
 
 #ifdef DEBUG
-void group_dump(group);
+void bind_list_dump(bind_list);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CAMILLE_GROUP_H */
+#endif /* CAMILLE_BINDING_H */

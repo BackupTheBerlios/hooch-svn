@@ -66,36 +66,17 @@ typedef struct option_t {
 	option_data data;
 } option_t, * option;
 
-/** Option binding */
-typedef struct binding_t {
-	option option;			/* The bound option */
-	int empty;			/* empty, "override back to default" */
-	gendata value;			/* The bound value */
-} binding_t, * binding;
-
-/** Option binding list */
-typedef alist bind_list;
-typedef alist_t bind_list_t;
-
-char *option_type_name(option_type);
-
 option_hier option_hier_create(void);
 void option_hier_destroy(option_hier);
 option_hier option_hier_insert(option_hier, option);
 option option_hier_lookup(option_hier, char *);
 
+char *option_type_name(option_type);
 option option_create(char *, option_type, option_data);
 void option_destroy(option);
-option_type option_get_type(option o);
-
-bind_list bind_list_create(void);
-void bind_list_destroy(bind_list);
-bind_list option_bind(bind_list, option, option_type, gendata);
-bind_list option_unbind(bind_list, option);
-
-#ifdef DEBUG
-void bind_list_dump(bind_list);
-#endif
+option_type option_get_type(option);
+gendata option_get_default(option);
+void option_set_default(option, gendata);
 
 #ifdef __cplusplus
 }

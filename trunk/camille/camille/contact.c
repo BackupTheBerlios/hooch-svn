@@ -41,7 +41,7 @@
 #include <camille/contact.h>
 
 #ifdef DEBUG
-static void contact_id_walk(gendata *, gendata *);
+static void contact_id_walk(gendata *, gendata *, gendata);
 #endif
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -51,6 +51,7 @@ static void contact_id_walk(gendata *, gendata *);
  *
  * \param name  The (symbolic, identifier) name of the contact.  This will get
  *		  copied, so you can free the original or pass const strings.
+ * \param ids   An alist of initial ids for the contact.
  *
  * \return  The new contact, or ERROR_PTR if there was an error.
  *	      errno = ENOMEM if out of memory.
@@ -58,20 +59,17 @@ static void contact_id_walk(gendata *, gendata *);
  * \sa contact_destroy
  */
 contact
-contact_create(const char *name)
+contact_create(const char *name, alist ids)
 {
 	contact_t *ct;
 
 	assert(name != NULL);
+	assert(ids != ERROR_PTR);
 
 	if ((ct = malloc(sizeof(contact_t))) == NULL)
 		return ERROR_PTR;
 
-	if ((ct->ids = alist_create()) == ERROR_PTR) {
-		free(ct);
-		return ERROR_PTR;
-	}
-
+	ct->ids = ids;
 	ct->name = str_cpy(name);
 
 	if (ct->name == NULL) {
@@ -127,11 +125,15 @@ contact_get_name(contact ct)
 void
 contact_dump(contact ct)
 {
+	gendata dummy_data;
+
 	assert(ct != ERROR_PTR);
 	assert(ct != NULL);
 
+	dummy_data.num = 0;
+
 	printf("Contact %s:\n", ct->name);
-	alist_walk(ct->ids, contact_id_walk);
+	alist_walk(ct->ids, contact_id_walk, dummy_data);
 }
 
 
@@ -139,7 +141,8 @@ contact_dump(contact ct)
  * Call id dumping function for all ids in the contact.
  */
 static void
-contact_id_walk(gendata *key, gendata *value)
+contact_id_walk(gendata *key, gendata *value, gendata data)
+/* ARGSUSED2 */
 {
 	contact_id_dump((contact_id)value->ptr);
 }

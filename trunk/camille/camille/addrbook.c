@@ -49,8 +49,8 @@ extern FILE *yyin;
 extern int yyparse(void);
 
 #ifdef DEBUG
-static void contact_walk(gendata *, gendata *);
-static void group_walk(gendata *, gendata *);
+static void contact_walk(gendata *, gendata *, gendata);
+static void group_walk(gendata *, gendata *, gendata);
 #endif
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -274,19 +274,25 @@ addrbook_del_group(addrbook ab, char *name)
 void
 addrbook_dump(addrbook ab)
 {
+	gendata dummy_data;
+
 	assert(ab != ERROR_PTR);
 	assert(ab != NULL);
 
+	/* We don't need to pass anything */
+	dummy_data.num = 0;
+
 	/* Dump contacts, groups etc */
-	ht_walk(ab->contacts, contact_walk);
-	ht_walk(ab->groups, group_walk);
+	ht_walk(ab->contacts, contact_walk, dummy_data);
+	ht_walk(ab->groups, group_walk, dummy_data);
 }
 
 /*
  * Call contact dumping function for all contacts in the addressbook.
  */
 static void
-contact_walk(gendata *key, gendata *value)
+contact_walk(gendata *key, gendata *value, gendata data)
+/* ARGSUSED2 */
 {
 	contact_dump((contact)value->ptr);
 }
@@ -296,7 +302,8 @@ contact_walk(gendata *key, gendata *value)
  * Call group dumping function for all groups in the addressbook.
  */
 static void
-group_walk(gendata *key, gendata *value)
+group_walk(gendata *key, gendata *value, gendata data)
+/* ARGSUSED2 */
 {
 	group_dump((group)value->ptr);
 }

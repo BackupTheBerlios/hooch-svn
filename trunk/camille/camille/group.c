@@ -47,17 +47,20 @@
  *
  * \param name  The (symbolic, identifier) name of the group.  This will get
  *		  copied, so you can free the original or pass const strings.
+ * \param bl    The initial bindings for the group.
  *
  * \return  The new group, or ERROR_PTR if there was an error.
+ *	      errno = ENOMEM if out of memory.
  *
  * \sa group_destroy
  */
 group
-group_create(const char *name)
+group_create(const char *name, bind_list bl)
 {
 	group_t *gr;
 
 	assert(name != NULL);
+	assert(bl != ERROR_PTR);
 
 	if ((gr = malloc(sizeof(group_t))) == NULL)
 		return ERROR_PTR;
@@ -67,11 +70,7 @@ group_create(const char *name)
 		return ERROR_PTR;
 	}
 
-	if ((gr->bindings = bind_list_create()) == ERROR_PTR) {
-		free(gr->name);
-		free(gr);
-		return ERROR_PTR;
-	}
+	gr->bindings = bl;
 
 	return (group)gr;
 }

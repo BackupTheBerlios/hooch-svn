@@ -39,14 +39,14 @@
 extern "C" {
 #endif
 
-#include <camille/option.h>
+#include <camille/binding.h>
 
 typedef struct contact_id_t {
 	char *name;
 	bind_list bindings;
 } contact_id_t, *contact_id;
 
-contact_id contact_id_create(const char *);
+contact_id contact_id_create(const char *, bind_list);
 void contact_id_destroy(contact_id);
 char *contact_id_get_name(contact_id);
 bind_list contact_id_get_bindings(contact_id);

@@ -42,6 +42,7 @@ contact sjamaan {
 contact nvie { id work { name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }}
 
 defaults {
+	address = "Test@foo.com";
 	string_test = `Enclosed in backticks, test: { ', ", \`, \\ }`;
 	string_test2 = 'Enclosed in single quotes, test: { \', ", `, \\ }';
 	string_test3 = "Enclosed in double quotes, test: { \', \", `, \\ }";

@@ -38,7 +38,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <gune/error.h>
-#include <gune/misc.h>
 #include <gune/string.h>
 #include <camille/option.h>
 
@@ -50,14 +49,6 @@ static char *option_type_names[NUM_OTYPES + 1] = {
 	"empty",
 	"unknown"
 };
-
-static binding binding_create(option, option_type, gendata);
-static void binding_destroy(binding);
-
-#ifdef DEBUG
-static void binding_walk(gendata *, gendata *);
-static void binding_dump(binding);
-#endif
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -270,204 +261,51 @@ option_get_type(option opt)
 }
 
 
-/*
- * Create a binding for a certain option.  Internal use only.
+/**
+ * Get an option's default value.
  *
- * \param opt    The option to bind.
- * \param t      The requested type of the option.
- * \param value  The value of the option (ignored if t == OTYPE_EMPTY).
+ * \param opt  The option to get the default value of.
  *
- * \return  The binding, or ERROR_PTR in case of error.
- *	      errno = ENOMEM if out of memory.
- *	      errno = EINVAL if option type does not match requested type.
+ * \return  The option's value.  (needs to be interpreted according to its type)
  *
- * \sa binding_destroy
+ * \sa option_set_default
  */
-static binding
-binding_create(option opt, option_type t, gendata value)
+gendata
+option_get_default(option opt)
 {
-	binding_t *bnd;
+	return opt->data.def;
+}
 
+
+/**
+ * Set an option's default value.  If the option is of type OTYPE_HIER, the
+ *  operation is invalid and will not do anything.  If the option is of type
+ *  OTYPE_STRING, the string will be copied.
+ *
+ * \param opt  The option to set the default value of.
+ * \param def  The new default value of the option.
+ *
+ * \sa option_get_default
+ */
+void
+option_set_default(option opt, gendata def)
+{
 	assert(opt != ERROR_PTR);
-	assert(opt != NULL);
 
-	if (t != opt->type && t != OTYPE_EMPTY) {
-		errno = EINVAL;
-		return ERROR_PTR;
-	}
-
-	if ((bnd = malloc(sizeof(binding_t))) == NULL)
-		return ERROR_PTR;
-
-	bnd->option = opt;
-	bnd->empty = (t == OTYPE_EMPTY);
-
-	if (t != OTYPE_EMPTY)
-		bnd->value = value;
-
-	return (binding)bnd;
-}
-
-
-/**
- * Destroy a binding of an option.
- *
- * \param bnd  The binding to destroy.
- *
- * \sa binding_create
- */
-void
-binding_destroy(binding bnd)
-{
-	free(bnd);
-}
-
-
-/**
- * Create a binding list.
- *
- * \return  The created binding list, or ERROR_PTR in case of error.
- *	      errno = ENOMEM if out of memory.
- *
- * \sa bind_list_destroy
- */
-bind_list
-bind_list_create(void)
-{
-	alist al;
-
-	if ((al = alist_create()) == ERROR_PTR)
-		return ERROR_PTR;
-
-	return (bind_list)al;
-}
-
-
-/**
- * Destroy a binding list and every binding in it.
- *
- * \param bl  The binding list to destroy.
- *
- * \sa bind_list_create
- */
-void
-bind_list_destroy(bind_list bl)
-{
-	alist_destroy((alist)bl, NULL, (free_func)binding_destroy);
-}
-
-
-/**
- * Bind an option to a value and insert it into a binding list.
- *
- * \param bl     Binding list in which to insert the new binding.
- * \param opt    The option to bind.
- * \param t      The requested type of the option.
- * \param value  The value of the option (ignored if t == OTYPE_EMPTY)
- *
- * \return  The new bindings list, or ERROR_PTR in case of error.
- *	      errno = ENOMEM if out of memory.
- *	      errno = EINVAL if option type does not match requested type.
- */
-bind_list
-option_bind(bind_list bl, option opt, option_type t, gendata value)
-{
-	alist al;
-	gendata akey, avalue;
-	binding bnd;
-
-	assert(bl != ERROR_PTR);
-
-	if ((bnd = binding_create(opt, t, value)) == ERROR_PTR)
-		return ERROR_PTR;
-
-	akey.ptr = bnd->option;
-	avalue.ptr = bnd;
-
-	if ((al = alist_insert((alist)bl, akey, avalue, ptr_eq,
-				(free_func)binding_destroy)) == ERROR_PTR) {
-		binding_destroy(bnd);
-		return ERROR_PTR;
-	}
-
-	return (bind_list)al;
-}
-
-
-/**
- * Unbind an option.
- *
- * \param bl   The binding list in which to look.
- * \param opt  The option to unbind.
- *
- * \return  The binding list.
- */
-bind_list
-option_unbind(bind_list bl, option opt)
-{
-	gendata key;
-
-	key.ptr = opt;
-
-	bl = (bind_list)alist_delete((alist)bl, key, ptr_eq, NULL,
-				      (free_func)binding_destroy);
-
-	return bl;
-}
-
-
-#ifdef DEBUG
-/**
- * Prints a dump of a bind list
- *
- * \param  The bind list to print.
- */
-void
-bind_list_dump(bind_list bl)
-{
-	alist_walk((alist)bl, binding_walk);
-}
-
-
-/*
- * Call binding dumping function for all bindings in the bindings list.
- */
-void
-binding_walk(gendata *key, gendata *value)
-{
-	binding_dump((binding)value->ptr);
-}
-
-
-/*
- * Dump a binding.
- */
-void
-binding_dump(binding bnd)
-{
-	gendata data = bnd->value;
-
-	printf("%s = ", bnd->option->name);
-	if (bnd->empty) {
-		printf("(empty), default = ");
-		data = bnd->option->data.def;
-	}
-	switch (bnd->option->type) {
-		case OTYPE_BOOL:
-			if (data.num == 0)
-				printf("false");
-			else
-				printf("true");
+	switch (opt->type) {
+		case OTYPE_HIER:
+			/* Do nothing */
 			break;
 		case OTYPE_STRING:
-			printf("'%s'", (char *)data.ptr);
+			opt->data.def.ptr = str_cpy(def.ptr);
 			break;
+		case OTYPE_BOOL:
+			/* FALLTHROUGH */
 		case OTYPE_NUMBER:
-			printf("%i", data.num);
+			opt->data.def = def;
 			break;
 		default:
-			printf("unknown");
+			/* Do nothing in case of error */
+			return;
 	}
-	printf("\n");
 }
-#endif

@@ -47,7 +47,7 @@ typedef struct contact_t {
 	alist ids;				/* alist of contact_ids */
 } contact_t, *contact;
 
-contact contact_create(const char *);
+contact contact_create(const char *, alist);
 void contact_destroy(contact);
 char *contact_get_name(contact);
 
