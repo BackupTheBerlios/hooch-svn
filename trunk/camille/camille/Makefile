@@ -14,7 +14,7 @@ YHEADER=1
 YFLAGS+= -v
 
 LDADD= -lgune
-CFLAGS+= -I..
+CFLAGS+= -I.. ${DEFS}
 LINTFLAGS+= -I..
 
 # XXX HACK: Clean this up

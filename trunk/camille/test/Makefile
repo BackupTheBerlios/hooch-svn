@@ -12,6 +12,6 @@ LDADD+= -lcamille -lgune
 
 # XXX HACK: Clean this up
 LDADD+= -L../../../gune/gune -R../../../gune/gune
-CFLAGS+= -I../../../gune
+CFLAGS+= -I../../../gune ${DEFS}
 
 .include <bsd.prog.mk>

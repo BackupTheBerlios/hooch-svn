@@ -249,7 +249,7 @@ addrbook_dump(addrbook ab)
 {
 	/* Dump contacts, groups etc */
 	ht_walk(ab->contacts, contact_walk);
-	ht_walk(ab->groups, group_walk)
+	ht_walk(ab->groups, group_walk);
 }
 
 /**
