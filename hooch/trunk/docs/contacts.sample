@@ -13,13 +13,12 @@
 # contact-list		=  *(LWSP (contact / group) LWSP)
 #
 # contact		=  "contact" LWSP contact-identifier LWSP
-#			    "{" LWSP contact-contents LWSP "}"
+#			    "{" contact-contents "}"
 #
-# group			=  "group" LWSP group-identifier LWSP
-#			    "{" LWSP *group-contents LWSP "}"
-# group-contents	=  *(id-contents) members *(id-contents)
+# group			=  "group" LWSP group-name LWSP "{" *group-contents "}"
+# group-contents	=  *id-contents members *id-contents
 #
-# members		=  "members" LWSP "=" LWSP members-list LWSP ";"
+# members		=  "members" LWSP "=" members-list LWSP ";"
 # members-list		=  *(LWSP member)
 # member		=  contact-identifier
 #
