@@ -20,6 +20,12 @@ defaults {
 		encrypt = yes;		# Encryption to an `empty' key id just
 					# sends an unencrypted mail anyway.
 	}
+
+	#
+	# Only behavioural settings are allowed to be defaulted.
+	# Informational settings are not.
+	#
+	phone_number = "555-ACME";	# Illegal, user would get error message.
 }
 
 #
@@ -33,31 +39,6 @@ contact homer {
 	id work {
 		address = "homer@powerplant.net";
 		pgp.key_id = "0xBABE2ADE5BED";
-
-		# XXX: Consider this
-		info { ... }
-		behaviour { ... }	# <-- These things should be allowed
-					#     to be defined in the `defaults'
-					#     block and in `groups' blocks
-		# I'm rather against doing this in the syntax.  It is
-		# much nicer to have internal rules which fields may or
-		# may not appear in an id / contact / group.
-		# If a user enters something in a `defaults' section, he
-		# will simply get an error: `xxx is only allowed as
-		# contact information' (or something).  It is not much
-		# cleaner to have the info { .. } behaviour { .. }
-		# keywords, although it may appear to be cleaner at first
-		# sight.  In the end, if a user puts something that belongs
-		# in info under behaviour (or elsewhere), he will get the
-		# same (rephrased) error (`xx is only allowed in info blocks')..
-		#
-		# It is probably best to keep the checks internal to the
-		# programs, and make clear in the documentation where things
-		# may or may not be.
-		#
-		# If it helps to resolve cognitive dissonance, see defaults
-		# and contact classes that inherit from a common `behaviour'
-		# class, which contacts extend to include some info fields.
 	}
 }
 

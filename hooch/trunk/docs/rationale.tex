@@ -14,35 +14,47 @@
 
 \maketitle
 
-\section{General configuration files syntax}
+\section{Syntax}
 
-The syntax of all Hooch and Turner config files is generally speaking the same.
-The basic notation is borrowed from C-like languages and inspired by
-Irssi's configuration files and CSS notation.  This should make it easy
-to read for experienced programmers.  Beginners should not need to edit
-most config files manually, since the user interface shall eventually
-support some way of setting preferences, so there was no reason to worry
-about the somewhat cryptic nature (for beginners, anyway) of C.
+\subsection{Origin}
+
+The syntax of all Hooch and Turner config files is generally speaking
+the same.  The basic notation is borrowed from C-like languages and
+inspired by Irssi's configuration files and CSS notation.  This should
+make it easy to read for experienced programmers.  Beginners should not
+need to edit most config files manually, since the user interface shall
+eventually support some way of setting preferences, so there was no
+reason to worry about the somewhat cryptic nature (for beginners,
+anyway) of C.
+ 
+\subsection{Grouping options}
 
 There is a C struct-like notation to group options that belong together,
 like all options that are applicable to a certain plug-in.  This is to
 bring some structure into the config files.  This avoids the mess that
-many programs' config files are, especially when Hooch's feature set grows
-as the program matures and new plug-ins are installed.
-Because the user does not always fully utilise every option a plug-in or
-subsystem has to offer, the dot notation (\texttt{struct.option = value;})
-can be used for compactness.
+many programs' config files are, especially when Hooch's feature set
+grows as the program matures and new plug-ins are installed.  Because
+the user does not always fully utilise every option a plug-in or
+subsystem has to offer, the dot notation (\texttt{struct.option =
+value;}) can be used for compactness.
+
+\subsection{Statements}
 
 For ease of parsing, a semicolon is required at the end of a statement.
 This allows the user to make statements span multiple lines in the file,
 providing maximum flexibility of notation.  Whitespace and comments are
-also completely ignored for this reason.  Because a closing brace (\}) is
-always the end of a list of assignments to one structure's fields, there
-is no need for a semicolon after a closing brace.  Thus, to avoid confusion,
-the semicolon is explicitly disallowed after closing braces.
+also completely ignored for this reason.  Because a closing brace
+(\verb.}.) is always the end of a list of assignments to one structure's
+fields, there is no need for a semicolon after a closing brace.  Thus,
+to avoid confusion, the semicolon is explicitly disallowed after closing
+braces.
+
+\subsection{Comments}
 
 For consistency with many other Unix tools, a hash symbol (\#) marks the
 beginning of a comment that runs until the end of a line.
+
+\subsection{\texttt{empty}}
 
 Because in some situations options are inherited from structures higher
 up in the hierarchy (CSS-like), there has to be a way to unset some
@@ -52,57 +64,79 @@ substructure to what it would be if it or its parent had never been set
 in the first place.
 
 The clearest example is probably the PGP key ID which is set on some
-contact's primary email address, while at the secondary's address site does
-not have PGP at all.  Here, the secondary address' PGP key ID value
+contact's primary email address, while at the secondary's address site
+does not have PGP at all.  Here, the secondary address' PGP key ID value
 should be unset to prevent Hooch's PGP plugin from signing an email.
 
 
 \section{Contact list design rationale}
 
+\subsection{Identities}
+
 Contacts in many other Unix mail clients are just simple aliases for a
-name and an email address.  Because it is often the case that one
-person has multiple email addresses (like one for home, one for work),
-Hooch binds these addresses under one \emph{contact} to keep them together
-and perform operations on the basis of contacts instead of on email
+name and an email address.  Because it is often the case that one person
+has multiple email addresses (like one for home, one for work), Hooch
+binds these addresses under one \emph{contact} to keep them together and
+perform operations on the basis of contacts instead of on email
 addresses.  These addresses are called contact identities, or
 \emph{identities}, for short.
 
-The system used for this is somewhat like CSS.  Settings that belong to a
-certain contact are stored in the contact's main id and optionally
-overridden in a sub-id.  By doing so, we can allow the main id's settings
-to also pertain to sub-ids of the contact.  When we mail to another email
-address of the same person, the name of that person generally does not
-change, neither as do many other properties.  These are properties of
-the \emph{contact}, not of the alias/email address.
+We used a cascading properties system for this.  Settings that belong to
+a certain contact are stored in the contact's main idenity and
+optionally overridden in a sub-identity.  By doing so, we can allow the
+main identity's settings to also pertain to sub-identities of the
+contact.  When we mail to another email address of the same person, the
+name of that person generally does not change, neither as do many other
+properties.
 
 On the other hand, there are certain things that \emph{sometimes} differ
 between email addresses of one person, like a PGP key for example, or
-perhaps the ability to view HTML mail at that address' site.  It does not
-matter which of the options these are, that cannot be predicted in advance.
-Also, plugins might define new options which might or might not be carried
-over into sub-ids.  For this reason, every option of a contact may be
-overridden in a sub-id, even if this would not make much sense conceptually.
+perhaps the ability to view HTML mail at that address' site.  It does
+not matter which of the options these are---that cannot be predicted in
+advance.  Also, future plugins might define new options which might or
+might not be carried over into sub-identities.  For this reason, every
+option of a contact may be overridden in a sub-identity, even if this
+would not make much sense conceptually.
 
-Requiring each id to be a sub-id (ie, not allowing an \texttt{address}
-field in the main body of the contact) would be irritating in the simple
-case of a pure name/address pair with nothing else added.  Also, when
-mailing to a contact, most of the time we do not bother about some
-secondary address, we just wish to send mail to that person's primary
-address.  Not having to specify a sub-id is more practical then.
+Requiring each identity to be a sub-identity (i.e., not allowing an
+\texttt{address} field in the main body of the contact) would be
+irritating in the simple cases that a contact has no need for a
+sub-identity (i.e. in most cases).  Also, when mailing to a contact,
+most of the time we do not bother about some secondary address, we just
+wish to send mail to that person's primary address.  Not having to
+specify a sub-identity is more practical then.  Therefore we introduced
+some syntactical sugar for this, allowing short primary identity
+declarations:
+
+An example:
+\begin{verbatim}
+# This...
+contact jose {
+    primary {
+        name = "Jose";
+        address = "jose@hola.es";
+    }
+}
+
+# ...can be written in short as:
+contact jose {
+    name = "Jose";
+    address = "jose@hola.es";
+}
+\end{verbatim}
 
 
 \subsection{Defaults}
 
 \subsubsection{Rejected ideas}
 
-Because it is inpractical to specify many options common to each contact
-every time a new contact is defined, there should be a way to define
-default options applicable to all contacts.
-We considered defining a special contact called `default', but this is
-not a good idea because this contact should not contain identities or an
-address field.
-The `cascade' idea of properties which fall down from the default to a
-contact to an identity does not apply here either.
+Because it is not practical to specify many options common to each
+contact every time a new contact is defined, there should be a way to
+define default options applicable to all contacts.  We considered
+defining a \textbf{special contact} called `default', but this is not a
+good idea because this contact should not contain identities or an
+address field.  The `cascade' idea of properties which fall down from
+the default to a contact to an identity does not apply here either.
 After all, defaults are not a contact at all.
 
 Putting the defaults among the contacts (intermixing them with contacts)
@@ -119,38 +153,71 @@ program), this is not desirable.
 The current solution is to allow exactly one \texttt{defaults} block
 which may contain only the behaviour settings of identities.
 
+\subsubsection{Overridable settings}
+
+Not all settings may be defaulted in the \texttt{default} block.  There
+are two types of options that can be set.  For the end user, they are no
+different, but internally, we make the distinction in order to overcome
+conceptually wrong contructs in the contacts file.  The two types of
+settings are \textbf{informational} and \textbf{behavioural} ones.
+
+Informational settings belong to contacts or identities and are
+conceptually wrong to default anywhere.  For example, defaulting a
+contact's phone number would be pointless, for these properties always
+differ per user, in principle.
+
+Behavioural settings, on the contrary, are very good candidates to
+default.  Say one wants to send out HTML mail per default.  In these
+cases, one could default the (imaginary) setting
+\texttt{enable\_html\_attachments} to \texttt{yes}, and overwrite the
+setting in all specific contacts that do not favor HTML mails.o
+
+Thus, note that there is no technical diffence between the two types of
+settings, but a distinction is merely made to avoid conceptually wrong
+constructs.
+
 
 \subsection{Groups}
 
 Groups are a very useful feature, since users often want to mail to
-several people interested in a subject (say, students attending a course)
-and do not want to manually select these people from a large address
-book every time.
+several people interested in a subject (say, students attending a
+course) and do not want to manually select these people from a large
+address book every time.
+
+\subsubsection{Rejected ideas}
 
 Treating groups as simply a collection of e-mail addresses is a bad idea
 because Hooch supports the notion of contacts.  If one modifies the
 address of a contact, one should not also have to modify this address in
 all groups that address is in as well.
 
-Having a \texttt{groups} option in a contact listing the groups the
-contact is a member of is a possible solution, but it is not very clear.
-How can one get a simple overview of all the contacts in a group?  One would
-have to walk through the entire file to find them all.  As can be read
-below, our solution to the groups problem is more flexible, as well.
+Having a \texttt{groups} option in a contact, summarizing the groups the
+contact is a member of, is a possible solution, but it is not very
+clear.  How can one get a simple overview of all the contacts in a
+group?  One would have to walk through the entire file to find them all.
+As can be read below, our solution to the groups problem is more
+flexible, as well.
 
-Simply wrapping a \texttt{group \{ .. \}} block around contacts is not
+Simply wrapping a \verb=group { ... }= block around contacts is not
 acceptable, for two reasons:
+
 \begin{itemize}
 \item Contacts can be members of more than one group.
 \item When a contact is a member of two groups, we might want to use
-	their business or their personal id, depending on which group we
-	mail to.
+      their business or their personal id, depending on which group we
+      mail to.
 \end{itemize}
+
+\subsubsection{Accepted idea}
+
 For this last reason, a new notation had to be decided, which is used
-subsequently in other config files as well.  This is the colon
-operator.  When we wish to mail to Homer's work address, we say
+subsequently in other config files as well.  This is the colon operator.
+When we wish to mail to Homer's work address, we say
 \texttt{homer:work}.  We cannot use the notation \texttt{homer.work} as
-this would refer to the value of the \texttt{work} option of \texttt{homer}.
+this would refer to the value of the \texttt{work} option of
+the contact \texttt{homer}.
+
+\subsubsection{Behaviour when settings conflict}
 
 For groups, the settings of a contact might conflict with other members
 of the group.  For example, when working in a project group, one of the
