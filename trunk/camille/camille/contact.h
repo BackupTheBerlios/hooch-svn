@@ -30,30 +30,33 @@
  */
 
 /*
- * Addressbook groups functionality
+ * Contact list
  */
-#ifndef CAMILLE_GROUPS_H
-#define CAMILLE_GROUPS_H
+#ifndef CAMILLE_CONTACT_H
+#define CAMILLE_CONTACT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct group_t {
-	char *name;
-	alist contacts;
-} group_t, *group;
+#include <gune/gune.h>
+#include <camille/contact_id.h>
 
-group group_create(const char *);
-void group_destroy(group);
-char *group_name(group);
+typedef struct contact_t {
+	char *name;
+	alist ids;				/* alist of contact_ids */
+} contact_t, *contact;
+
+contact contact_create(const char *);
+void contact_destroy(contact);
+char *contact_name(contact);
 
 #ifdef DEBUG
-void group_dump(group);
+void contact_dump(contact);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CAMILLE_GROUPS_H */
+#endif /* CAMILLE_CONTACT_H */

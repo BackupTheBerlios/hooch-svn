@@ -5,7 +5,7 @@
 #
 
 LIB= camille
-CAMILLESRCS= addrbook.c groups.c contacts.c contact_id.c parser.y
+CAMILLESRCS= addrbook.c group.c contact.c contact_id.c parser.y
 GENSRCS= parser.c parser_lex.c parser.h
 SRCS= ${CAMILLESRCS} ${GENSRCS}
 

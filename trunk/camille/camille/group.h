@@ -30,50 +30,32 @@
  */
 
 /*
- * Address book manipulation functions
+ * Addressbook groups functionality
  */
-#ifndef CAMILLE_ADDRBOOK_H
-#define CAMILLE_ADDRBOOK_H
+#ifndef CAMILLE_GROUP_H
+#define CAMILLE_GROUP_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <gune/gune.h>
-#include <camille/contact.h>
-#include <camille/group.h>
 
-/*
- * Contact and group hash table range.  In normal situations people have
- * more contacts than groups, so reflect this here.  Maybe this option should
- * become runtime configurable in addrbook creation function or elsewhere.
- * (in creation function would be inappropriate since changing the underlying
- *  storage type for contacts & groups shouldn't break the API)
- */
-#define CONTACTS_RANGE		255
-#define GROUPS_RANGE		16
+typedef struct group_t {
+	char *name;
+	alist contacts;
+} group_t, *group;
 
-typedef struct addrbook_t {
-	ht contacts;
-	ht groups;
-	alist defaults;				/* alist of addrbook_options */
-} addrbook_t, *addrbook;
-
-addrbook addrbook_create(void);
-void addrbook_destroy(addrbook);
-addrbook addrbook_add_contact(addrbook, contact);
-addrbook addrbook_del_contact(addrbook, char *);
-addrbook addrbook_add_group(addrbook, group);
-addrbook addrbook_del_group(addrbook, char *);
-
-addrbook addrbook_parse_file(FILE *);
+group group_create(const char *);
+void group_destroy(group);
+char *group_name(group);
 
 #ifdef DEBUG
-void addrbook_dump(addrbook);
+void group_dump(group);
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CAMILLE_ADDRBOOK_H */
+#endif /* CAMILLE_GROUP_H */

@@ -30,87 +30,135 @@
  */
 
 /**
- * \file groups.c
- * Addressbook groups functionality
+ * \file contact.c
+ * Contact list manipulation functions
  */
 
 #include <stdlib.h>
 #include <gune/gune.h>
-#include <camille/groups.h>
+#include <camille/contact.h>
 
-group_t * const ERROR_GROUP = (void *)error_dummy_func;
+contact_t * const ERROR_CONTACT = (void *)error_dummy_func;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 /**
- * Create a group with a given name, initialising all data to the defaults.
+ * Create a contact with a given name, initialising all data to the defaults.
  *
- * \param name  The (symbolic, identifier) name of the group
+ * \param name  The (symbolic, identifier) name of the contact
  *
- * \return  The new group, or ERROR_GROUP if there was an error.
+ * \return  The new contact, or ERROR_CONTACT if there was an error.
  *
- * \sa group_destroy
+ * \sa contact_destroy
  */
-group
-group_create(const char *name)
+contact
+contact_create(const char *name)
 {
-	group_t *gr;
+	contact_t *cont;
 
-	if ((gr = malloc(sizeof(group_t))) == NULL)
-		return ERROR_GROUP;
+	if ((cont = malloc(sizeof(contact_t))) == NULL)
+		return ERROR_CONTACT;
 
-	gr->name = str_cpy(name);
+	cont->name = str_cpy(name);
 
-	if (gr->name == NULL) {
-		free(gr);
-		return ERROR_GROUP;
+	if (cont->name == NULL) {
+		free(cont);
+		return ERROR_CONTACT;
 	}
 
-	return (group)gr;
+	return (contact)cont;
 }
 
 
 /**
- * Destroy a group.
+ * Destroy a contact.
  *
- * \param gr  The group to destroy.
+ * \param cont  The contact to destroy.
  *
- * \sa group_create
+ * \sa contact_create
  */
 void
-group_destroy(group gr)
+contact_destroy(contact cont)
 {
-	free(gr->name);
-	free(gr);
+	free(cont->name);
+	free(cont);
 }
 
 
 /**
- * Retrieve the name of a group.
+ * Retrieve the name of a contact.
  *
- * \param gr  The group to get the name of.
+ * \param cont  The contact to get the name of.
  */
 /*
  * XXX Actually we would like this to return a const ptr... We can't unless we
  *  we want to cast around while using the name as hash key.
  */
 char *
-group_name(group gr)
+contact_name(contact cont)
 {
-	return gr->name;
+	return cont->name;
 }
 
 
 #ifdef DEBUG
 /**
- * Prints a dump of a group.
+ * Prints a dump of a contact.
  *
- * \param gr  The group to print.
+ * \param ct  The contact to print.
  */
 void
-group_dump(group gr)
+contact_dump(contact ct)
 {
-	printf("Group %s:\n", gr->name);
+	printf("Contact %s:\n", ct->name);
 }
 #endif /* DEBUG */
+
+
+/**
+ * Add an id to a contact, or update an existing id.
+ *
+ * \param ct  The contact to add the id to.
+ * \param id  The id to add to the contact.
+ *
+ * \return  The contact
+ *
+ * \sa contact_del_id
+ */
+contact
+contact_add_id(contact ct, contact_id id)
+{
+	/* XXX a better name is contact_insert_id??? */
+	gendata key, value;
+
+	key.ptr = contact_id_name(id);
+	value.ptr = id;
+
+	/* Hmm, this key/value gendata nonsense should be easier */
+	alist_insert(ct->ids, key, value, str_eq,
+		     (free_func)contact_id_destroy);
+
+	return ct;
+}
+
+
+/**
+ * Delete an id from a contact.
+ *
+ * \param id    The contact to delete the id from.
+ * \param name  The name of the id to delete.
+ *
+ * \return  The contact
+ *
+ * \sa contact_add_id
+ */
+contact
+contact_del_id(contact ct, char *name)
+{
+	gendata key;
+	key.ptr = name;
+
+	alist_delete(ct->ids, key, str_eq, NULL, (free_func)contact_id_destroy);
+
+	return ct;
+}

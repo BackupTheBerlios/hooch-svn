@@ -29,34 +29,88 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Contact list
+/**
+ * \file group.c
+ * Addressbook groups functionality
  */
-#ifndef CAMILLE_CONTACTS_H
-#define CAMILLE_CONTACTS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+#include <stdlib.h>
 #include <gune/gune.h>
-#include <camille/contact_id.h>
+#include <camille/group.h>
 
-typedef struct contact_t {
-	char *name;
-	alist ids;				/* alist of contact_ids */
-} contact_t, *contact;
+group_t * const ERROR_GROUP = (void *)error_dummy_func;
 
-contact contact_create(const char *);
-void contact_destroy(contact);
-char *contact_name(contact);
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+/**
+ * Create a group with a given name, initialising all data to the defaults.
+ *
+ * \param name  The (symbolic, identifier) name of the group
+ *
+ * \return  The new group, or ERROR_GROUP if there was an error.
+ *
+ * \sa group_destroy
+ */
+group
+group_create(const char *name)
+{
+	group_t *gr;
+
+	if ((gr = malloc(sizeof(group_t))) == NULL)
+		return ERROR_GROUP;
+
+	gr->name = str_cpy(name);
+
+	if (gr->name == NULL) {
+		free(gr);
+		return ERROR_GROUP;
+	}
+
+	return (group)gr;
+}
+
+
+/**
+ * Destroy a group.
+ *
+ * \param gr  The group to destroy.
+ *
+ * \sa group_create
+ */
+void
+group_destroy(group gr)
+{
+	free(gr->name);
+	free(gr);
+}
+
+
+/**
+ * Retrieve the name of a group.
+ *
+ * \param gr  The group to get the name of.
+ */
+/*
+ * XXX Actually we would like this to return a const ptr... We can't unless we
+ *  we want to cast around while using the name as hash key.
+ */
+char *
+group_name(group gr)
+{
+	return gr->name;
+}
+
 
 #ifdef DEBUG
-void contact_dump(contact);
-#endif
-
-#ifdef __cplusplus
+/**
+ * Prints a dump of a group.
+ *
+ * \param gr  The group to print.
+ */
+void
+group_dump(group gr)
+{
+	printf("Group %s:\n", gr->name);
 }
-#endif
-
-#endif /* CAMILLE_CONTACTS_H */
+#endif /* DEBUG */
