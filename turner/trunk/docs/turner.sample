@@ -82,6 +82,15 @@ rule {
 		cc = maggy;		# Invalid, user may intend maggy:*
 		cc = maggy:primary;	# Valid alternative
 	}
+	
+	#
+	# Q: Psycological issue: consider this:
+	#           match { to = bart:*; }
+	#    What we mean by that is: the To-field *contains* any address of
+	#    Bart.  Will the =-operator not false imply an equality relation,
+	#    instead of a "containment"?
+	#    ``Confusion is drawing near...  I can feel it.''
+	#
 
 	#
 	# XXX: The name ``begin'' is very general.  We could be much more
