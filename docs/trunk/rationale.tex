@@ -19,9 +19,9 @@
 \subsection{Origin}
 
 The syntax of all Hooch and Turner config files is generally speaking
-the same.  The basic notation is borrowed from C-like languages, the Unix
-shell and inspired by Irssi's configuration files and CSS notation.  This
-should make it easy to read for experienced programmers.  Beginners should not
+the same.  The basic notation is borrowed from C-like languages and
+inspired by Irssi's configuration files and CSS notation.  This should
+make it easy to read for experienced programmers.  Beginners should not
 need to edit most config files manually, since the user interface shall
 eventually support some way of setting preferences, so there was no
 reason to worry about the somewhat cryptic nature (for beginners,
@@ -36,39 +36,18 @@ many programs' config files are, especially when Hooch's feature set
 grows as the program matures and new plug-ins are installed.  Because
 the user does not always fully utilise every option a plug-in or
 subsystem has to offer, the dot notation (\texttt{struct.option =
-value}) can be used for compactness.
+value;}) can be used for compactness.
 
 \subsection{Statements}
 
-\subsubsection{Rejected idea}
-
-Originally, we decided a statement should always be ended by a
-semi-colon and strings should be enclosed in quotes, like in C, for
-maximum clarity and ease of parsing.
-
-This would also allow the user to make statements span multiple lines
-in the file and write one-liners with ease, providing maximum flexibility
-of notation.
-
-\subsubsection{Accepted idea}
-
-The above idea is more formal and is thus probably better design.
-But it turned out to be extremely inpractical in Turner's
-configuration files, where one is constantly writing very simple lines.
-In that case, it became a real bother to wite things like
-\verb|! "echo \"Hello, World\"";|.  Instead, it became increasingly
-clear to us that the right way would be to abandon the extremely
-academic and formal notation and adopt a more loose style of notation.
-Using a different notation exclusively for lines with pipes is
-unacceptable, since it breaks consistency, so the change was
-incorporated in every file format.
-
-Now, statements are until the end of a line, and if one wishes to
-continue on a new line, a single backslash at the end of the line
-is needed, like in the shell or in Makefiles.  If for some reason it is
-necessary to be precise about spaces, one can still enclose the string in
-double quotes, again like in the shell or a Makefile.
-
+For ease of parsing, a semicolon is required at the end of a statement.
+This allows the user to make statements span multiple lines in the file,
+providing maximum flexibility of notation.  Whitespace and comments are
+also completely ignored for this reason.  Because a closing brace
+(\verb.}.) is always the end of a list of assignments to one structure's
+fields, there is no need for a semicolon after a closing brace.  Thus,
+to avoid confusion, the semicolon is explicitly disallowed after closing
+braces.
 
 \subsection{Comments}
 
@@ -134,15 +113,15 @@ An example:
 # This...
 contact jose {
     primary {	# "primary" is a mandatory identity
-        name = Jose
-        address = jose@hola.es
+        name = "Jose";
+        address = "jose@hola.es";
     }
 }
 
 # ...can be written in short as:
 contact jose {
-    name = Jose
-    address = jose@hola.es
+    name = "Jose";
+    address = "jose@hola.es";
 }
 \end{verbatim}
 
@@ -152,12 +131,12 @@ one, and should result in a parsing error:
 
 \begin{verbatim}
 contact jose {
-    name = Jose
-    address = jose@hola.es
+    name = "Jose";
+    address = "jose@hola.es";
 
     primary {	# False: there are primary fields already
-        name = Jose
-        address = jose@hola.es
+        name = "Jose";
+        address = "jose@hola.es";
     }
 }
 \end{verbatim}
