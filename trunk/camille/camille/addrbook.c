@@ -42,8 +42,6 @@ addrbook_t * const ERROR_ADDRBOOK = (void *)error_dummy_func;
 /* XXX There's prolly a cleaner way to do this */
 /* Parser data */
 addrbook curr_addrbook;
-contact  curr_contact;
-group    curr_group;
 extern FILE *yyin;
 
 extern int yyparse(void);

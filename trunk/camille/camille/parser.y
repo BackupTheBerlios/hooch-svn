@@ -40,11 +40,12 @@
 #define TRACE
 #endif
 
-int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
+/* Bool indicating whether we read a defaults block */
+static int read_defaults = 0;
 
+static contact  curr_contact;
+static group    curr_group;
 extern addrbook curr_addrbook;
-extern contact curr_contact;
-extern group curr_group;
 
 extern int yylex(void);
 
@@ -229,7 +230,7 @@ start:
 
 %%
 
-void
+static void
 yyerror(char *err, ...) {
 	va_list ap;
 	va_start(ap, err);
