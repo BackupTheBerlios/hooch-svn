@@ -34,6 +34,7 @@
  * Contact list manipulation functions
  */
 
+#include <stdlib.h>
 #include <gune/error.h>
 #include <camille/contacts.h>
 
@@ -52,6 +53,9 @@ contact
 contact_create(const char *name)
 {
 	contact_t *cont;
+
+	if ((cont = malloc(sizeof(contact_t))) == NULL)
+		return ERROR_CONTACT;
 
 	return (contact)cont;
 }

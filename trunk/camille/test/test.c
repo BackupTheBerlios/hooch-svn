@@ -49,7 +49,7 @@ main(int argc, char **argv)
 {
 	extern char *optarg;
 	char *str = NULL;
-	char ch;
+	int ch;
 
 	/* Default options */
 	int i;

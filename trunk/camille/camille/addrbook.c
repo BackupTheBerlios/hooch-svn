@@ -78,20 +78,20 @@ addrbook_create(void)
 	if ((ab = malloc(sizeof(addrbook_t))) == NULL)
 		return ERROR_ADDRBOOK;
 
-	if ((ab->contacts = ht_create(CONTACTS_RANGE, str_hash, str_eq))
+	if ((ab->contacts = ht_create(CONTACTS_RANGE, str_hash))
 	    == ERROR_HT) {
 		free(ab);
 		return ERROR_ADDRBOOK;
 	}
 
-	if ((ab->groups = ht_create(GROUPS_RANGE, str_hash, str_eq))
+	if ((ab->groups = ht_create(GROUPS_RANGE, str_hash))
 	    == ERROR_HT) {
 		ht_destroy(ab->contacts, NULL, NULL);
 		free(ab);
 		return ERROR_ADDRBOOK;
 	}
 
-	if ((ab->defaults = alist_create(str_eq)) == ERROR_ALIST) {
+	if ((ab->defaults = alist_create()) == ERROR_ALIST) {
 		ht_destroy(ab->groups, NULL, NULL);
 		ht_destroy(ab->contacts, NULL, NULL);
 		free(ab);
