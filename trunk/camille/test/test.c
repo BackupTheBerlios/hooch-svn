@@ -61,6 +61,9 @@ main(int argc, char **argv)
 	}
 	*/
 
+	printf("$Id$\n");
+	printf("Running test... Go your gang.\n");
+
 	while ((ch = getopt(argc, argv, "h")) != -1)
 		switch (ch) {
 		case 'h':

@@ -39,12 +39,12 @@
 extern "C" {
 #endif
 
-#include <gune/lists.h>
+#include <gune/gune.h>
 
 struct address_book {
 	array contacts;
 	array groups;
-}
+};
 
 #ifdef __cplusplus
 }
