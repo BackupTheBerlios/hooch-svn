@@ -52,6 +52,7 @@ wspace		[ \t]
 #include <stdlib.h>
 #include <gune/stack.h>
 #include <gune/string.h>
+#include <camille/option.h>
 #include "parser.h"
 
 void yyerror(char *, ...);
@@ -128,9 +129,9 @@ empty			{	return EMPTY;		}
 \-?0x{hexdigit}+	{
 				long lval;
 
+				errno = 0;
 				lval = strtol(yytext, NULL, 16);
 
-				errno = 0;
 				/*
 				 * Check if the number is either too large
 				 * according to strtol itself (even too big
