@@ -34,6 +34,8 @@
  * Hooch mail client, main program
  */
 
+#include "hooch.h"
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**

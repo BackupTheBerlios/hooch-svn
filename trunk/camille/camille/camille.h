@@ -41,6 +41,12 @@ extern "C" {
 
 #include <gune/gune.h>
 
+#define CAMILLE_MAJOR_VERSION	0
+#define CAMILLE_MINOR_VERSION	1
+
+#define CAMILLE_VERSION		\
+		GEN_VERSION(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
+
 struct address_book {
 	array contacts;
 	array groups;

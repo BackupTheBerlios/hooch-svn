@@ -34,6 +34,8 @@
  * Turner mail processor, main program
  */
 
+#include "turner.h"
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
