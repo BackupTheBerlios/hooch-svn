@@ -55,12 +55,25 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
 %token <string> STRING;
 %token <boolean> BOOLEAN;
 %token <integer> INTEGER;
-%token CONTACT, IDENTITY, DEFAULTS, EMPTY;
 
-%type <amount> list_of_blocks list_of_identities
-%type <amount> defaults_fields identity_fields fields
+%token CONTACT, IDENTITY, DEFAULTS, GROUP;
+%token EMPTY;
 
-%start list_of_blocks
+/* Lists of blocks */
+%type <amount> blocks
+%type <amount> identities
+
+/* Statement blocks */
+%type <amount> defaults_stms
+%type <amount> identity_stms
+%type <amount> group_stms
+%type <amount> single_stms
+/* %type <amount> stms */
+
+/* Field names */
+%type <identifier> field
+
+%start start
 
 %%
 
@@ -74,13 +87,14 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
  *
  */
 
-list_of_blocks:
-	block list_of_blocks	{ $$ = 1 + $2; }
+blocks:
+	block blocks		{ $$ = 1 + $2; }
 	| /* Empty */		{ $$ = 0; }
 	;
 
 block:	contact_block		{ }
 	| defaults_block	{ }
+	| group_block		{ }
 	;
 
 contact_block:
@@ -92,7 +106,7 @@ contact_block:
 	;
 
 contact_body:
-	list_of_identities
+	identities
 		{
 			printf("===> Check that there was at least a primary identity.\n");
 		}
@@ -103,13 +117,13 @@ contact_body:
 	 */
 	;
 
-list_of_identities:
-	identity list_of_identities	{ $$ = 1 + $2; }
-	| /* Empty */			{ $$ = 0; }
+identities:
+	identity identities	{ $$ = 1 + $2; }
+	| /* Empty */		{ $$ = 0; }
 	;
 
 identity:
-	IDENTITY IDENTIFIER '{' identity_fields '}'
+	IDENTITY IDENTIFIER '{' identity_stms '}'
 		{
 			printf("===> Check whether no identity with the same name exists.\n");
 			printf("===> Check that identity %s has \"name\" and \"address\".\n", $2);
@@ -117,8 +131,17 @@ identity:
 		}
 	;
 
+group_block:
+	GROUP IDENTIFIER '{' group_stms '}'
+		{
+			printf("===> Check whether no group with the same name exists.\n");
+			printf("===> Check whether group has a members field.\n");
+			printf("===> If not, store group %s.\n", $2);
+		}
+	;
+
 defaults_block:
-	DEFAULTS '{' defaults_fields '}'
+	DEFAULTS '{' defaults_stms '}'
 		{
 			if (read_defaults) {
 				yyerror("Error: More than one defaults-block is not allowed.\n");
@@ -134,37 +157,43 @@ defaults_block:
 		}
 	;
 
-identity_fields: fields { $$ = $1; };
-defaults_fields: fields { $$ = $1; };
+identity_stms: single_stms	{ $$ = $1; };
+defaults_stms: single_stms	{ $$ = $1; };
+group_stms:    single_stms	{ $$ = $1; };	/* XXX Allow multi_stms, too */
 
-fields:
-	field_assignment fields { /* Return the number of fields */ $$ = 1 + $2; }
-	| /* Empty */ { $$ = 0; };
+single_stms:
+	single_stm single_stms	{ $$ = 1 + $2; }
+	| /* Empty */		{ $$ = 0; };
 
-field_assignment:
-	IDENTIFIER '=' BOOLEAN ';'	/* XXX Should be fieldname '=' boolean */
+single_stm:
+	';'			{ }
+	| field '=' BOOLEAN ';'
 		{
 			printf("Storing boolean \"%s\" => %d in contact buffer.\n",
 			       $1, $3);
 		}
-	| IDENTIFIER '=' INTEGER ';'	/* XXX Should be fieldname '=' integer */
+	| field '=' INTEGER ';'
 		{
 			printf("Storing integer \"%s\" => %d in contact buffer.\n",
 			       $1, $3);
 		}
-	| IDENTIFIER '=' STRING ';'	/* XXX Should be fieldname '=' string */
+	| field '=' STRING ';'
 		{
 			printf("Storing string \"%s\" => \"%s\" in contact buffer.\n",
 			       $1, $3);
 		}
-	| IDENTIFIER '=' EMPTY ';'	/* XXX Should be fieldname '=' empty */
+	| field '=' EMPTY ';'
 		{
 			printf("Storing empty field \"%s\" in contact buffer.\n",
 			       $1);
 		}
 	;
 
-start:	list_of_blocks
+field:
+	IDENTIFIER	{ $$ = $1; }
+	;
+
+start:	blocks
 		{
 			printf("\n");
 			printf("Summary:\n");

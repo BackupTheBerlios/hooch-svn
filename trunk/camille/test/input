@@ -44,6 +44,7 @@ defaults {
 	string_test = `Enclosed in backticks, test: { ', ", \`, \\ }`;
 	string_test2 = 'Enclosed in single quotes, test: { \', ", `, \\ }';
 	string_test3 = "Enclosed in double quotes, test: { \', \", `, \\ }";
+	;;;;;;;;;;;;;;
 	#empty = "";	# <-- This gave syntax error!
 	something-empty = empty;
 }
@@ -52,6 +53,12 @@ contact SomeEmptyContactAfterADefaultsBlock {
 	# This should NOT be valid, eventually!
 	id one {}
 	id two {}
+}
+
+group friends {
+	# members = nvie, sjamaan;
+	somefield = 0xf00;
+	;
 }
 
 contact SomeEmptyContactAfterADefaultsBlock {

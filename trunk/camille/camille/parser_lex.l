@@ -46,10 +46,10 @@ wspace		[ \t]
 void yyerror(char *, ...);
 
 /* Values internally used in lexicographical analysis */
-int lineno = 1;
-stack s;
-unsigned int ssize;
-char delim_opened;
+int lineno = 1;		/* Keep track of line numbers to produce friendly error messages */
+stack s;		/* Stack used to store strings that are in analysis */
+unsigned int ssize;	/* The size of the string that is in analysis */
+char delim_opened;	/* The character that opened the string in analysis */
 
 void push_char(char);
 char *pop_string(void);
@@ -107,7 +107,13 @@ char *pop_string(void);
 	/*** Language keywords ***/
 (yes|true)		{	yylval.boolean = 1; return BOOLEAN;	}
 (no|false|neener)	{	yylval.boolean = 0; return BOOLEAN;	}
+defaults		{	return DEFAULTS;	}
+contact			{	return CONTACT;		}
+id			{	return IDENTITY;	}
+group			{	return GROUP;		}
+empty			{	return EMPTY;		}
 
+	/*** Numbers ***/
 \-?0x{hexdigit}+	{
 				yylval.integer = strtol(yytext, NULL, 16);
 				return INTEGER;
@@ -118,16 +124,8 @@ char *pop_string(void);
 				return INTEGER;
 			}
 
-defaults	{	return DEFAULTS;	}
-
-contact		{	return CONTACT;		}
-
-empty		{	return EMPTY;		}
-
-id		{	return IDENTITY;	}
-
 	/*** Interpunction ***/
-[{}=;]		{	return yytext[0];	}
+[{}=,;]		{	return yytext[0];	}
 
 	/*** Identifiers ***/
 {alpha}{idchars}+	{
@@ -156,7 +154,6 @@ push_char(char c)
 	d.sym = c;	/* Can't these lines be written as one? */
 
 	ssize++;
-	/* printf("read %c... setting ssize to %d\n", c, ssize); */
 	stack_push(s, d);
 }
 
