@@ -5,7 +5,7 @@
 #
 
 LIB= camille
-CAMILLESRCS= contacts.c
+CAMILLESRCS= contacts.c parser.y
 GENSRCS= parser.c parser_lex.c parser.h
 SRCS= ${CAMILLESRCS} ${GENSRCS}
 

@@ -34,26 +34,52 @@ digit	[0-9]
 letter	[A-Za-z]
 upcase	[A-Z]
 lowcase	[a-z]
-wspace	[ \t\n]
+wspace	[ \t]
 
 %{
 
 #include <stdio.h>
 #include "parser.h"
-void yyerror(char *);
+void yyerror(char *, ...);
 
 int lineno = 1;
+int defaults_found = 0;
 
 %}
 
 %%
 
-\n		lineno++;	/* Keep track of line numbers */
+	/*
+	 * Whitespaces and comments
+	 */
+#.*		;		/* Skip over comments, starting with # until \n */
 
 {wspace}+	;       	/* Skip whitespaces */
 
+\n		lineno++;	/* Keep track of line numbers */
+
+	/*
+	 * Language keywords
+	 */
+defaults	{
+			if (defaults_found++ > 0) {
+				/* XXX: Maybe print file name, too? */
+				yyerror("line %d: Block defaults multiply "
+			  	        "defined (only allowed once)", lineno);
+			}
+			else
+				return DEFAULTS;
+		}
 contact		return CONTACT;
 
+	/*
+	 * Interpunction
+	 */
+[{}=;]		return *yytext;
+
+	/*
+	 * Identifiers
+	 */
 {letter}+	{
 			char *buf = (char *)malloc((unsigned int)yyleng + 1);
 			strcpy(buf, yytext);
@@ -62,7 +88,7 @@ contact		return CONTACT;
 		}
 
 .		{
-			fprintf(stderr, "Unknown character on line %d: ``%c''\n", lineno, *yytext);
+			yyerror("Unknown character on line %d: ``%c''\n", lineno, *yytext);
 			exit(1);
 		}
 
