@@ -43,8 +43,9 @@
 /* Bool indicating whether we read a defaults block */
 static int read_defaults = 0;
 
-static contact  curr_contact;
-static group    curr_group;
+static group	   curr_group;
+static contact	   curr_contact;
+static contact_id  curr_id;
 extern addrbook curr_addrbook;
 
 extern int yylex(void);
@@ -139,12 +140,14 @@ identity:
 		{
 			printf("===> Make new identity \"%s\"\n", $2);
 			/* TODO: Check whether no identity with the same name exists */
+			curr_id = contact_id_create($2);
 		}
 	'{' identity_stms '}'
 		{
 			/* TODO: Check that this identity has name and address */
 			/* If so: */
 			printf("===> Store identity \"%s\"\n", $2);
+			contact_add_id(curr_contact, curr_id);
 		}
 	;
 

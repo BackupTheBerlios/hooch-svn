@@ -40,6 +40,10 @@
 
 contact_t * const ERROR_CONTACT = (void *)error_dummy_func;
 
+#ifdef DEBUG
+static void contact_id_walk(gendata *, gendata *);
+#endif
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
@@ -58,6 +62,11 @@ contact_create(const char *name)
 
 	if ((cont = malloc(sizeof(contact_t))) == NULL)
 		return ERROR_CONTACT;
+
+	if ((cont->ids = alist_create()) == ERROR_ALIST) {
+		free(cont);
+		return ERROR_CONTACT;
+	}
 
 	cont->name = str_cpy(name);
 
@@ -111,6 +120,17 @@ void
 contact_dump(contact ct)
 {
 	printf("Contact %s:\n", ct->name);
+	alist_walk(ct->ids, contact_id_walk);
+}
+
+
+/**
+ * Call id dumping function for all ids in the contact.
+ */
+static void
+contact_id_walk(gendata *key, gendata *value)
+{
+	contact_id_dump((contact_id)value->ptr);
 }
 #endif /* DEBUG */
 

@@ -51,6 +51,9 @@ contact contact_create(const char *);
 void contact_destroy(contact);
 char *contact_name(contact);
 
+contact contact_add_id(contact, contact_id);
+contact contact_del_id(contact, char *);
+
 #ifdef DEBUG
 void contact_dump(contact);
 #endif
