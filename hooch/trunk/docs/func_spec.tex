@@ -1,0 +1,243 @@
+% $Id: func_spec.tex,v 1.7 2003/12/19 20:53:11 airhead Exp $
+%
+% Hooch Functional Specification
+%
+
+\documentclass[a4paper]{book}
+
+\usepackage[english]{babel}
+\usepackage{url}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+\title{Hooch Functional Specification}
+\date{October 2003}
+\author{Peter~Bex\and{}Vincent~Driessen}
+\begin{document}
+
+\frontmatter
+
+\maketitle
+\tableofcontents
+
+
+\mainmatter
+
+\chapter{Overview}
+
+Hooch is an e-mail client for Unix-like operating systems.
+
+This document will only discuss the general working of the program, not
+technical implementation details. For these, see the Hooch Technical
+Specification.
+
+
+\section{Major features}
+
+Hooch supports the following major features:
+\begin{itemize}
+\item {\bf Person-based address book.} The address book consists of persons,
+	mailing lists and groups of persons. This way, a person can have
+	multiple addresses while a list cannot.
+\item {\bf Class-based configuration file.} The configuration is done in
+	classes, making the overall design more modular (modules specify
+	their own classes) and the config files very human-readable.
+\item {\bf Mailing list handling.} Mailing lists are supported by providing
+	thread-based views for messages and replying to the list instead of
+	the sender of a message.
+\item {\bf Multiple user interfaces.} The design is modular, allowing for
+	multiple UIs. The current aim is to create both a graphical one and
+	a curses-based one. The latter one is initially the most important.
+\item {\bf Maximum configurability.} The user can provide their own
+	keymappings, color schemes and lay-out, depending on the selected
+	interface. Modules supply their own configurable parameters.
+\item {\bf Integration of major external programs by plugins.} PGP, for example
+	is supported by presenting a list of available PGP keys and options for
+	encrypting and signing. The actual PGP encryption is performed by
+	external tools. This is done by a crypto module which in turn has a
+	PGP module.
+\end{itemize}
+
+
+\section{Unsupported features}
+
+Hooch will not support the following features:
+\begin{itemize}
+\item {\bf Retrieving mail from a server.} This should be delegated to
+	another application, for example fetchmail.
+\item {\bf Filtering mail.} This is also delegated. Hooch assumes the mail
+	to be filtered when it reads it.
+\item {\bf Composing mail.} The user can specify their favorite editor to
+	type their mail with.
+\item {\bf Post-processing mail.} Encryption of mail, for example, can be
+	achieved by piping the e-mail through a PGP program.
+\item {\bf Reading mime attachments.} Any non-plaintext attachments should
+	be read using an external program. There \emph{are} provisions for
+	automatically viewing attachments of specified types with specified
+	programs.
+\end{itemize}
+
+
+\section{Typical usage}
+
+What follows is a typical example of day-to-day usage of Hooch.
+
+Jack logs in to his system and starts up Hooch. He is now shown his default
+inbox in the \emph{index} view. Here he sees a list of messages, some of which
+are marked 'new'. The status bar tells him there are other folders which
+contain new messages.
+
+Jack decides to first read the new mail in his inbox. This opens up the
+\emph{pager} view. Here he sees a small selection of headers, followed by
+the body of the e-mail. He scrolls through and decides he wishes to reply.
+So he presses the reply button. This selects the identity the mail was sent
+to and matching signature and opens the default editor on a message
+containing just the signature. After typing his e-mail, he quits the editor
+and is shown the \emph{compose} screen. Here he can make some adjustments
+with regard to the subject of the e-mail and some optional other recipients,
+and optionally some settings provided by plugins.
+
+Now, he decides to e-mail his boss about that possible raise he was hoping
+for, so he presses the 'compose mail' button. He then gets the opportunity to
+choose an id in the \emph{id} view, where he selects his 'Jack at work' id.
+The matching signature is a mandatory disclaimer from his company and the PGP
+key is the one matching his address at work. Now, he enters the
+\emph{address book} view, where he selects his boss' address. After typing
+his mail, he starts checking the mailing lists he is subscribed to.
+
+To do so, he opens up the \emph{browser} view. This shows his mailfolder,
+with the mailboxes and subdirectories. If a mailbox is marked 'new', there
+are new (or unread) messages in the box. If a subdirectory is marked 'new',
+there is at least one mailbox underneath which contains new messages.
+Selecting the list, he comes back to the \emph{index}, where the inbox is
+replaced by the list's e-mail messages. The messages are displayed in
+threaded mode, because Jack supplied this as the mode for this mailbox.
+He also supplied in the configuration that he wants all threads to be
+collapsed unless there are unread messages somewhere in the thread.
+He quickly skims the messages, marking those which appear not to be of
+interest to him as read. The statusbar now changes to indicate there are no
+new messages, including in other mailboxes, so Jack decides to finally get
+to work and quits Hooch.
+
+
+\chapter{The views}
+
+\section{Index}
+
+The default screen shown at startup. This view shows mails in the currently
+selected mailbox, optionally threaded by topic. It shows a user-customisable
+string for each e-mail in the list, which can contain any combination of
+headers in an e-mail. Each listed entry also shows a number of flags, which
+are extendable by plugins. These flags show the status of the particular
+message, which can indicate for example if the message has already been read
+or not, whether the message is encrypted or signed etc.
+Messages can also be color coded or in some other way formatted, depending on
+which interface is used. 
+
+The index shows in the status bar how many messages are in the currently
+selected mailbox, the number of flagged messages and the name of the mailbox.
+The user can optionally format the layout of the statusbar.
+By selecting a message, it can be opened. This will open the internal pager by
+default, but the message can also be passed on to another program. It is
+always possible to pass the message on to another program, regardless of the
+default operation.
+Most operations which are available from the pager are also available in the
+index, for when the user wishes to open messages with a specific program
+these operations must still be available. See pager for a description of these
+operations.
+
+
+\section{Pager}
+
+The pager is the view which the user will see when he has selected an e-mail
+to view. It provides functionality to scroll through it, and
+
+
+\section{Address Book}
+
+The screen greeting the user when he enters the address book, is a list of
+all groups, people and lists (collectively called 'aliases') which are not
+entered in any subgroup. When an entire group is added, all default e-mail
+addresses of the members of this group are added to the currently active
+field. Alternatively, the address can be entered into a different field,
+when the corresponding button is pressed.
+\\XXX FIXME: All default addresses? Better select which addresses belong to
+which group and have that selected!\\
+Also, a group can be 'opened', which replaces the previous list by a list of
+persons and subgroups in the group.
+If a person's address is added, the user can do one of two things: Either
+'select' the person, which adds the default e-mail address to the current
+field, or 'open' the person as if he or she were a group, and select the
+desired address. When aliases are entered into an address field, the item in
+the view becomes marked, indicating whether all or some of the members of
+a group are entered, whether the default or another address of a person
+is entered or when a list is entered.
+
+Aliases can be added or deleted from the address book view. When creating
+a new alias, the item is automatically inserted in the currently selected
+group (if no group is selected, the alias will not be entered in any group).
+If a person is created, the user gets the \emph{person} form where
+information about a person can be entered. The same holds for a list, opening
+the \emph{list} form. If a group is created, the user can select aliases
+which are to be entered as members of the group in the same fashion as
+aliases are added to an address field when composing mail.
+\\XXX TODO: Also here, how to deal with the case of specifically selected
+addresses?
+
+\subsection{List form}
+
+\subsection{Person form}
+
+
+\section{Id}
+
+
+\section{Browser}
+
+
+\section{Compose}
+
+
+\chapter{Global functionality}
+
+There is functionality which is available globally, which means it is
+available everywhere except where it is appropriate. This functionality is
+described in this chapter.
+
+\section{Searching, tagging and limiting}
+
+One can perform searching anywhere where Hooch is not expecting any input
+in the form of direct text.
+Searching is done by pressing the search button and then typing a
+pattern which follows the same syntax as Mutt's patterns.
+When a search pattern has been entered, the first hit down from the current
+position is shown. The next can be shown by pressing the 'next match' key.
+One can also search backwards.
+
+Tagging works like searching, except that \emph{all} matches are tagged at
+once. After that, operations can be performed on all tagged
+entries by first typing the 'apply to tagged' button and then the desired
+operation as it would be applied on a single entry. Tags are not remembered
+across mailboxes.
+
+Limiting works like tagging, but now only the matches are shown while all
+other entries are hidden. Limits are removed when changing mailboxes.
+
+Tagging and limiting do not work in the pager, searching does.
+
+
+\section{Completion}
+
+When Hooch is expecting direct text input, pressing a completion key (usually
+tab) will try to finish the currently typed word. If there is only one match,
+the match will be completed, followed by what the user will most likely type
+directly following the current entry. In address fields for example, a comma
+and a space will be added after the current alias. If the current word can
+be finished partially with certainty, but after that there are multiple
+options, the word will be finished partially. If there are multiple options
+from the currently typed word (including the empty word), the appropriate
+view is opened containing only those entries that match the partial word
+already entered.
+
+
+\end{document}

@@ -1,0 +1,128 @@
+#
+# Sample Turner/Hooch address book
+#
+# $Id: addresses.sample,v 1.14 2004/05/24 21:42:10 airhead Exp $
+#
+
+#
+# Multiple identities per contact are possible, by defining id-blocks for a contact.
+#
+contact homer {
+	address = "homer@simpsons.net";
+	pgp.key_id = empty;
+
+	id work {
+		address = "homer@powerplant.net";
+		pgp.key_id = "0xBABE2ADE5BED";
+	}
+}
+
+#
+# x { } is synonymous for x;
+#
+# But /only/ if it is legal to put something inside those braces. (So
+# assignments to simple variables (bools, strings etc) MUST have a ; at the end)
+#
+
+#
+# Now we can access homer's work address with `homer:work'
+# Specifying a contact's specific e-mail address in a group can be also done easily now:
+#
+group employees { contacts = homer:work, smithers; }
+
+#
+# We might even get rid of the annoying notation that links addresses to pgp
+# keys by grouping them together under a different identity:
+#
+contact homer {
+	address = "homer@simpsons.net";			# Main address
+	pgp.key_id = 0xabcdef;				# With PGP key
+	id work {
+		address = "homer@powerplant.net";	# Work address
+		#
+		# We need to explicitly set this to empty, because
+		# the settings from the main ID are cascaded over into
+		# the id things.
+		#
+		pgp.key_id = empty;			# Empty?
+	}
+}
+
+##########
+# Groups #
+##########
+
+# Groups are defined like this:
+group parents {
+	contacts = marge, homer;
+	option1 = y;
+	option2 = foo;
+}
+
+#
+# If after reading and parsing all config files there are still contacts
+#  in a `contacts' field of a group which do not exist, we get an error.  So
+#  we can put people in groups in advance, and tell Hooch more about these
+#  contacts (put the `implementation' of the contacts) later in the file.
+#
+
+#
+# Note that there may not be a contact with the same name as a group.  This is
+#  the desired effect, since the user can now type a mail, and on the `to' line
+#  type the name of either a group or a contact and get an unambiguous expansion
+#
+
+#
+# We allow the exact same options for groups as for contacts, to provide
+# group-wide defaults for all contacts, with optional override in the contacts
+# themselves.
+# With the behaviour of when addressing the group, the group settings are in
+# effect, but when addressing the contact directly, those settings have effect.
+#
+# Suppose we have user `burns' in group `bosses' and in group `evil'.
+# `bosses' has property `pgp.sign = yes' and `evil' has `pgp.sign = no'.  Now,
+# when we mail to `burns', `pgp.sign' will be whatever the selected burns
+# identity property `pgp.sign' has been set to.  If we would mail to group
+# `bosses', then `pgp.sign' will be `yes' for burns.  If we mail to `evil',
+# then `pgp.sign' will be `no' for burns.  If two settings will conflict, for
+# example, when we mail to both groups, or to one group and the contact burns
+# itself in addition, the contact will get two mails, one signed and one
+# unsigned.  This behaviour is pgp-plugin specific though.
+#
+# Note: this behaviour should not be allowed by Hooch, but should be enabled in
+# the .hoochrc file, because this behaviour is pretty non-standard and the user
+# should use it only when fully concious.
+
+#
+# Subsystems/extensions can be handled with ease.  They simply register which
+# lines (under which blocks (so register "pgp.key_id", "pgp.sign" etc) they
+# understand and the type of these fields.  Perhaps even new toplevel blocks
+# (say `gui' or something)
+# This way we can error immediately on keywords we don't understand.
+#
+contact burns {
+	name = "Mr. Burns";
+	address = "burns@powerplant.net";
+
+	# Picture plugin/GUI which optionally shows photos of your contacts
+	picture = "~/pics/ugly_mug.png";
+
+	# More elaborate plugins can be passed a structure with many fields
+	pgp {
+		key_id = "0x1029384756";# Number or string? (Hex! what if no 0x)
+		encrypt = yes;		# bool.  true/false also accepted
+		sign = yes;
+	}
+
+	#
+	# One can refer to structures or contacts with dot notation,
+	# for example suppose we only want to specify a key id, and rely
+	# on sane defaults for the rest of the PGP subsystem:
+	#
+	pgp.key_id = "1029384756";
+
+	# Of course, this idea can (and should, for intuity/consistency
+	# reasons) be extended.  For example, we could use burns.address
+	# if we want to refer to the address field of the contact or group
+	# called `burns' in any other place of the program.  (and so on)
+}
