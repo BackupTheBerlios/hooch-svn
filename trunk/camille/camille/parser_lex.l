@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: parser.y 70 2004-06-06 02:26:09Z nvie $
  *
  * Copyright (c) 2004 Peter Bex and Vincent Driessen
  * All rights reserved.
@@ -29,51 +29,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* Character classes */
+digit	[0-9]
+letter	[A-Za-z]
+upcase	[A-Z]
+lowcase	[a-z]
+wspace	[ \t\n]
+
 %{
 
-#ifdef DEBUG
-#define TRACE printf("Reduce at line %d\n", __LINE__);
-#else
-#define TRACE
-#endif
+#include <stdio.h>
+#include "parser.h"
+void yyerror(char *);
+
+int lineno = 1;
 
 %}
 
-%union {
-	char *identifier;
-	int result;
-};
+%%
 
-%token <identifier> IDENTIFIER;
-%token CONTACT;
+\n		lineno++;	/* Keep track of line numbers */
 
-%type <result> list_of_contacts
+{wspace}+	;       	/* Skip whitespaces */
 
-%start start
+contact		return CONTACT;
+
+{letter}+	{
+			char *buf = (char *)malloc((unsigned int)yyleng + 1);
+			strcpy(buf, yytext);
+			yylval.identifier = buf;
+			return IDENTIFIER;
+		}
+
+.		{
+			fprintf(stderr, "Unknown character on line %d: ``%c''\n", lineno, *yytext);
+			exit(1);
+		}
 
 %%
 
-start:
-	list_of_contacts
-		{
-			printf("Total: %d contacts\n", $1);
-		}
-	;
-
-list_of_contacts:
-	contact list_of_contacts { $$ = $2 + 1; }
-	| { $$ = 0; }	/* Lambda */
-	;
-
-contact:
-	CONTACT IDENTIFIER
-		{
-			printf("Found contact: ``%s''\n", $2);
-		}
-	;
-
-%%
-
-void yyerror(char *err) {
-	printf("Camille: %s\n", err);
+int
+yywrap(void) {
+        return 1;
 }
