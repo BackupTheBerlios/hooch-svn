@@ -12,7 +12,7 @@
 #
 # contact-list		=  *(LWSP (contact / group) LWSP)
 #
-# contact		=  "contact" LWSP contact-identifier LWSP
+# contact		=  "contact" LWSP contact-name LWSP
 #			    "{" contact-contents "}"
 #
 # group			=  "group" LWSP group-name LWSP "{" *group-contents "}"
@@ -20,7 +20,7 @@
 #
 # members		=  "members" LWSP "=" members-list LWSP ";"
 # members-list		=  *(LWSP member)
-# member		=  contact-identifier
+# member		=  subcontact-name
 #
 # contact-contents	=  *(id-contents / id)
 # id			=  LWSP "id" LWSP id-name LWSP "{" *id-contents "}" LWSP
@@ -31,8 +31,10 @@
 # struct		/= struct-name LWSP "{" *id-contents "}"
 #
 # option-name		=  identifier
-# contact-identifier	=  identifier [":" identifier]
-# group-identifier	=  identifier
+# contact-name		=  identifier
+# id-name		=  identifier
+# subcontact-name	=  contact-name [":" id-name]
+# group-name		=  identifier
 #
 # identifier		=  *(ALPHA / DIGIT / "-" / "_")		; Is this OK?
 #
