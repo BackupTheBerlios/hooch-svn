@@ -1,6 +1,5 @@
 /*
  * $Id$
- * $Camille$
  *
  * Copyright (c) 2004 Peter Bex and Vincent Driessen
  * All rights reserved.
