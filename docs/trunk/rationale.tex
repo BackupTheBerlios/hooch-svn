@@ -259,77 +259,18 @@ also legal inside a group.  If it actually makes sense is up to the user.
 % XXX: Discuss the syntax we dropped in revision 40 of turner.sample.
 \section{Action script syntax}
 
-XXX: Fix this!  This is just a dump of information to get us started writing
-this section:
 
-\begin{verbatim}
-As can be read in revision 39 of turner.sample:
----------------------------------------------------------------------
-match {
-	# First, we can define some patterns that should be matched
-	from = homer:work		# Mail from homer's work, or...
-	     | marge:any		# From any address of marge, or...
-	     | "someone@else\.com";	# A From field that matches this pattern
-	to = bart			# Bart's primary address, *and* to
-	   & maggy;			# Maggy's primary address
-	field "X-Custom" = "foo";	# And the X-Custom field is set to "foo"
+\section{The problem with headers}
 
-	# Next, define the actions to take
-	# Specify a list of mailboxes to move this mail to
-	incoming = bla;			# Will be $mailbox/bla, i.e.: ~/Mail/bla
+In traditional mail processors, one uses regular expressions on the lines in an
+e-mail directly, without referring to the e-mail addresses in a \texttt{To}-field,
+for example.  This is too low-level for most practical situations, where one would
+rather like to refer to collections of e-mail addresses of \emph{contacts}.
 
-	# NOTE: Every `match' should have at least one `incoming' or
-	# `outgoing'.
+For this reason, we introduced two keywords, \texttt{contains} and
+\texttt{matches}, which mean the header field should be interpreted as a list
+of e-mail addresses or just as a string which can be matched against a regular
+expression, respectively.
 
-	#
-	# An execute block is executed in the order it is presented
-	# so execute { x y z } will execute x first, then y, then z
-	# A match may contain only one execute block
-	#
-	# The begin block is run as the very last thing.  So settings AFTER
-	# a begin block still hold inside the bagin block.
-	#
-	# Example:
-	# match {
-	#	begin {
-	#		echo "Foo!";
-	#	}
-	#	from marge;
-	# }
-	# will trigger on mail from marge and print `Foo'.
-	#
-	begin {
-		# Stuff in an exec block is a shell script (or perhaps some
-		# other program, depending on .turnerrc!!)
-		exec {
-			# anything the shell (or whatever interpreter
-			# one chooses to invoke on exec blocks) accepts.
-			/usr/local/bin/beep		# on mail arrival
-		}
-		# pipe blocks are like exec blocks, but stdin is open and
-		# offers the e-mail.
-		pipe {
-			#
-			# Problem: How can we make information from turner
-			# available within this block?
-			# Use the environment???
-			#
-			/usr/bin/mail -s "One of your employees received \
-					  an e-mail" boss@powerplant.net
-		}
-
-		# filter blocks are exactly like pipe blocks, only everything
-		# below the block uses stdout from the block as the new
-		# e-mail.
-		filter {
-			# something that transforms the e-mail
-			/usr/bin/remove-pink-color-tags
-		}
-
-		# Now, any pink color tags are gone! (we're still in the
-		# begin { } block, so the order of things is important.
-	}
-}
-\end{verbatim}
 
 \end{document}
