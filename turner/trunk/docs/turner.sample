@@ -3,19 +3,6 @@
 #
 # $Id$
 #
-# <sjamaan>
-# I removed old <sjamaan> and <nvie> keywords and introduced new <sjamaan>'s
-#  for the comments I just added.
-#
-
-#
-# Q: We only match on mail headers, right? Or mail body content as well?
-#
-# A: Hmm, I think it should be possible to grep for words in an e-mail, but
-#     let's defer this, since we are still considering a way to do things
-#     depending on program exit code.  We could check for success from using
-#     grep on the e-mail body.
-#
 
 #
 # First we should specify where contacts are located
@@ -44,35 +31,7 @@
 #
 # XXX: Perhaps we even need to do things based on exit code??
 #
-# XXX: We should also consider how we implement groups, once we're done with
-#      this.
-#
-# XXX: In the rule-block below, where do we allow for send and recv mode
-#      control options?
-#
-# A: Anywhere?  I don't see a reason to restrict the send {} and recv {}
-#     block position.  Even AROUND a rule (meaning the rule is not even
-#     considered in the mode), around a match, inside a match(!),
-#     around a `perform' block(?).  This last should imply we can
-#     have two `perform' blocks inside a rule.  This would normally
-#     not be allowed, but since the program does not consider things
-#     wrapped in a block of the other mode, it is possible.
-#
-#    Since we would rather obviously also allow send/recv checks inside
-#     a `perform' (I hate this name already) block, we might consider
-#     not allowing them around perform blocks, but I personally think
-#     that would destroy some consistency.
-#
-#    One of the nicer things is that we can also allow conditional
-#     option-setting.  Like so:
-recv {
-	maildir = "~/Mail/inbox";
-	# ... other options ...
-}
-send {
-	maildir = "~/Mail/outbox";
-	# ... other options ...
-}
+
 #
 # But of course, we can do this only if we actually allow turner options
 #  in this rules file as well...  This might be a good reason to allow it,
@@ -93,52 +52,105 @@ rule {
 	# matched in the input mail headers.  (implicit OR within matches)
 	#
 	match {
-		#
-		# Specify what from should contain in order to match.
-		#
-		# Q: How can we specify "homer:work, but no-one else"? :}
-		#
-		# A: The key to the answer possibly lies in a NOT operator
-		#     Either that, or we should swap the AND/OR behaviour
-		#
-		# Another way to do it, which I definately do NOT prefer,
-		#  is creating a new operator, a `unique-equals' operator:
-		#
-		from == homer:work;
-		# 
-		# or, in spirit of the `Precisely one' existential quantifier
-		# in maths:
-		#
-		from != homer:work;
-		#
-		# (but this is very confusing to C programmers)
-		#
-		#
-		from = homer:work		# Either homer's work account..
-		     | marge:*			# any address of marge..
-		     | "someone@else\.com";	# or a regular expression
+# XXX BEGIN ACCEPTED
 
-		# The match is also valid if X-Custom is set to `foo'
 		#
-		# Q: Why the `header' keyword?  Isn't it enough to look for
-		#     quotes?  Quotes mean the literal header, the from/to etc
-		#     identifiers are declared internally.  This is also
-		#     more consistent with how we make the distinction between
-		#     literal e-mail addresses or symbolic ones from contacts.
+		# marge:foo is implicitly interpreted as marge:foo.address
+		# marge is implicitly interpreted as marge:primary.address,
+		# but only if the option allow_implicit_primary is `yes'.
 		#
-		header "X-Custom" = "foo";
+
+		recv {
+			maildir = "~/Mail/inbox";
+			# ... other options ...
+		}
+		send {
+			#
+			# How to know if this is a user variable or a Turner program setting?
+			#
+
+			settings {
+				allow_implict_meuk...
+			}
+			maildir = "~/Mail/outbox";
+			# ... other options ...
+		}
+		# On usage, type ${maildir}
+
+		to contains homer:work;
+		to only contains homer:work;	# ``only'' is a keyword that
+						# can be prefixed to
+						# ``contains'' only
+
+		to contains any of homer:work, smithers:work;
+		to contains all of homer:work, smithers:work;
+
+		to contains co-workers;		# is the same as:
+		to contains any of co-workers;
+
+		to only contains co-workers;	# is the same as:
+		to only contains any of co-workers;
+
+		# No shorter ways to express these:
+		to contains all of friends;
+		to only contains all of friends;
+
+		# to does not contain any of friends;		# Same as:
+		to contains none of friends;
+
+		# We do NOT accept
+		# to only contains none of friends;
 		#
-		# I'd suggest just this:
+		# since it is undefined what that should be (both
+		# mathematically and naturally)
+
 		#
-		"X-Custom" = "foo";
+		# Suppose we have a contact:
 		#
-		# XXX: Are these things the same?
-		# to = "foo";
-		# "to" = "foo";
-		# It would be nice to allow to to be mapped to `cc', `bcc' or
-		# `to'.  Well, it's not important yet, we simply can define
-		# what they mean when we are done with the rest of the syntax.
+		# contact vincent {
+		#	address = "nvie@nvie.com";
+		# }
+		# Then we have the following expansion:
 		#
+		# to contains vincent => to contains "^nvie@nvie\.com$"
+		# to matches vincent => to matches "^nvie@nvie\.com$"
+		#
+		# That's why this also vurks:
+		#
+		to contains "@netbsd\.org$";
+
+		to does not contain all of friends;
+		to does not only contain any of friends;
+
+		# This would be exactly opposite of what one would expect in
+		# natural language.
+		to does not only contain all friends;
+
+		# Forget `does not'!
+		# Here's why:
+		# Natural language would mean ``contains all friends, and some more''
+		to does not only contain all friends;
+
+		# What Turner would think is ``contains not exactly friends''
+
+		# XXX [any-]header? body? mail? both?
+
+		# These are the defaults for all matches
+		body contains "foobar" insensitive greedy single;	# Also matches FOOBAR
+
+		# Interpret x-custom as a to-like field, making a list of e-mail addresses:
+		"x-custom" contains marge:primary, homer:work;
+
+		# Just grep the raw text after the semi-colon of x-custom
+		"x-custom2" matches marge:foo;
+}
+
+#
+# This is a rule with fallthrough (default is stop):
+#
+non-terminal rule { ... }		# One may explicitly use `terminal rule { .. }'
+
+# XXX END ACCEPTED
 
 		#
 		# Q: This just slipped into my mind.  Should we allow for
@@ -168,47 +180,12 @@ rule {
 		# rest of the file, and we might get tremendous parsing
 		# problems.
 		#
-		# <sjamaan>
 		# The macros thing is an alright idea.  Perhaps we could
 		# find something more elegant, but let's keep this in mind.
 		#
+		# Variables?
 	}
 
-	match {
-		# Another match that should be passed
-		to = bart:*;		# Mail sent to any address of bart
-
-		#
-		# Note that the line below is invalid if the
-		# allow_implicit_primary option is set to `no'
-		# (which is the default, if not set):
-		#
-		cc = maggy;		# Invalid, user may intend maggy:*
-		cc = maggy:primary;	# Valid alternative
-	}
-	
-	#
-	# Q: Psycological issue: consider this:
-	#           match { to = bart:*; }
-	#    What we mean by that is: the To-field *contains* any address of
-	#    Bart.  Will the =-operator not false imply an equality relation,
-	#    instead of a "containment"?
-	#    ``Confusion is drawing near...  I can feel it.''
-	#
-	# <sjamaan>
-	# You're right about that.  Perhaps we can revise the old notation,
-	#  and use `set x "value";' instead?  That would fix it all.
-	# Or, just use := for assignment, like in Pascal.  I like both methods
-	#  a lot, although the first one is more `native Unix tongue', since
-	#  mutt, vi, some shells etc use this notation.
-	#
-	# (about `act' keyword)
-	# My point remains.  Overthink this.
-	#
-	# Agree.  But names are appealing as well.  And: if they become
-	# legacy, the become terribly rancid.  (car, cdr, anyone?)  Keep an
-	# open mind.  Now is the time we can easily change it.
-	#
 	act {
 		#
 		# Every command in an act-block is executed in the order they
@@ -288,111 +265,3 @@ rule {
 		< "sort | head -n 50";
 	}
 }
-
-#
-# A simple, real-life, example
-#
-rule {
-	match { from = krusty:*; }
-	act { > '/dev/null'; }	# F*ck that damned clown!
-}
-
-rule {
-	match { subject = "news"; }
-	act {
-		< "strip-html";	# Let the strip-html program clean the mail
-		> "newsletters";
-	}
-}
-
-
-#
-# XXX: How do we indicate that a match is halting or non-halting when it is
-#       matched?  Here's a possible way (which I prefer):
-#
-# Hmm!  I forgot about that completely.  Nice, nice, nice.  ``It's a keeper!''
-# I deleted the other block, for it was very rans ;)
-#
-terminal rule {				# Simply an extra keyword
-	match {
-		from = spammers;
-	}
-	> "/dev/null";
-}
-
-
-#
-# Something to consider:
-# What do we do by default?  How many times would one want a match NOT
-#  to terminate versus how many times one would want a match to terminate?
-#
-# Perhaps it is better to have a rule terminate by default unless specified
-# otherwise?  Then change the keyword to something else:
-#
-non-terminal rule {
-	match {	}			# XXX: An empty block always matches?
-					# Note that a missing match { } block
-					# conceptually means that the rule
-					# should never match, so that's
-					# something completely different.
-
-	# <nvie>
-	# I fully agree.  Maybe add some syntactic sugar for this? Like so:
-	#
-	# <sjamaan>
-	# Good idea.  Looks better.  `always' just expands to { }.
-	match always;
-
-	# Beep on new mail
-	! "beep";
-}
-
-#
-# XXX: Consideration
-# I guess, indeed, that terminals should be considered the default.
-# However, some interesting point may be to let Turner detect it itself, i.e.
-# by letting a match be terminal when it uses the '>'-operator to write to
-# a mailbox.
-#
-# Pros:
-# * Simple, elegant
-# * Less typing required (and thus, less complex scripts)
-#
-# Cons:
-# * Possible to write to one mailbox at most
-# <sjamaan>
-# * Confusing and not very clear when one has a long rule, or one which
-#    does write on recv { } but not on send { }.
-#
-# Because the only con will be almost never used in practise, still it
-# scratches.  Typically, you don't want such a restriction.
-# Maybe... a golden midway.  A proposal:
-# 1. A rule is a non-terminal one if no ">" is used.
-# 2. Otherwise a rule is terminal, UNLESS you specify the non-terminal
-#    keyword.
-#
-# Big example:
-
-# Implicit non-terminal, since ">" is not used.
-rule {
-	match always;
-	! "beep";
-}
-
-# Explicit non-terminal required here, if one could have friends at work :)
-non-terminal rule {	
-	match { from = friends:*; }
-	> "friends";
-}
-
-# This rule is a terminal again
-rule {
-	match { from = acme:*; }
-	> "acme";
-}
-
-#
-# <sjamaan>
-# I vote for dropping this.  Rules are always terminal, unless explicitly
-#  marked `non-terminal' (or some shorter keyword instead)
-#
