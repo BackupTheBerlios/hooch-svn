@@ -146,3 +146,25 @@ contact burns {
 	# if we want to refer to the address field of the contact or group
 	# called `burns' in any other place of the program.  (and so on)
 }
+
+# Quick example of mailing lists
+contact daily {
+	name = "The Springfield Daily";
+	address = "daily@springfield.net";
+
+	#
+	# Specifying `list = yes' means that the user can do a `list reply'
+	# to the list instead of to the person.  Of course, our settings
+	# might include something which could optionally even make this
+	# the default for a reply to a mailing list msg.
+	# Specifying `list = yes' also (optionally?) transforms the default
+	# `to' display to the mailing list address instead of your address.
+	# Also, mail-followup-to field is set to the list when replying.
+	#
+	# Optionally, one can define other list-specific settings as well,
+	#  in new plugins etc.
+	#
+	# Threaded view of a mailbox is NOT enabled with this setting.
+	#
+	list = yes;				# Defaults to `no'
+}
