@@ -47,7 +47,6 @@ void yyerror(char *, ...);
 
 /* Values internally used in lexicographical analysis */
 int lineno = 1;
-int defaults_found = 0;
 stack s;
 int ssize;
 char str_begin;
@@ -119,15 +118,7 @@ char *pop_string(void);
 				return INTEGER;
 			}
 
-defaults	{
-			if (defaults_found++ > 0) {
-				/* XXX: Maybe print file name, too? */
-				yyerror("line %d: Block defaults multiply "
-			  	        "defined (only allowed once)", lineno);
-			}
-			else
-				return DEFAULTS;
-		}
+defaults	{	return DEFAULTS;	}
 
 contact		{	return CONTACT;		}
 

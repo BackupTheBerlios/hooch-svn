@@ -39,6 +39,8 @@
 #define TRACE
 #endif
 
+int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
+
 %}
 
 %union {
@@ -55,18 +57,32 @@
 %token <integer> INTEGER;
 %token CONTACT, DEFAULTS, EMPTY;
 
-%type <result> loc defaults_fields contact_fields fields
+%type <result> list_of_blocks defaults_fields contact_fields fields
 
-%start start
+%start list_of_blocks
 
 %%
 
-loc:
-	contact loc { $$ = $2 + 1; }
-	| /* Empty */ { $$ = 0; }
+/*
+ * Some conventions:
+ * ----------------
+ * identifiers are in all lowercase. In case of long names, an underscore is
+ * used in order to separate words for readibility, like: long_identifier
+ *
+ * TOKENS are in all uppercase.
+ *
+ */
+
+list_of_blocks:
+	block list_of_blocks	{ $$ = 1 + $2; }
+	| /* Empty */		{ $$ = 0; }
 	;
 
-contact:
+block:	contact_block		{ }
+	| defaults_block	{ }
+	;
+
+contact_block:
 	CONTACT IDENTIFIER '{' contact_fields '}'
 		{
 			printf("===> Verify that contact ID %s does not exist\n", $2);
@@ -75,9 +91,14 @@ contact:
 		}
 	;
 
-defaults:
+defaults_block:
 	DEFAULTS '{' defaults_fields '}'
 		{
+			if (read_defaults) {
+				yyerror("Error: More than one defaults-block is not allowed.\n");
+			}
+			read_defaults = 1;
+
 			if ($3 > 0) {
 				printf("===> Found defaults (with fields)\n");
 				printf("===> Clean and store above fields in buffer for contact defaults\n");
@@ -117,21 +138,13 @@ field_assignment:
 		}
 	;
 
-start:	loc
+start:	list_of_blocks
 		{
 			printf("\n");
 			printf("Summary:\n");
 			printf("Number of contacts: %d\n", $1);
 			printf("Found NO defaults\n");
 		}
-	| loc defaults loc
-		{
-			printf("\n");
-			printf("Summary:\n");
-			printf("Number of contacts: %d\n", $1 + $3);
-			printf("Found defaults\n");
-		}
-	;
 
 %%
 
