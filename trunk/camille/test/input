@@ -6,7 +6,7 @@
 
 # Nice indenting supported...
 contact sjamaan {
-	name = "Peter\'s Adresje\"s";
+	name = "Peter";
 	address = "hisemail@foobar.net";
 	field = "Some field
 				that spans multiple          \
@@ -18,18 +18,26 @@ contact sjamaan {
 	is_healthy_in_the_brain = neener;
 	blah = no;
 	foo = false;
+
+	# Test integers
+	zero = 0x0;
+	pgp-key-id = 0xF00;
+	pgp-key-id2 = 0xf00;
+	hex_overflow = 0x8972937982379;
+	some-number = 0;
+	some-other_number = 13;
+	secret-number = 2713682;
+	an_overflow = 93281972189127982179;	# Overflow
+	negative = -37268;
+	negative_hex_overflow = -0x8923793472439732498;
 }
 
 # ...or we could write it in a one-liner
 # Note that we can stuff a string with backslashes, without them having any effect
 contact nvie {	name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }
 
-# <scriptkiddy_mode>
-# /us can even type commentz here! w00t! ;-)
-# </scriptkiddy_mode>
-
 defaults {
-	somefield = "somestring with backslashes, like \\ <- this";
+	somefield = "somestring with backslashes, like \\ <- this, or single ('), double (\") or backtick (`) quotes";
 }
 
 contact SomeEmptyContactAfterADefaultsBlock {

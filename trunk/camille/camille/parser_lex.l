@@ -30,9 +30,11 @@
  */
 
 /* Character classes */
-alpha	[A-Za-z]
-idchars	[A-Za-z0-9_-]
-wspace	[ \t]
+digit		[0-9]
+hexdigit	[A-Fa-f0-9]
+alpha		[A-Za-z]
+idchars		[A-Za-z0-9_-]
+wspace		[ \t]
 
 %{
 
@@ -96,6 +98,16 @@ char *pop_string(void);
 	/*** Language keywords ***/
 (yes|true)		{ yylval.boolean = 1; return BOOLEAN; }
 (no|false|neener)	{ yylval.boolean = 0; return BOOLEAN; }
+
+\-?0x{hexdigit}+	{
+				yylval.integer = strtol(yytext, NULL, 16);
+				return INTEGER;
+			}
+
+\-?{digit}+		{
+				yylval.integer = atoi(yytext);
+				return INTEGER;
+			}
 
 defaults	{
 			if (defaults_found++ > 0) {

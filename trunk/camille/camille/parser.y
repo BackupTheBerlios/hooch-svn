@@ -45,12 +45,14 @@
 	char *identifier;
 	char *string;
 	int boolean;
+	int integer;
 	int result;
 };
 
 %token <identifier> IDENTIFIER;
 %token <string> STRING;
 %token <boolean> BOOLEAN;
+%token <integer> INTEGER;
 %token CONTACT, DEFAULTS;
 
 %type <result> loc defaults_fields contact_fields fields
@@ -93,11 +95,17 @@ fields:
 	| /* Empty */ { $$ = 0; };
 
 field_assignment:
-	IDENTIFIER '=' BOOLEAN ';'	/* Should be fieldname '=' string */
+	IDENTIFIER '=' BOOLEAN ';'	/* Should be fieldname '=' boolean */
 		{
 			printf("Storing boolean \"%s\" => %d in contact buffer.\n",
 			       $1, $3);
 		}
+	| IDENTIFIER '=' INTEGER ';'	/* Should be fieldname '=' integer */
+		{
+			printf("Storing integer \"%s\" => %d in contact buffer.\n",
+			       $1, $3);
+		}
+	;
 	| IDENTIFIER '=' STRING ';'	/* Should be fieldname '=' string */
 		{
 			printf("Storing string \"%s\" => \"%s\" in contact buffer.\n",
