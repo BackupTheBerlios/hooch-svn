@@ -116,11 +116,6 @@ group parents {
 }
 
 #
-# Interesting observation:  Aren't groups just contacts where, when
-# mailing to them, ALL ids are selected, and no main address is allowed?
-#
-
-#
 # If after reading and parsing all config files there are still contacts in a
 # `members' field of a group which do not exist, we get an error.  It is legal
 # to forward-reference the contacts in a group.
