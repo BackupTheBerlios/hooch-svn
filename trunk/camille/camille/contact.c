@@ -174,8 +174,7 @@ contact_add_id(contact ct, contact_id id)
 	value.ptr = id;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	if (alist_insert_uniq(ct->ids, key, value, str_eq,
-			      (free_func)contact_id_destroy) == ERROR_ALIST)
+	if (alist_insert_uniq(ct->ids, key, value, str_eq) == ERROR_ALIST)
 		return ERROR_CONTACT;
 
 	return ct;

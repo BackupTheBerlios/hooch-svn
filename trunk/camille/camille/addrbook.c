@@ -167,8 +167,7 @@ addrbook_add_contact(addrbook ab, contact ct)
 	value.ptr = ct;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	if (ht_insert_uniq(ab->contacts, key, value, str_eq,
-			(free_func)contact_destroy) == ERROR_HT)
+	if (ht_insert_uniq(ab->contacts, key, value, str_eq) == ERROR_HT)
 		return ERROR_ADDRBOOK;
 
 	return ab;
@@ -230,8 +229,7 @@ addrbook_add_group(addrbook ab, group gr)
 	value.ptr = gr;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	if (ht_insert_uniq(ab->groups, key, value, str_eq,
-			   (free_func)group_destroy) == ERROR_HT)
+	if (ht_insert_uniq(ab->groups, key, value, str_eq) == ERROR_HT)
 		return ERROR_ADDRBOOK;
 
 	return ab;
