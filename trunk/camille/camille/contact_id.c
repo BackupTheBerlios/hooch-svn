@@ -50,7 +50,6 @@
  * \param name  The (symbolic, identifier) name of the contact id.  This will
  *		  get copied, so you can free the original or pass \c const
  *		  strings.
- * \param bl    The initial bindings for the id.
  *
  * \return  The new contact id, or \c NULL if there was an error.
  *
@@ -60,7 +59,7 @@
  * \sa contact_id_destroy
  */
 contact_id
-contact_id_create(const char *name, bind_list bl)
+contact_id_create(const char *name)
 {
 	contact_id_t *id;
 
@@ -74,7 +73,7 @@ contact_id_create(const char *name, bind_list bl)
 		return NULL;
 	}
 
-	id->bindings = bl;
+	id->bindings = bind_list_create();
 
 	return (contact_id)id;
 }
@@ -121,12 +120,37 @@ contact_id_get_name(contact_id id)
  * The bindings may be modified directly.
  *
  * \param id  The contact id to get the bindings of.
+ *
+ * \return  The bindings list.
  */
 bind_list
 contact_id_get_bindings(contact_id id)
 {
 	assert(id != NULL);
 	return id->bindings;
+}
+
+
+/**
+ * \brief Set the binding list of a contact id.
+ *
+ * \note
+ * The previous binding list will be overwritten with the new one without
+ *  any memory deallocation.
+ *
+ * \param id  The contact to set the bindings of.
+ * \param bl  The binding list to set.
+ *
+ * \return  The contact id.
+ */
+contact_id
+contact_id_set_bindings(contact_id id, bind_list bl)
+{
+	assert(id != NULL);
+	assert(bl != NULL);
+	id->bindings = bl;
+
+	return id;
 }
 
 

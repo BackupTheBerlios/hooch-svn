@@ -85,9 +85,12 @@ int
 main(int argc, char **argv)
 {
 	extern char *optarg;
+	extern char *malloc_options;
 	int ch;
 	addrbook a;
 	option_hier hier;
+
+	malloc_options = "ZAVX";
 
 	printf("$Id$\n");
 	printf("Running test... Go your gang.\n");

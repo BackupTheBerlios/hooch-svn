@@ -57,6 +57,13 @@ wspace		[ \t]
 #include <camille/contact.h>
 #include <camille/contact_id.h>
 #include <camille/option.h>
+
+/* HACK: To make the compiler shut up.  This is VERY annoying */
+typedef struct temp_contact_t {
+	bind_list primary_bindings;
+	alist ids;
+} temp_contact;
+
 #include "parser.h"
 
 void yyerror(char *, ...);

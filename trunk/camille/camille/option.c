@@ -265,6 +265,22 @@ option_destroy(option o)
 
 
 /**
+ * \brief Get an option's name.
+ *
+ * \param opt  The option to get the name of.
+ *
+ * \return  The option's name.
+ */
+char *
+option_get_name(option opt)
+{
+	assert(opt != NULL);
+
+	return opt->name;
+}
+
+
+/**
  * \brief Get an option's type.
  *
  * \param opt  The option to get the type of.
@@ -274,6 +290,8 @@ option_destroy(option o)
 option_type
 option_get_type(option opt)
 {
+	assert(opt != NULL);
+
 	return opt->type;
 }
 

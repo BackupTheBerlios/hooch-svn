@@ -69,6 +69,7 @@ gendata binding_get_value(binding);
 
 bind_list bind_list_create(void);
 void bind_list_destroy(bind_list);
+int bind_list_empty(bind_list);
 bind_list bind_list_insert_uniq(bind_list, binding);
 void bind_list_walk(bind_list, bind_walk_func, gendata);
 

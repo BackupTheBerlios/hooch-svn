@@ -51,6 +51,11 @@
 /* Bool indicating whether we read a defaults block */
 static int read_defaults = 0;
 
+typedef struct temp_contact_t {
+	bind_list primary_bl;
+	alist ids;
+} temp_contact;
+
 extern addrbook curr_addrbook;
 option_hier curr_opthier;
 
@@ -60,6 +65,9 @@ extern int lineno;
 
 static binding try_bind(option_hier, char *, option_type, gendata);
 static void defaults_walker(binding, gendata);
+static bind_list try_insert_binding(bind_list, binding);
+static alist try_insert_contact_id(alist, contact_id);
+static contact try_create_primary_id(contact, bind_list);
 
 %}
 
@@ -73,6 +81,7 @@ static void defaults_walker(binding, gendata);
 	alist assoclist;
 	contact_id id;
 	contact cnt;
+	temp_contact tmp_cnt;
 	group grp;
 	addrbook abook;
 };
@@ -91,7 +100,7 @@ static void defaults_walker(binding, gendata);
 %type <bindlist> group_stms
 %type <bindlist> stms
 %type <bnd> stm
-%type <assoclist> contact_body
+%type <tmp_cnt> contact_body
 %type <assoclist> identities
 %type <id> identity
 %type <cnt> contact_block
@@ -136,7 +145,7 @@ blocks:	contact_block blocks
 		}
 	| defaults_block blocks
 		{
-			/* XXX TODO FIXME trein train */
+			/* XXX TODO FIXME */
 			/* Add a set_defaults func to addrbook.c or soemthing */
 			$$ = $2;
 		}
@@ -170,60 +179,41 @@ blocks:	contact_block blocks
 contact_block:
 	CONTACT IDENTIFIER '{' contact_body '}'
 		{
-			$$ = contact_create($2, $4);
+			$$ = contact_create($2, $4.ids);
+			$$ = try_create_primary_id($$, $4.primary_bl);
 			free($2);
 		}
 	;
 
 contact_body:
-	identities
+	identity contact_body
 		{
-			/* Check that there was at least a primary identity */
-			$$ = $1;
+			$$.primary_bl = $2.primary_bl;
+			$$.ids = try_insert_contact_id($2.ids, $1);
 		}
-	/*
-	   XXX TODO Support direct identity field declarations in
-	   contact_body, too, affecting the primary identity.  Note that in
-	   this case, there may be no explicit primary identity, then.
-	 */
-	;
-
-identities:
-	identity identities
+	| stm contact_body
 		{
-			gendata key, value;
-
-			/* Skip error ids */
-			if ($1 != NULL) {
-				key.ptr = contact_id_get_name($1);
-				value.ptr = $1;
-				$$ = alist_insert_uniq($2, key, value, str_eq);
-				if ($$ == NULL) {
-					if (errno == EINVAL) {
-						yyerror("Duplicate entry for"
-							 " id %s", key.ptr);
-					}
-					yyerror("%s adding %s to list",
-						 strerror(errno), key.ptr);
-					contact_id_destroy($1);
-					$$ = $2;
-				}
-			} else {
-				$$ = $2;
-			}
+			$$.primary_bl = try_insert_binding($2.primary_bl, $1);
+			$$.ids = $2.ids;
 		}
 	| /* Empty */
 		{
-			$$ = alist_create();
+			$$.primary_bl = bind_list_create();
+			$$.ids = alist_create();
 		}
 	;
 
 identity:
 	IDENTITY IDENTIFIER '{' identity_stms '}'
 		{
-			$$ = contact_id_create($2, $4);
+			$$ = contact_id_create($2);
+
+			/* FIXME: This should possibly be done a lot cleaner */
+			bind_list_destroy(contact_id_get_bindings($$));
+
+			contact_id_set_bindings($$, $4);
 			free($2);
-			/* TODO: Check that this identity has name and address */
+			/* TODO: Check that this identity has name and address?? */
 		}
 	;
 
@@ -259,23 +249,7 @@ group_stms:    stms		{ $$ = $1; };	/* XXX Allow multi_stms, too */
 stms:
 	stm stms
 		{
-			assert ($2 != NULL);
-
-			/*
-			 * Simply skip error values.  We've emitted errors
-			 *  when we encountered them, anyway.
-			 */
-			if ($1 != NULL) {
-				$$ = bind_list_insert_uniq($2, $1);
-				if ($$ == NULL) {
-					yyerror("%s adding %s to list",
-						 strerror(errno), $1);
-					binding_destroy($1);
-					$$ = $2;
-				}
-			} else {
-				$$ = $2;
-			}
+			$$ = try_insert_binding($2, $1);
 		}
 	| /* Empty */
 		{
@@ -389,4 +363,112 @@ defaults_walker(binding bnd, gendata data)
 	if (!binding_empty(bnd))
 		option_set_default(binding_get_option(bnd),
 				   binding_get_value(bnd));
+}
+
+
+/*
+ * Insert a binding into a bind_list.  If that's not possible, emit an
+ *  error, destroy the binding and return the old binding list.
+ */
+static bind_list
+try_insert_binding(bind_list bl, binding bnd)
+{
+	bind_list bl_tmp;
+
+	assert(bl != NULL);
+
+	/*
+	 * Simply skip invalid bindings.  We've emitted errors
+	 *  when we encountered them, anyway.
+	 */
+	if (bnd != NULL) {
+		bl_tmp = bind_list_insert_uniq(bl, bnd);
+
+		if (bl_tmp == NULL) {
+			char *name;
+			name = option_get_name(binding_get_option(bnd));
+
+			if (errno == EINVAL) {
+				yyerror("Duplicate entry for option %s", name);
+			} else {
+				yyerror("%s adding %s to list",
+				 	strerror(errno), name);
+			}
+			binding_destroy(bnd);
+		} else {
+			bl = bl_tmp;
+		}
+	}
+	return bl;
+}
+
+
+/*
+ * Insert a contact id into an alist.  If that's not possible, emit an
+ *  error, destroy the contact id and return the old association list.
+ */
+static alist
+try_insert_contact_id(alist al, contact_id id)
+{
+	gendata key, value;
+	alist al_tmp;
+
+	assert(al != NULL);
+
+	/* Skip error ids */
+	if (id != NULL) {
+		key.ptr = contact_id_get_name(id);
+		value.ptr = id;
+		al_tmp = alist_insert_uniq(al, key, value, str_eq);
+		if (al_tmp == NULL) {
+			if (errno == EINVAL) {
+				yyerror("Duplicate entry for id %s", key.ptr);
+			} else {
+				yyerror("%s adding %s to list",
+					 strerror(errno), key.ptr);
+			}
+			contact_id_destroy(id);
+		} else {
+			al = al_tmp;
+		}
+	}
+
+	return al;
+}
+
+
+/*
+ * Create a `primary' contact id for a contact.  If that's not possible, emit
+ *  an error, destroy the `primary' binding list and return the old contact.
+ */
+static contact
+try_create_primary_id(contact ct, bind_list bl)
+{
+	contact ct_tmp;
+
+	assert(ct != NULL);
+	assert(bl != NULL);
+
+	if (!bind_list_empty(bl)) {
+		contact_id prim;
+
+		prim = contact_id_create("primary");
+		/* FIXME: This should possibly be done a lot cleaner */
+		bind_list_destroy(contact_id_get_bindings(prim));
+		prim = contact_id_set_bindings(prim, bl);
+
+		/* Try to add explicit primary id bindings */
+		if ((ct_tmp = contact_add_id(ct, prim)) == NULL) {
+			yyerror("Implicit primary contact id disallowed when "
+				"there is also an explicit primary");
+			/* This destroys the binding list as well */
+			contact_id_destroy(prim);
+		} else {
+			ct = ct_tmp;
+		}
+	} else {
+		bind_list_destroy(bl);
+	}
+
+	return ct;
 }

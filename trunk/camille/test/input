@@ -37,6 +37,13 @@ contact sjamaan {
 	}
 }
 
+contact double_primary {
+	address = "double@foo.com";
+	id primary {
+		address = "error@double_primary.com";
+	}
+}
+
 # ...or we could write it in a one-liner
 # Note that we can stuff a string with backslashes, without them having any effect
 contact nvie { id work { name = "Vinnie"; address = "n\vi\e@f\o\o\bar\.\org"; }}

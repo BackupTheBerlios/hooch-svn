@@ -196,6 +196,20 @@ bind_list_create(void)
 
 
 /**
+ * \brief Check if a binding list is empty.
+ *
+ * \param bl  The binding list to check for emptiness.
+ *
+ * \return  0 if not empty, nonzero if empty.
+ */
+int
+bind_list_empty(bind_list bl)
+{
+	return alist_empty((alist)bl);
+}
+
+
+/**
  * \brief Insert a binding in a binding list (no replace).
  *
  * If the variable is already bound (in the supplied list), it is an error.

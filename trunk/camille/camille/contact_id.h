@@ -49,10 +49,11 @@ typedef struct contact_id_t {
 	bind_list bindings;		/**< The bindings of the contact id */
 } contact_id_t, *contact_id;
 
-contact_id contact_id_create(const char *, bind_list);
+contact_id contact_id_create(const char *);
 void contact_id_destroy(contact_id);
 char *contact_id_get_name(contact_id);
 bind_list contact_id_get_bindings(contact_id);
+contact_id contact_id_set_bindings(contact_id, bind_list);
 
 #ifdef DEBUG
 void contact_id_dump(contact_id);

@@ -97,6 +97,7 @@ char *option_type_name(option_type);
 option option_create(char *, option_type, option_data);
 void option_destroy(option);
 option_type option_get_type(option);
+char *option_get_name(option);
 gendata option_get_default(option);
 void option_set_default(option, gendata);
 
