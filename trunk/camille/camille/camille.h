@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-#include <gune/gune.h>
+#include <gune/version.h>
 
 #define CAMILLE_MAJOR_VERSION	0
 #define CAMILLE_MINOR_VERSION	1

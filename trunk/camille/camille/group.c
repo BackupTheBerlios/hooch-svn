@@ -34,6 +34,7 @@
  * Addressbook groups functionality
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <gune/gune.h>
 #include <camille/group.h>
@@ -41,7 +42,6 @@
 group_t * const ERROR_GROUP = (void *)error_dummy_func;
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
 
 /**
  * Create a group with a given name, initialising all data to the defaults.
@@ -56,6 +56,8 @@ group
 group_create(const char *name)
 {
 	group_t *gr;
+
+	assert(name != NULL);
 
 	if ((gr = malloc(sizeof(group_t))) == NULL)
 		return ERROR_GROUP;
@@ -81,6 +83,8 @@ group_create(const char *name)
 void
 group_destroy(group gr)
 {
+	assert(gr != ERROR_GROUP);
+	assert(gr != NULL);
 	free(gr->name);
 	free(gr);
 }
@@ -96,8 +100,10 @@ group_destroy(group gr)
  *  we want to cast around while using the name as hash key.
  */
 char *
-group_name(group gr)
+group_get_name(group gr)
 {
+	assert(gr != ERROR_GROUP);
+	assert(gr != NULL);
 	return gr->name;
 }
 
@@ -111,6 +117,8 @@ group_name(group gr)
 void
 group_dump(group gr)
 {
+	assert(gr != ERROR_GROUP);
+	assert(gr != NULL);
 	printf("Group %s:\n", gr->name);
 }
 #endif /* DEBUG */

@@ -39,16 +39,20 @@
 extern "C" {
 #endif
 
-#include <gune/gune.h>
+#include <gune/alist.h>
+#include <camille/contact.h>
 
 typedef struct group_t {
 	char *name;
 	alist contacts;
 } group_t, *group;
 
+/** Invalid group, used as error in return value */
+extern group_t * const ERROR_GROUP;
+
 group group_create(const char *);
 void group_destroy(group);
-char *group_name(group);
+char *group_get_name(group);
 
 #ifdef DEBUG
 void group_dump(group);

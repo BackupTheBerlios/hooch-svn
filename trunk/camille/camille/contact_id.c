@@ -34,6 +34,7 @@
  * Contact id manipulation functions
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <gune/gune.h>
 #include <camille/contact_id.h>
@@ -55,6 +56,8 @@ contact_id
 contact_id_create(const char *name)
 {
 	contact_id_t *id;
+
+	assert(name != NULL);
 
 	if ((id = malloc(sizeof(contact_id_t))) == NULL)
 		return ERROR_CONTACT_ID;
@@ -80,6 +83,8 @@ contact_id_create(const char *name)
 void
 contact_id_destroy(contact_id id)
 {
+	assert(id != ERROR_CONTACT_ID);
+	assert(id != NULL);
 	free(id->name);
 	free(id);
 }
@@ -95,8 +100,10 @@ contact_id_destroy(contact_id id)
  *  we want to cast around while using the name as hash key.
  */
 char *
-contact_id_name(contact_id id)
+contact_id_get_name(contact_id id)
 {
+	assert(id != ERROR_CONTACT_ID);
+	assert(id != NULL);
 	return id->name;
 }
 
@@ -110,6 +117,8 @@ contact_id_name(contact_id id)
 void
 contact_id_dump(contact_id id)
 {
+	assert(id != ERROR_CONTACT_ID);
+	assert(id != NULL);
 	printf("Id %s:\n", id->name);
 }
 #endif /* DEBUG */

@@ -34,7 +34,10 @@
  * Address book manipulation functions
  */
 
+#include <assert.h>
 #include <stdlib.h>
+#include <gune/string.h>
+#include <gune/error.h>
 #include <camille/addrbook.h>
 
 addrbook_t * const ERROR_ADDRBOOK = (void *)error_dummy_func;
@@ -121,6 +124,9 @@ addrbook_create(void)
 void
 addrbook_destroy(addrbook ab)
 {
+	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != NULL);
+
 	/* Casting to free_func is ok here */
 	/* 
 	 * We don't free the hash keys because these ptrs are copies
@@ -135,33 +141,35 @@ addrbook_destroy(addrbook ab)
 
 
 /**
- * Add a contact to an addressbook, or update an existing contact.
+ * Add a contact to an addressbook.
  *
  * \param ab  The addressbook to add the contact to.
  * \param ct  The contact to add to the addressbook.
  *
- * \return  The addressbook
+ * \return  The addressbook, or ERROR_ADDRBOOK if an error occurred.
+ *	     errno = EINVAL if there already was a contact with the same name
+ *		      in the address book.
+ *	     errno = ENOMEM if out of memory.
  *
  * \sa addrbook_add_group, addrbook_del_contact
  */
 addrbook
 addrbook_add_contact(addrbook ab, contact ct)
 {
-	/* XXX a better name is addrbook_insert_contact??? */
-	/*
-	 * Give this some thought.  Note that if we do this, we should also
-	 * actually change addrbook_del_contact into addrbook_delete_contact
-	 * This is more consistent with some Gune functions (ht/alist, but
-	 * not, for example, queue), but do you really ``insert''
-	 * something into an addressbook?
-	 */
 	gendata key, value;
 
-	key.ptr = contact_name(ct);
+	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != NULL);
+	assert(ct != ERROR_CONTACT);
+	assert(ct != NULL);
+
+	key.ptr = contact_get_name(ct);
 	value.ptr = ct;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	ht_insert(ab->contacts, key, value, str_eq, (free_func)contact_destroy);
+	if (ht_insert_uniq(ab->contacts, key, value, str_eq,
+			(free_func)contact_destroy) == ERROR_HT)
+		return ERROR_ADDRBOOK;
 
 	return ab;
 }
@@ -173,7 +181,7 @@ addrbook_add_contact(addrbook ab, contact ct)
  * \param ab    The addressbook to delete the contact from.
  * \param name  The name of the contact to delete.
  *
- * \return  The addressbook
+ * \return  The addressbook, or ERROR_ADDRBOOK if the contact does not exist.
  *
  * \sa addrbook_del_group, addrbook_add_contact
  */
@@ -183,33 +191,48 @@ addrbook_del_contact(addrbook ab, char *name)
 	gendata key;
 	key.ptr = name;
 
-	ht_delete(ab->contacts, key, str_eq, NULL, (free_func)contact_destroy);
+	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != NULL);
+	assert(name != NULL);
+
+	if (ht_delete(ab->contacts, key, str_eq, NULL,
+		      (free_func)contact_destroy) == ERROR_HT)
+		return ERROR_ADDRBOOK;
 
 	return ab;
 }
 
 
 /**
- * Add a group to an addressbook, or update an existing group.
+ * Add a group to an addressbook.
  *
  * \param ab  The addressbook to add the group to.
  * \param gr  The group to add to the addressbook.
  *
- * \return  The addressbook
+ * \return  The addressbook, or ERROR_ADDRBOOK in case of error.
+ *	     errno = EINVAL if there already was a group with the same name
+ *		      in the address book.
+ *	     errno = ENOMEM if out of memory.
  *
  * \sa addrbook_add_contact, addrbook_del_group
  */
 addrbook
 addrbook_add_group(addrbook ab, group gr)
 {
-	/* XXX a better name is addrbook_insert_group??? */
 	gendata key, value;
 
-	key.ptr = group_name(gr);
+	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != NULL);
+	assert(gr != ERROR_GROUP);
+	assert(gr != NULL);
+
+	key.ptr = group_get_name(gr);
 	value.ptr = gr;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	ht_insert(ab->groups, key, value, str_eq, (free_func)group_destroy);
+	if (ht_insert_uniq(ab->groups, key, value, str_eq,
+			   (free_func)group_destroy) == ERROR_HT)
+		return ERROR_ADDRBOOK;
 
 	return ab;
 }
@@ -221,7 +244,7 @@ addrbook_add_group(addrbook ab, group gr)
  * \param ab    The addressbook to delete the group from.
  * \param name  The name of the group to delete.
  *
- * \return  The addressbook
+ * \return  The addressbook, or ERROR_ADDRBOOK if the group does not exist.
  *
  * \sa addrbook_del_contact, addrbook_add_group
  */
@@ -231,7 +254,13 @@ addrbook_del_group(addrbook ab, char *name)
 	gendata key;
 	key.ptr = name;
 
-	ht_delete(ab->groups, key, str_eq, NULL, (free_func)group_destroy);
+	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != NULL);
+	assert(name != NULL);
+
+	if (ht_delete(ab->groups, key, str_eq, NULL,
+		      (free_func)group_destroy) == ERROR_HT)
+		return ERROR_ADDRBOOK;
 
 	return ab;
 }
@@ -246,6 +275,9 @@ addrbook_del_group(addrbook ab, char *name)
 void
 addrbook_dump(addrbook ab)
 {
+	assert(ab != ERROR_ADDRBOOK);
+	assert(ab != NULL);
+
 	/* Dump contacts, groups etc */
 	ht_walk(ab->contacts, contact_walk);
 	ht_walk(ab->groups, group_walk);

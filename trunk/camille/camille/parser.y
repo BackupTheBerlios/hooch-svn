@@ -31,6 +31,8 @@
 
 %{
 
+#include <errno.h>
+#include <string.h>
 #include <stdarg.h>
 #include <camille/addrbook.h>
 
@@ -49,6 +51,8 @@ static contact_id  curr_id;
 extern addrbook curr_addrbook;
 
 extern int yylex(void);
+
+extern int lineno;
 
 %}
 
@@ -112,9 +116,21 @@ contact_block:
 		}
 	'{' contact_body '}'
 		{
-			printf("===> Store contact \"%s\"\n", $2);
-			curr_addrbook = addrbook_add_contact(curr_addrbook,
-							     curr_contact);
+			addrbook a;
+
+			a = addrbook_add_contact(curr_addrbook, curr_contact);
+			if (a == ERROR_ADDRBOOK) {
+				if (errno == EINVAL)
+					yyerror("Redefinition of contact %s",
+						contact_get_name(curr_contact));
+				else
+					yyerror("Error adding contact %s; %s",
+						contact_get_name(curr_contact),
+						strerror(errno));
+				contact_destroy(curr_contact);
+			} else {
+				curr_addrbook = a;
+			}
 		}
 	;
 
@@ -138,15 +154,12 @@ identities:
 identity:
 	IDENTITY IDENTIFIER
 		{
-			printf("===> Make new identity \"%s\"\n", $2);
-			/* TODO: Check whether no identity with the same name exists */
 			curr_id = contact_id_create($2);
 		}
 	'{' identity_stms '}'
 		{
 			/* TODO: Check that this identity has name and address */
 			/* If so: */
-			printf("===> Store identity \"%s\"\n", $2);
 			contact_add_id(curr_contact, curr_id);
 		}
 	;
@@ -154,17 +167,27 @@ identity:
 group_block:
 	GROUP IDENTIFIER
 		{
-			printf("===> Make new group: \"%s\"\n", $2);
-			/* TODO: Check whether no group with the same name exists */
 			curr_group = group_create($2);
 		}
 	'{' group_stms '}'
 		{
+			addrbook a;
+
 			/* TODO: Check whether group has a members field */
 			/* If so: */
-			printf("===> Store group %s.\n", $2);
-			curr_addrbook = addrbook_add_group(curr_addrbook,
-							  curr_group);
+			a = addrbook_add_group(curr_addrbook, curr_group);
+			if (a == ERROR_ADDRBOOK) {
+				if (errno == EINVAL)
+					yyerror("Redefinition of group %s",
+						group_get_name(curr_group));
+				else
+					yyerror("Error adding group %s: %s",
+						group_get_name(curr_group),
+						strerror(errno));
+				group_destroy(curr_group);
+			} else {
+				curr_addrbook = a;
+			}
 		}
 	;
 
@@ -238,14 +261,9 @@ yyerror(char *err, ...) {
 	va_list ap;
 	va_start(ap, err);
 
-	printf("camille: ");
+	printf("camille: line %i: ", lineno);
 	vprintf(err, ap);
 	printf("\n");
 
 	va_end(ap);
-	/*
-	 * XXX TODO FIXME What should we do here, exactly?  Not exit, that's
-	 * for sure.  At least, if we want to use this thing as a library.
-	 */
-	exit(1);
 }

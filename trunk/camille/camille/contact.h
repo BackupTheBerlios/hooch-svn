@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-#include <gune/gune.h>
+#include <gune/alist.h>
 #include <camille/contact_id.h>
 
 typedef struct contact_t {
@@ -47,9 +47,12 @@ typedef struct contact_t {
 	alist ids;				/* alist of contact_ids */
 } contact_t, *contact;
 
+/** Invalid contact, used as error in return value */
+extern contact_t * const ERROR_CONTACT;
+
 contact contact_create(const char *);
 void contact_destroy(contact);
-char *contact_name(contact);
+char *contact_get_name(contact);
 
 contact contact_add_id(contact, contact_id);
 contact contact_del_id(contact, char *);

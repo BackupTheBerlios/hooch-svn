@@ -39,9 +39,11 @@
 extern "C" {
 #endif
 
-#include <gune/gune.h>
+#include <gune/alist.h>
+#include <gune/ht.h>
 #include <camille/contact.h>
 #include <camille/group.h>
+#include <stdio.h>
 
 /*
  * Contact and group hash table range.  In normal situations people have
@@ -58,6 +60,9 @@ typedef struct addrbook_t {
 	ht groups;
 	alist defaults;				/* alist of addrbook_options */
 } addrbook_t, *addrbook;
+
+/** Invalid addressbook, used as error in return value */
+extern addrbook_t * const ERROR_ADDRBOOK;
 
 addrbook addrbook_create(void);
 void addrbook_destroy(addrbook);

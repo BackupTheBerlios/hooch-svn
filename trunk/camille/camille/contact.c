@@ -34,6 +34,7 @@
  * Contact list manipulation functions
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <gune/gune.h>
 #include <camille/contact.h>
@@ -58,39 +59,43 @@ static void contact_id_walk(gendata *, gendata *);
 contact
 contact_create(const char *name)
 {
-	contact_t *cont;
+	contact_t *ct;
 
-	if ((cont = malloc(sizeof(contact_t))) == NULL)
+	assert(name != NULL);
+
+	if ((ct = malloc(sizeof(contact_t))) == NULL)
 		return ERROR_CONTACT;
 
-	if ((cont->ids = alist_create()) == ERROR_ALIST) {
-		free(cont);
-		return ERROR_CONTACT;
-	}
-
-	cont->name = str_cpy(name);
-
-	if (cont->name == NULL) {
-		free(cont);
+	if ((ct->ids = alist_create()) == ERROR_ALIST) {
+		free(ct);
 		return ERROR_CONTACT;
 	}
 
-	return (contact)cont;
+	ct->name = str_cpy(name);
+
+	if (ct->name == NULL) {
+		free(ct);
+		return ERROR_CONTACT;
+	}
+
+	return (contact)ct;
 }
 
 
 /**
  * Destroy a contact.
  *
- * \param cont  The contact to destroy.
+ * \param ct  The contact to destroy.
  *
  * \sa contact_create
  */
 void
-contact_destroy(contact cont)
+contact_destroy(contact ct)
 {
-	free(cont->name);
-	free(cont);
+	assert(ct != ERROR_CONTACT);
+	assert(ct != NULL);
+	free(ct->name);
+	free(ct);
 }
 
 
@@ -104,9 +109,11 @@ contact_destroy(contact cont)
  *  we want to cast around while using the name as hash key.
  */
 char *
-contact_name(contact cont)
+contact_get_name(contact ct)
 {
-	return cont->name;
+	assert(ct != ERROR_CONTACT);
+	assert(ct != NULL);
+	return ct->name;
 }
 
 
@@ -119,6 +126,9 @@ contact_name(contact cont)
 void
 contact_dump(contact ct)
 {
+	assert(ct != ERROR_CONTACT);
+	assert(ct != NULL);
+
 	printf("Contact %s:\n", ct->name);
 	alist_walk(ct->ids, contact_id_walk);
 }
@@ -136,27 +146,35 @@ contact_id_walk(gendata *key, gendata *value)
 
 
 /**
- * Add an id to a contact, or update an existing id.
+ * Add an id to a contact.
  *
  * \param ct  The contact to add the id to.
  * \param id  The id to add to the contact.
  *
- * \return  The contact
+ * \return  The contact, or CONTACT_ERROR if the id already existed or another
+ *	     error occurred.
+ *	    errno = EINVAL if the id already existed
+ *	    errno = ENOMEM if out of memory
  *
  * \sa contact_del_id
  */
 contact
 contact_add_id(contact ct, contact_id id)
 {
-	/* XXX a better name is contact_insert_id??? */
 	gendata key, value;
 
-	key.ptr = contact_id_name(id);
+	assert(ct != ERROR_CONTACT);
+	assert(ct != NULL);
+	assert(id != ERROR_CONTACT_ID);
+	assert(id != NULL);
+
+	key.ptr = contact_id_get_name(id);
 	value.ptr = id;
 
 	/* Hmm, this key/value gendata nonsense should be easier */
-	alist_insert(ct->ids, key, value, str_eq,
-		     (free_func)contact_id_destroy);
+	if (alist_insert_uniq(ct->ids, key, value, str_eq,
+			      (free_func)contact_id_destroy) == ERROR_ALIST)
+		return ERROR_CONTACT;
 
 	return ct;
 }
@@ -176,6 +194,11 @@ contact
 contact_del_id(contact ct, char *name)
 {
 	gendata key;
+
+	assert(ct != ERROR_CONTACT);
+	assert(ct != NULL);
+	assert(name != NULL);
+
 	key.ptr = name;
 
 	alist_delete(ct->ids, key, str_eq, NULL, (free_func)contact_id_destroy);

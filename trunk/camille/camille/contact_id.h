@@ -39,16 +39,19 @@
 extern "C" {
 #endif
 
-#include <gune/gune.h>
+#include <gune/alist.h>
 
 typedef struct contact_id_t {
 	char *name;
 	alist options;				/* alist of addrbook_options */
 } contact_id_t, *contact_id;
 
+/** Invalid contact id, used as error in return value */
+extern contact_id_t * const ERROR_CONTACT_ID;
+
 contact_id contact_id_create(const char *);
 void contact_id_destroy(contact_id);
-char *contact_id_name(contact_id);
+char *contact_id_get_name(contact_id);
 
 #ifdef DEBUG
 void contact_id_dump(contact_id);
