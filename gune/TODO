@@ -1,0 +1,15 @@
+#
+# $Id: TODO,v 1.7 2004/03/22 20:07:07 airhead Exp $
+#
+# TODO list for Gune
+#
+# TODO items are prefixed "- " and indented with three spaces if the lines
+# are any longer than 80 characters.
+#
+- Think about thread safety (like locking lists when adding/removing).
+- Test implementation of queues and write test harness for it.
+- Check out if there's a way to detect if the compiler supports -ansi -pedantic
+   -Wall -Werror flags.
+- Write something for associative arrays
+- Add checks for when malloc fails!!!
+- Bounds checking necessary?  If yes, error messages necessary or just NULL?
