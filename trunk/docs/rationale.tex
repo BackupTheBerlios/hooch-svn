@@ -235,6 +235,34 @@ When we wish to mail to Homer's work address, we say
 this would refer to the value of the \texttt{work} option of
 the contact \texttt{homer}.
 
+Another advantage of the new idea is that when mailing to a certain group
+one might want to set different options, for example use a disclaimer
+signature file that was specifically created for mailings to this group.
+
+An example:
+\begin{verbatim}
+group workers {
+	signature = ~/Mail/disclaimer.sig;
+	members = homer:work, smithers:home;
+}
+\end{verbatim}
+
+This introduces a new kind of data type, namely the array.  Because
+groups can contain many members, it is nice to be able to split them
+across multiple lines.  For this, one could of course omit the semicolon
+and just continue on the next line.  But it would be nicer to be able
+to split these long lists into multiple lines.  For this, we introduced
+the \verb|+=| operator.
+
+An example:
+\begin{verbatim}
+group kids {
+	members =  bart, lisa;
+	members += maggy;
+}
+\end{verbatim}
+
+
 \subsubsection{Behaviour when settings conflict}
 
 For groups, the settings of a contact might conflict with other members
