@@ -112,7 +112,7 @@ An example:
 \begin{verbatim}
 # This...
 contact jose {
-    primary {
+    primary {	# "primary" is a mandatory identity
         name = "Jose";
         address = "jose@hola.es";
     }
@@ -122,6 +122,22 @@ contact jose {
 contact jose {
     name = "Jose";
     address = "jose@hola.es";
+}
+\end{verbatim}
+
+Note that is can only be one of these two types of \texttt{primary} identity
+declarations.  For example, the contact declaration below would be a false
+one, and should result in a parsing error:
+
+\begin{verbatim}
+contact jose {
+    name = "Jose";
+    address = "jose@hola.es";
+
+    primary {	# False: there are primary fields already
+        name = "Jose";
+        address = "jose@hola.es";
+    }
 }
 \end{verbatim}
 
