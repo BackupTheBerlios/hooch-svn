@@ -292,7 +292,7 @@ addrbook_dump(addrbook ab)
  */
 static void
 contact_walk(gendata *key, gendata *value, gendata data)
-/* ARGSUSED2 */
+/* ARGSUSED1 */
 {
 	contact_dump((contact)value->ptr);
 }
@@ -303,7 +303,7 @@ contact_walk(gendata *key, gendata *value, gendata data)
  */
 static void
 group_walk(gendata *key, gendata *value, gendata data)
-/* ARGSUSED2 */
+/* ARGSUSED1 */
 {
 	group_dump((group)value->ptr);
 }
