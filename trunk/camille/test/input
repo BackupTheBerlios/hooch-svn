@@ -1,0 +1,26 @@
+#
+# $Id$
+#
+# Test file for address book parsing
+#
+
+# Nice indenting supported...
+contact sjamaan {
+	name = Peter;
+	address = hisemail;
+}
+
+# ...or we could write it in a one-liner
+contact nvie {	name = Vinnie; address = hisemail; }
+
+# <scriptkiddy_mode>
+# /us can even type commentz here! w00t! ;-)
+# </scriptkiddy_mode>
+
+defaults {
+	somefield = somevalue;
+}
+
+contact SomeEmptyContactAfterADefaultsBlock {
+	# This should NOT be valid, eventually!
+}
