@@ -1,0 +1,34 @@
+#
+# Sample Turner script
+#
+# $Id$
+#
+
+# First we should specify where contacts are located
+#
+# Q: Perhaps in a turner { } block?  Although that actually should imply
+# settings for Turner, but these need to be made in .turnerrc.
+contacts-file = ~/.hooch/contacts
+
+# A mailbox prefix?
+mailbox = ~/Mail
+
+#
+# We should make a distinction between incoming and outgoing mails from the user.
+#
+match {
+	# First, we can define some patterns that should be matched
+	from = homer:work		# Mail from homer's work, or...
+	     | marge:any		# From any address of marge, or...
+	     | "someone@else\.com";	# A From field that matches this pattern
+	to = bart			# Bart's primary address, *and* to
+	   & maggy;			# Maggy's primary address
+	field "X-Custom" = "foo";	# And the X-Custom field is set to "foo"
+
+	# Next, define the actions to take
+	# Specify a list of mailboxes to move this mail to
+	incoming = bla;			# Will be $mailbox/bla, i.e.: ~/Mail/bla
+
+	# NOTE: Every `match' should have at least one `incoming' or
+	# `outgoing'.
+}
