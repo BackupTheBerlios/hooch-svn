@@ -50,8 +50,9 @@ extern "C" {
 		GEN_VERSION_STR(CAMILLE_MAJOR_VERSION, CAMILLE_MINOR_VERSION)
 
 #include <camille/addrbook.h>
-#include <camille/contacts.h>
-#include <camille/groups.h>
+#include <camille/group.h>
+#include <camille/contact.h>
+#include <camille/contact_id.h>
 
 #ifdef __cplusplus
 }
