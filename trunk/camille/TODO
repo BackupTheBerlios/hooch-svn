@@ -21,3 +21,5 @@
 	  This now simply gives a "syntax error", but does not say why.  A
 	  message like "expecting contact name after keyword `contact'" is no
 	  superfluous luxery.
+- Change yyerror so it calls a user-specified function.  This way, we can
+   redirect errors to windows for a GUI version, and use printw for curses.
