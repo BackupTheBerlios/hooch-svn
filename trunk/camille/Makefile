@@ -7,6 +7,5 @@
 #
 
 SUBDIR=		camille
-SUBDIR+=	test
 
 .include <bsd.subdir.mk>
