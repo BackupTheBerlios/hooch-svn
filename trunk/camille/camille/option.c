@@ -103,7 +103,8 @@ option_hier_create(void)
 
 
 /**
- * Destroy an option hierarchy.
+ * Destroy an option hierarchy.  Be sure to destroy all bindings to the options
+ *  in the hierarchy first.
  *
  * \param h  The hierarchy to destroy.
  *
@@ -218,7 +219,7 @@ option_create(char *name, option_type type, option_data data)
 
 
 /**
- * Destroy an option.
+ * Destroy an option.  Be sure to destroy all bindings to the option first.
  *
  * \param o  The option to destroy.
  *
