@@ -68,7 +68,6 @@ int read_defaults = 0;	/* Bool indicating whether we read a defaults block */
 %type <amount> identity_stms
 %type <amount> group_stms
 %type <amount> single_stms
-/* %type <amount> stms */
 
 /* Field names */
 %type <identifier> field
